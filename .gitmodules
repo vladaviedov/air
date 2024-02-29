@@ -1,3 +1,4 @@
 [submodule "lib/libgpiod"]
 	path = lib/libgpiod
 	url = https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git
+	branch = v1.6.x
