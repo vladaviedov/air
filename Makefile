@@ -2,6 +2,8 @@ CC=g++ -std=c++20
 CFLAGS=-Wall -Wextra -g
 LDFLAGS=-lgpiodcxx
 
+GPIOD_LIB=libgpiodcxx.so
+
 OUT_DRIVER=build/bin/driver.so
 SUBDIRS_DRIVER=$(shell cd src/driver && find * -type d -printf "%p/\n")
 MKSUBDIRS_DRIVER=$(addprefix build/obj/driver/, $(SUBDIRS_CAR))
@@ -15,7 +17,15 @@ SRCS_CAR=$(shell cd src/car && find * -type f -name '*.cpp')
 OBJS_CAR=$(addprefix build/obj/car/, $(SRCS_CAR:.cpp=.o))
 
 .PHONY:
-all: rootdirs $(MKSUBDIRS) $(OUT_DRIVER) $(OUT_CAR)
+all: rootdirs $(GPIOD_LIB) $(MKSUBDIRS) $(OUT_DRIVER) $(OUT_CAR)
+
+$(GPIOD_LIB): lib/libgpiod
+	cd $^; \
+	./autogen.sh \
+		--prefix=${CURDIR}/build/lib/ \
+		--enable-bindings-cxx; \
+	make; \
+	make install
 
 $(OUT_DRIVER): $(OBJS_DRIVER)
 	$(CC) -shared $^ -o $@ $(LDFLAGS)
@@ -24,9 +34,12 @@ $(OUT_CAR): $(OBJS_CAR)
 	$(CC) $^ -o $@ $(LDFLAGS)
 
 .PHONY: rootdirs
-rootdirs: build/bin build/obj/car build/obj/driver
+rootdirs: build/bin build/lib build/obj/car build/obj/driver
 
 build/bin:
+	mkdir -p $@
+
+build/lib:
 	mkdir -p $@
 
 # Mkdir template
