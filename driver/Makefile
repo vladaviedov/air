@@ -1,8 +1,9 @@
 CC=g++
 CFLAGS=-Wall -Wextra -g -std=c++20 -I ../build/include -fPIC
-LDFLAGS=-L../build/lib -lgpiodcxx
+AR=ar
+ARFLAGS=rusc
 
-OUT=../build/lib/libdriver.so
+OUT=../build/lib/libdriver.a
 SUBDIRS=$(shell cd src/ && find * -type d -printf "%p/\n")
 MKSUBDIRS=$(addprefix ../build/obj/driver/, $(SUBDIRS_CAR))
 SRCS=$(shell cd src/ && find * -type f -name '*.cpp')
@@ -14,7 +15,7 @@ $(info [${CURDIR}])
 all: ../build/obj/driver $(MKSUBDIRS) $(OUT)
 
 $(OUT): $(OBJS)
-	$(CC) -shared $^ -o $@ $(LDFLAGS)
+	$(AR) $(ARFLAGS) $@ $^
 
 # Mkdir template
 define mk_subdir
