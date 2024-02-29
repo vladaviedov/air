@@ -1,4 +1,4 @@
-GPIOD_LIB=build/lib/lib/libgpiodcxx.so
+GPIOD_LIB=build/lib/libgpiodcxx.so
 
 .PHONY: all
 all: builddirs car
@@ -7,13 +7,14 @@ all: builddirs car
 builddirs:
 	mkdir -p build/
 	mkdir -p build/lib
+	mkdir -p build/include
 	mkdir -p build/obj
 	mkdir -p build/bin
 
 $(GPIOD_LIB): lib/libgpiod
 	cd $^; \
 	./autogen.sh \
-		--prefix=${CURDIR}/build/lib/ \
+		--prefix=${CURDIR}/build \
 		--enable-bindings-cxx; \
 	make; \
 	make install
@@ -29,3 +30,7 @@ car: driver
 .PHONY: clean
 clean:
 	rm -rf build
+
+.PHONY: libclean
+libclean:
+	$(MAKE) -C lib/libgpiod clean

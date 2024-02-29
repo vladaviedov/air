@@ -1,6 +1,6 @@
 CC=g++
-CFLAGS=-Wall -Wextra -g -std=c++20 -I ../build/lib/include -fPIC
-LDFLAGS=-L../build/lib/lib -lgpiodcxx
+CFLAGS=-Wall -Wextra -g -std=c++20 -I ../build/include -fPIC
+LDFLAGS=-L../build/lib -lgpiodcxx
 
 OUT=../build/lib/libdriver.so
 SUBDIRS=$(shell cd src/ && find * -type d -printf "%p/\n")
@@ -38,4 +38,5 @@ $(foreach subdir, $(SUBDIRS), $(eval $(call compile_subdir,$(subdir))))
 
 .PHONY: clean
 clean:
-	rm -rf build/obj/driver
+	rm -rf ../build/obj/driver
+	rm ../build/lib/libdriver.so

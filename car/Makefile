@@ -1,6 +1,6 @@
 CC=g++
-CFLAGS=-Wall -Wextra -g -std=c++20
-LDFLAGS=-L../build/bin/ -ldriver
+CFLAGS=-Wall -Wextra -g -std=c++20 -I ../build/include
+LDFLAGS=-L../build/lib/ -ldriver -lgpiodcxx
 
 OUT=../build/bin/car
 SUBDIRS=$(shell cd src/ && find * -type d -printf "%p/\n")
@@ -36,4 +36,5 @@ $(foreach subdir, $(SUBDIRS), $(eval $(call compile_subdir,$(subdir))))
 
 .PHONY: clean
 clean:
-	rm -rf build/obj/car
+	rm -rf ../build/obj/car
+	rm ../build/bin/car
