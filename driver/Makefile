@@ -1,5 +1,5 @@
 CC=../build/gcc/bin/arm-linux-gnueabihf-g++
-CFLAGS=-Wall -Wextra -g -std=c++20 -I ../build/include -fPIC
+CFLAGS=-Wall -Wextra -g -std=c++20 -I ../build/include -I ./include -fPIC
 AR=../build/gcc/arm-linux-gnueabihf/bin/ar
 ARFLAGS=rsc
 

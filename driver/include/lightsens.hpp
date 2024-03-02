@@ -1,5 +1,5 @@
 /**
- * @file driver/lightsens.hpp
+ * @file include/lightsens.hpp
  * @brief Infrared sensor driver header.
  */
 #pragma once

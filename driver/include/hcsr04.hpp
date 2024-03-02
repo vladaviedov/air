@@ -1,5 +1,5 @@
 /**
- * @file driver/hcsr04.hpp
+ * @file include/hcsr04.hpp
  * @brief Driver header for the HC-SR04 ultrasonice sensor.
  */
 #pragma once

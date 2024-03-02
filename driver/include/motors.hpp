@@ -1,5 +1,5 @@
 /**
- * @file driver/motor.hpp
+ * @file include/motors.hpp
  * @brief Motor driver header for the provided motor controller.
  */
 #pragma once

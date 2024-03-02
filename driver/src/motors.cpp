@@ -1,5 +1,5 @@
 /**
- * @file driver/motor.cpp
+ * @file src/motors.cpp
  * @brief Motor driver implementation with the provided motor controller.
  */
 #include "motors.hpp"
@@ -7,9 +7,8 @@
 #include <cstdint>
 #include <gpiod.hpp>
 
+#include "defines.hpp"
 #include "pwm.hpp"
-
-#define GPIO_USER "robot2_motors"
 
 motor::motor(gpiod::chip &chip, uint32_t in1_pin, uint32_t in2_pin, uint32_t pwm_pin) :
 	ain1(chip.get_line(in1_pin)),
@@ -17,12 +16,12 @@ motor::motor(gpiod::chip &chip, uint32_t in1_pin, uint32_t in2_pin, uint32_t pwm
 	pwm(chip, pwm_pin) {
 	// Set control pins to output
 	ain1.request({
-		.consumer = GPIO_USER,
+		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::DIRECTION_OUTPUT,
 		.flags = 0
 	}, 0);
 	ain2.request({
-		.consumer = GPIO_USER,
+		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::DIRECTION_OUTPUT,
 		.flags = 0
 	}, 0);

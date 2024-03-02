@@ -1,5 +1,5 @@
 /**
- * @file driver/pinmap.hpp
+ * @file include/pinmap.hpp
  * @brief This file provides macro mappings from physical pin numbers on the
  * Raspberry Pi to numbers recognized by libgpiod.
  */
