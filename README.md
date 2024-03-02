@@ -1,6 +1,6 @@
 # air
 
-## Microcontroller Info
+## Target Info
 Raspberry Pi Zero W 1.1
 
 - OS: Raspbian 12
@@ -16,13 +16,17 @@ base-devel
 autoconf-archive
 ```
 
-## Compile
-Get submodule if you have not done so
+## Setup
+Get submodules if you have not done so
 ```
 git submodule init
 git submodule update
 ```
 
+You need a cross-compiler for ARMv6 with threading and C++ support.
+Run `compiler.sh` to build a properly configured cross-compiler (takes a while).
+
+## Compile
 Compile with make
 ```
 make
@@ -32,3 +36,5 @@ Output files:
 ```
 build/bin/car
 ```
+
+Copy over to the pi
