@@ -1,6 +1,6 @@
 CC=../build/gcc/bin/arm-linux-gnueabihf-g++
 CFLAGS=-Wall -Wextra -g -std=c++20 -I ../build/include
-LDFLAGS=-L ../build/lib/ -ldriver
+LDFLAGS=-L ../build/lib/ -ldriver -lgpiodcxx
 
 OUT=../build/bin/car
 SUBDIRS=$(shell cd src/ && find * -type d -printf "%p/\n")
