@@ -10,10 +10,14 @@ SRCS=$(shell cd src/ && find * -type f -name '*.cpp')
 OBJS=$(addprefix ../build/obj/driver/, $(SRCS:.cpp=.o))
 
 .PHONY:
-all: ../build/obj/driver $(MKSUBDIRS) $(OUT)
+all: ../build/obj/driver $(MKSUBDIRS) $(OUT) headers
 
 $(OUT): $(OBJS)
 	$(AR) $(ARFLAGS) $@ $^
+
+.PHONY: headers
+headers:
+	cp -R include/ ../build/include/driver
 
 # Mkdir template
 define mk_subdir
