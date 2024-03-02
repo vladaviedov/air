@@ -12,12 +12,7 @@ builddirs:
 	mkdir -p build/bin
 
 $(GPIOD_LIB): lib/libgpiod
-	cd $^; \
-	./autogen.sh \
-		--prefix=${CURDIR}/build \
-		--enable-bindings-cxx; \
-	make; \
-	make install
+	./libgpiod.sh -j$$(nproc)
 
 .PHONY: driver
 driver: $(GPIOD_LIB)
@@ -29,8 +24,13 @@ car: driver
 
 .PHONY: clean
 clean:
-	rm -rf build
+	$(MAKE) -C driver clean
+	$(MAKE) -C car clean
 
 .PHONY: libclean
 libclean:
 	$(MAKE) -C lib/libgpiod clean
+
+.PHONY: fullclean
+fullclean:
+	rm -rf build
