@@ -13,10 +13,7 @@ mkdir -p $PREFIX
 # Step 1: Get kernel headers
 cd compiler/linux
 export KERNEL=kernel
-make \ 
-	ARCH=arm \
-	INSTALL_HDR_PATH=$PREFIX/arm-linux-gnueabihf \
-	headers_install
+make ARCH=arm INSTALL_HDR_PATH=$PREFIX/arm-linux-gnueabihf headers_install
 cd $BASE
 
 # Step 2: Compile binutils
