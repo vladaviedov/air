@@ -1,5 +1,5 @@
 /**
- * @file driver/pwm.cpp
+ * @file src/pwm.cpp
  * @brief Software PWM implementation.
  */
 #include "pwm.hpp"
@@ -8,17 +8,17 @@
 #include <chrono>
 #include <thread>
 
+#include "defines.hpp"
+
 // 500 Hz PWM -> 2000us / period
 #define TOTAL_TIME 2000
 #define TIME_PER_PERCENT (TOTAL_TIME / 100)
-
-#define GPIO_USER "robot2_pwm"
 
 pwm_worker::pwm_worker(gpiod::chip &chip, uint32_t pin) :
 	line(chip.get_line(pin)) {
 	// Set pin to output
 	line.request({
-		.consumer = GPIO_USER,
+		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::DIRECTION_OUTPUT,
 		.flags = 0
 	}, 0);

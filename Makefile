@@ -1,45 +1,36 @@
-CC=g++
-CFLAGS=-Wall -Wextra -g
-LDFLAGS=-lgpiodcxx
+GPIOD_LIB=build/lib/libgpiodcxx.so
 
-OUT_CAR=build/bin/car
-SUBDIRS_CAR=$(shell cd src/car && find * -type d -printf "%p/\n")
-MKSUBDIRS_CAR=$(addprefix build/obj/car/, $(SUBDIRS_CAR))
-SRCS_CAR=$(shell cd src/car && find * -type f -name '*.cpp')
-OBJS_CAR=$(addprefix build/obj/car/, $(SRCS_CAR:.cpp=.o))
+.PHONY: all
+all: builddirs car
 
-.PHONY:
-all: rootdirs $(MKSUBDIRS) $(OUT_CAR)
+.PHONY: builddirs
+builddirs:
+	mkdir -p build/
+	mkdir -p build/lib
+	mkdir -p build/include
+	mkdir -p build/obj
+	mkdir -p build/bin
 
-$(OUT_CAR): $(OBJS_CAR)
-	$(CC) $^ -o $@ $(LDFLAGS)
+$(GPIOD_LIB): lib/libgpiod
+	./libgpiod.sh -j$$(nproc)
 
-.PHONY: rootdirs
-rootdirs: build/bin build/obj/car
+.PHONY: driver
+driver: $(GPIOD_LIB)
+	$(MAKE) -C driver
 
-build/bin:
-	mkdir -p $@
-
-# Mkdir template
-define mk_subdir
-build/obj/$(1):
-	mkdir -p $$@
-endef
-
-# Build template
-define compile_subdir
-build/obj/$(1)%.o: src/$(1)%.cpp
-	$(CC) $(CFLAGS) -c $$< -o $$@
-endef
-
-# Build car root
-$(eval $(call mk_subdir,car))
-$(eval $(call compile_subdir,car))
-
-# Build car subdirectories
-$(foreach subdir, $(SUBDIRS_CAR), $(eval $(call mk_subdir,$(subdir))))
-$(foreach subdir, $(SUBDIRS_CAR), $(eval $(call compile_subdir,$(subdir))))
+.PHONY: car
+car: driver
+	$(MAKE) -C car
 
 .PHONY: clean
 clean:
+	$(MAKE) -C driver clean
+	$(MAKE) -C car clean
+
+.PHONY: libclean
+libclean:
+	$(MAKE) -C lib/libgpiod clean
+
+.PHONY: fullclean
+fullclean:
 	rm -rf build

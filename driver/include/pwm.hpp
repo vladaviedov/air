@@ -1,5 +1,5 @@
 /**
- * @file driver/pwm.hpp
+ * @file include/pwm.hpp
  * @brief Software PWM header.
  */
 #pragma once

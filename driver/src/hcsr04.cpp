@@ -1,5 +1,5 @@
 /**
- * @file driver/hcsr04.cpp
+ * @file src/hcsr04.cpp
  * @brief Driver implementation for HC-SR04.
  */
 #include "hcsr04.hpp"
@@ -11,21 +11,21 @@
 #include <mutex>
 #include <gpiod.hpp>
 
-#define GPIO_USER "robot2_sensor"
+#include "defines.hpp"
 
 hc_sr04::hc_sr04(gpiod::chip &chip, uint32_t trig_pin, uint32_t echo_pin) :
 	trig(chip.get_line(trig_pin)),
 	echo(chip.get_line(echo_pin)) {
 	// Set trig pin to output
 	trig.request({
-		.consumer = GPIO_USER,
+		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::DIRECTION_OUTPUT,
 		.flags = 0
 	}, 0);
 	
 	// Set echo pin to input
 	echo.request({
-		.consumer = GPIO_USER,
+		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::DIRECTION_INPUT,
 		.flags = 0
 	});

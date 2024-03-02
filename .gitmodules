@@ -1,0 +1,21 @@
+[submodule "lib/libgpiod"]
+	path = lib/libgpiod
+	url = https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git
+	branch = v1.6.x
+	shallow = true
+[submodule "compiler/glibc"]
+	path = compiler/glibc
+	url = https://sourceware.org/git/glibc.git
+	shallow = true
+[submodule "compiler/binutils-gdb"]
+	path = compiler/binutils-gdb
+	url = https://sourceware.org/git/binutils-gdb.git
+	shallow = true
+[submodule "compiler/gcc"]
+	path = compiler/gcc
+	url = https://gcc.gnu.org/git/gcc.git
+	shallow = true
+[submodule "compiler/linux"]
+	path = compiler/linux
+	url = https://github.com/raspberrypi/linux
+	shallow = true
