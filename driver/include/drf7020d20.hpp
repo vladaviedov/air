@@ -43,6 +43,17 @@ public:
 		uint32_t uart_port);
 
 	~drf7020d20();
+	
+	/**
+	 * @brief Enable module.
+	 */
+	void enable() const;
+	
+	/**
+	 * @brief Disable module.
+	 *
+	 */
+	void disable() const;
 
 	/**
 	 * @brief Configure RF module.
@@ -64,6 +75,7 @@ public:
 		parity parity) const;
 
 private:
+	int serial_fd;
 	const gpiod::line en;
 	const gpiod::line aux;
 	const gpiod::line set;
