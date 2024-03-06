@@ -4,11 +4,14 @@
  */
 #include "drf7020d20.hpp"
 
+#include <chrono>
 #include <cstdio>
 #include <cstdint>
 #include <cstring>
+#include <iostream>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <unistd.h>
 #include <fcntl.h>
 #include <gpiod.hpp>
@@ -26,22 +29,22 @@ drf7020d20::drf7020d20(
 	set(chip.get_line(set_pin)) {
 	en.request({
 		.consumer = GPIO_CONSUMER,
-		.request_type = gpiod::line::DIRECTION_INPUT,
+		.request_type = gpiod::line_request::DIRECTION_OUTPUT,
 		.flags = 0
 	});
 	aux.request({
 		.consumer = GPIO_CONSUMER,
-		.request_type = gpiod::line::DIRECTION_OUTPUT,
+		.request_type = gpiod::line_request::DIRECTION_INPUT,
 		.flags = 0
 	});
 	set.request({
 		.consumer = GPIO_CONSUMER,
-		.request_type = gpiod::line::DIRECTION_INPUT,
+		.request_type = gpiod::line_request::DIRECTION_OUTPUT,
 		.flags = 0
 	});
 
 	en.set_value(0);
-	set.set_value(0);
+	set.set_value(1);
 
 	// Open UART serial
 	std::string serial = "/dev/serial" + std::to_string(uart_port);
@@ -60,10 +63,12 @@ drf7020d20::~drf7020d20() {
 
 void drf7020d20::enable() const {
 	en.set_value(1);
+	std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
 
 void drf7020d20::disable() const {
 	en.set_value(0);
+	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
 bool drf7020d20::configure(
@@ -86,27 +91,31 @@ bool drf7020d20::configure(
 
 	// Enable set mode
 	set.set_value(0);
+	std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
 	// Send command
 	char buf[32];
-	std::snprintf(buf, 32, "WR %u %u %u %u %u\r\n",
+	std::snprintf(buf, 32, "WR %u %u %u %u %u\n",
 		freq, fsk_rate, power_level, uart_rate, parity);
-	if (write(serial_fd, buf, 32) < 0) {
+	if (write(serial_fd, buf, std::strlen(buf)) < 0) {
 		return false;
 	}
 
 	// Get response
-	if (read(serial_fd, buf, 32) < 0) {
+	if (read(serial_fd, buf, 1) < 0) {
 		return false;
 	}
+	std::cout << buf << std::endl;
 
 	// Verify response
 	char expect[32];
-	std::snprintf(expect, 32, "PARA %u %u %u %u %u\r\n",
+	std::snprintf(expect, 32, "PARA %u %u %u %u %u\n",
 		freq, fsk_rate, power_level, uart_rate, parity);
 	if (std::strcmp(buf, expect) != 0) {
 		return false;
 	}
 
+	set.set_value(1);
+	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	return true;
 }

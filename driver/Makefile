@@ -17,7 +17,8 @@ $(OUT): $(OBJS)
 
 .PHONY: headers
 headers:
-	cp -R include/ ../build/include/driver
+	mkdir -p ../build/include/driver
+	cp -R include/* ../build/include/driver
 
 # Mkdir template
 define mk_subdir
