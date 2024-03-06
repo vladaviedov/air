@@ -11,6 +11,7 @@ OBJS=$(addprefix ../build/obj/car/, $(SRCS:.cpp=.o))
 .PHONY:
 all: ../build/obj/car $(MKSUBDIRS) $(OUT)
 
+.PHONY: $(OUT)
 $(OUT): $(OBJS)
 	$(CC) $^ -o $@ $(LDFLAGS)
 

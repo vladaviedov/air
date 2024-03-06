@@ -10,8 +10,8 @@ int main() {
 	rf_test.enable();
 	rf_test.configure(433900, drf7020d20::DR9600, 9, drf7020d20::DR9600, drf7020d20::NONE);
 	
-	const char test[] = "Hello World. CALLSIGN\n";
-	rf_test.transmit(test, sizeof(test));
+	rf_test.receive();
+	rf_test.receive();
 
 	return 0;
 }

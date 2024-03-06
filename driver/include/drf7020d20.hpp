@@ -83,6 +83,8 @@ public:
 	 */
 	bool transmit(const char *msg, uint32_t length) const;
 
+	void receive() const;
+
 private:
 	int serial_fd;
 	const gpiod::line en;

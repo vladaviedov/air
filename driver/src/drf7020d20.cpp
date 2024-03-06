@@ -34,7 +34,7 @@ drf7020d20::drf7020d20(
 	});
 	aux.request({
 		.consumer = GPIO_CONSUMER,
-		.request_type = gpiod::line_request::DIRECTION_INPUT,
+		.request_type = gpiod::line_request::EVENT_RISING_EDGE,
 		.flags = 0
 	});
 	set.request({
@@ -114,13 +114,13 @@ bool drf7020d20::configure(
 	}
 
 	// Verify response
-	if (std::strncmp(buf, expect, 20) != 0) {
-		return false;
-	}
+	bool verify = std::strncmp(buf, expect, 20) == 0;
 
+	// Reset
 	set.set_value(1);
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
-	return true;
+
+	return verify;
 }
 
 bool drf7020d20::transmit(const char *msg, uint32_t length) const {
@@ -129,4 +129,23 @@ bool drf7020d20::transmit(const char *msg, uint32_t length) const {
 	}
 
 	return write(serial_fd, msg, length);
+}
+
+void drf7020d20::receive() const {
+	if (!enable_flag) {
+		return;
+	}
+
+	aux.event_wait(std::chrono::seconds(1000));
+	aux.event_read();
+
+	char buffer[256] = {0};
+	int have_read = read(serial_fd, buffer, 256);
+	
+	for (int i = 0; i < have_read; i++) {
+		putchar(buffer[i]);
+	}
+
+	// WHY????
+	read(serial_fd, buffer, 1);
 }
