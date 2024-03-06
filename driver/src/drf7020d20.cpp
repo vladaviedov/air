@@ -94,24 +94,25 @@ bool drf7020d20::configure(
 	std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
 	// Send command
-	char buf[32];
-	std::snprintf(buf, 32, "WR %u %u %u %u %u\n",
+	char buf[21];
+	std::snprintf(buf, 21, "WR %u %u %u %u %u\n",
 		freq, fsk_rate, power_level, uart_rate, parity);
 	if (write(serial_fd, buf, std::strlen(buf)) < 0) {
 		return false;
 	}
 
+	// Expected response
+	char expect[21];
+	std::snprintf(expect, 21, "PARA %u %u %u %u %u\n",
+		freq, fsk_rate, power_level, uart_rate, parity);
+
 	// Get response
-	if (read(serial_fd, buf, 1) < 0) {
+	if (read(serial_fd, buf, 20) < 0) {
 		return false;
 	}
-	std::cout << buf << std::endl;
 
 	// Verify response
-	char expect[32];
-	std::snprintf(expect, 32, "PARA %u %u %u %u %u\n",
-		freq, fsk_rate, power_level, uart_rate, parity);
-	if (std::strcmp(buf, expect) != 0) {
+	if (std::strncmp(buf, expect, 20) != 0) {
 		return false;
 	}
 
