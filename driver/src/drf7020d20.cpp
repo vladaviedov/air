@@ -61,14 +61,16 @@ drf7020d20::~drf7020d20() {
 	close(serial_fd);
 }
 
-void drf7020d20::enable() const {
+void drf7020d20::enable() {
 	en.set_value(1);
 	std::this_thread::sleep_for(std::chrono::milliseconds(50));
+	enable_flag = true;
 }
 
-void drf7020d20::disable() const {
+void drf7020d20::disable() {
 	en.set_value(0);
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	enable_flag = false;
 }
 
 bool drf7020d20::configure(
@@ -119,4 +121,12 @@ bool drf7020d20::configure(
 	set.set_value(1);
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	return true;
+}
+
+bool drf7020d20::transmit(const char *msg, uint32_t length) const {
+	if (!enable_flag) {
+		return false;
+	}
+
+	return write(serial_fd, msg, length);
 }

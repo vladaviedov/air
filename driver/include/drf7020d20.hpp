@@ -47,13 +47,13 @@ public:
 	/**
 	 * @brief Enable module.
 	 */
-	void enable() const;
+	void enable();
 	
 	/**
 	 * @brief Disable module.
 	 *
 	 */
-	void disable() const;
+	void disable();
 
 	/**
 	 * @brief Configure RF module.
@@ -73,11 +73,22 @@ public:
 		uint32_t power_level,
 		rate uart_rate,
 		parity parity) const;
+	
+	/**
+	 * @brief Transmit message over radio.
+	 *
+	 * @param[in] msg - Message buffer.
+	 * @param[in] length - Length of message.
+	 * @return True on success; False on fail.
+	 */
+	bool transmit(const char *msg, uint32_t length) const;
 
 private:
 	int serial_fd;
 	const gpiod::line en;
 	const gpiod::line aux;
 	const gpiod::line set;
+
+	bool enable_flag = false;
 
 };
