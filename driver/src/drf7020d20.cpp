@@ -35,7 +35,7 @@ drf7020d20::drf7020d20(
 	});
 	aux.request({
 		.consumer = GPIO_CONSUMER,
-		.request_type = gpiod::line_request::EVENT_RISING_EDGE,
+		.request_type = gpiod::line_request::EVENT_FALLING_EDGE,
 		.flags = 0
 	});
 	set.request({
@@ -89,23 +89,24 @@ bool drf7020d20::configure(
 	std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
 	// Send command
-	char buf[21];
-	std::snprintf(buf, 21, "WR %u %u %u %u %u\n",
+	char buf[22];
+	std::snprintf(buf, 22, "WR %u %u %u %u %u\r\n",
 		freq, fsk_rate, power_level, uart_rate, parity);
 	serial.write(buf, std::strlen(buf));
 
 	// Expected response
-	char expect[21];
-	std::snprintf(expect, 21, "PARA %u %u %u %u %u\n",
+	char expect[22];
+	std::snprintf(expect, 22, "PARA %u %u %u %u %u\r\n",
 		freq, fsk_rate, power_level, uart_rate, parity);
 
 	// Get response
-	if (serial.read(buf, 20) < 0) {
+	std::this_thread::sleep_for(std::chrono::milliseconds(200));
+	if (serial.read(buf, 21) < 0) {
 		return false;
 	}
 
 	// Verify response
-	bool verify = std::strncmp(buf, expect, 20) == 0;
+	bool verify = std::strncmp(buf, expect, 21) == 0;
 
 	// Reset
 	set.set_value(1);
@@ -127,6 +128,7 @@ std::string drf7020d20::receive() const {
 		return "";
 	}
 
+	// AUX will fall when data is ready to read
 	aux.event_wait(std::chrono::seconds(1000));
 	aux.event_read();
 

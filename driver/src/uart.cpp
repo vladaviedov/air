@@ -20,7 +20,7 @@ uart::uart(uint32_t port) {
 
 	// Copy and fix settings
 	struct termios settings = old_settings;
-	settings.c_lflag &= ~ECHO;
+	settings.c_lflag &= ~(ECHO | ICANON);
 	tcsetattr(fd, TCSANOW, &settings);
 }
 
