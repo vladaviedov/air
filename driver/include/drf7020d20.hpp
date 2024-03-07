@@ -7,6 +7,8 @@
 #include <cstdint>
 #include <gpiod.hpp>
 
+#include "uart.hpp"
+
 class drf7020d20 {
 
 public:
@@ -81,12 +83,19 @@ public:
 	 * @param[in] length - Length of message.
 	 * @return True on success; False on fail.
 	 */
-	bool transmit(const char *msg, uint32_t length) const;
+	bool transmit(const std::string &msg) const;
 
-	void receive() const;
+	/**
+	 * @brief Receive message over radio.
+	 *
+	 * @param[out] buffer - Buffer to place message.
+	 * @param[in] max_len - Maximum bytes to write into buffer.
+	 * @return Bytes read over radio.
+	 */
+	std::string receive() const;
 
 private:
-	int serial_fd;
+	const uart serial;
 	const gpiod::line en;
 	const gpiod::line aux;
 	const gpiod::line set;

@@ -24,6 +24,7 @@ drf7020d20::drf7020d20(
 		uint32_t aux_pin,
 		uint32_t set_pin,
 		uint32_t uart_port) :
+	serial(uart_port),
 	en(chip.get_line(en_pin)),
 	aux(chip.get_line(aux_pin)),
 	set(chip.get_line(set_pin)) {
@@ -45,20 +46,12 @@ drf7020d20::drf7020d20(
 
 	en.set_value(0);
 	set.set_value(1);
-
-	// Open UART serial
-	std::string serial = "/dev/serial" + std::to_string(uart_port);
-	serial_fd = open(serial.c_str(), O_RDWR);
-	if (serial_fd < 0) {
-		throw std::runtime_error("Failed to open serial port");
-	}
 }
 
 drf7020d20::~drf7020d20() {
 	en.release();
 	aux.release();
 	set.release();
-	close(serial_fd);
 }
 
 void drf7020d20::enable() {
@@ -99,9 +92,7 @@ bool drf7020d20::configure(
 	char buf[21];
 	std::snprintf(buf, 21, "WR %u %u %u %u %u\n",
 		freq, fsk_rate, power_level, uart_rate, parity);
-	if (write(serial_fd, buf, std::strlen(buf)) < 0) {
-		return false;
-	}
+	serial.write(buf, std::strlen(buf));
 
 	// Expected response
 	char expect[21];
@@ -109,7 +100,7 @@ bool drf7020d20::configure(
 		freq, fsk_rate, power_level, uart_rate, parity);
 
 	// Get response
-	if (read(serial_fd, buf, 20) < 0) {
+	if (serial.read(buf, 20) < 0) {
 		return false;
 	}
 
@@ -123,29 +114,21 @@ bool drf7020d20::configure(
 	return verify;
 }
 
-bool drf7020d20::transmit(const char *msg, uint32_t length) const {
+bool drf7020d20::transmit(const std::string &msg) const {
 	if (!enable_flag) {
 		return false;
 	}
 
-	return write(serial_fd, msg, length);
+	return serial.write(msg);
 }
 
-void drf7020d20::receive() const {
+std::string drf7020d20::receive() const {
 	if (!enable_flag) {
-		return;
+		return "";
 	}
 
 	aux.event_wait(std::chrono::seconds(1000));
 	aux.event_read();
 
-	char buffer[256] = {0};
-	int have_read = read(serial_fd, buffer, 256);
-	
-	for (int i = 0; i < have_read; i++) {
-		putchar(buffer[i]);
-	}
-
-	// WHY????
-	read(serial_fd, buffer, 1);
+	return serial.read();
 }
