@@ -1,3 +1,7 @@
+/**
+ * @file src/uart.cpp
+ * @brief UART serial driver.
+ */
 #include "uart.hpp"
 
 #include <cstdio>
@@ -18,7 +22,7 @@ uart::uart(uint32_t port) {
 	// Get current settings
 	tcgetattr(fd, &old_settings);
 
-	// Copy and fix settings
+	// Turn off ECHO and ICANON
 	struct termios settings = old_settings;
 	settings.c_lflag &= ~(ECHO | ICANON);
 	tcsetattr(fd, TCSANOW, &settings);

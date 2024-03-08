@@ -67,7 +67,7 @@ public:
 	 * @param[in] power_level - RF power level (0-9).
 	 * @param[in] uart_rate - UART bitrate.
 	 * @param[in] parity - Parity configuration.
-	 * @return True on success; False on fail.
+	 * @return Boolean result.
 	 */
 	bool configure(
 		uint32_t freq,
@@ -79,18 +79,16 @@ public:
 	/**
 	 * @brief Transmit message over radio.
 	 *
-	 * @param[in] msg - Message buffer.
-	 * @param[in] length - Length of message.
-	 * @return True on success; False on fail.
+	 * @param[in] msg - Message to send.
+	 * @return Boolean result.
 	 */
 	bool transmit(const std::string &msg) const;
 
 	/**
 	 * @brief Receive message over radio.
+	 * @note Blocks until a message is received.
 	 *
-	 * @param[out] buffer - Buffer to place message.
-	 * @param[in] max_len - Maximum bytes to write into buffer.
-	 * @return Bytes read over radio.
+	 * @return Received message. Empty string on error.
 	 */
 	std::string receive() const;
 
