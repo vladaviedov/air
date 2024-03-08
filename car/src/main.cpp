@@ -1,13 +1,41 @@
+#include <chrono>
 #include <cstdio>
+#include <string>
 #include <iostream>
 #include <gpiod.hpp>
-#include <driver/pwm.hpp>
 #include <driver/pinmap.hpp>
+#include <driver/drf7020d20.hpp>
+#include <thread>
+
+#define CALLSIGN ""
+#define TAG "/2"
 
 int main() {
 	gpiod::chip chip("gpiochip0");
-	pwm_worker pwm_test(chip, RASPI_3);
-	pwm_test.set_duty(50);
-	std::getchar();
+	drf7020d20 rf_test(chip, RASPI_40, RASPI_37, RASPI_38, 0);
+	rf_test.enable();
+	rf_test.configure(433900, drf7020d20::DR9600, 9, drf7020d20::DR9600, drf7020d20::NONE);
+	
+	std::string hello_msg("HELLO " CALLSIGN TAG "\n");
+	std::string ack_msg("ACK " CALLSIGN TAG "\n");
+	std::string bye_msg("BYE " CALLSIGN TAG "\n");
+
+	std::string input;
+	std::cin >> input;
+
+	if (input == "rx") {
+		std::cout << rf_test.receive();
+		rf_test.transmit(ack_msg);
+		std::cout << rf_test.receive();
+		rf_test.transmit(ack_msg);
+	}
+
+	if (input == "tx") {
+		rf_test.transmit(hello_msg);
+		std::cout << rf_test.receive();
+		rf_test.transmit(bye_msg);
+		std::cout << rf_test.receive();
+	}
+
 	return 0;
 }
