@@ -12,10 +12,26 @@ Raspberry Pi Zero W 1.1
 ## Requirements
 Archlinux Packages:
 ```
-base-devel
 autoconf-archive
+base-devel
 python
 rsync
+```
+
+Debian Packages:
+```
+autoconf-archive
+automake
+bison
+build-essential
+curl
+flex
+gawk
+libtool
+pkg-config
+python3
+rsync
+texinfo
 ```
 
 ## Setup
@@ -30,6 +46,7 @@ Run `compiler.sh` to build a properly configured cross-compiler (takes a while).
 
 Build tested with:
 - gcc 13, x86_64, archlinux
+- gcc 12, x86_64, debian 12
 
 ## Compile
 Compile with make

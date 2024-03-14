@@ -1,8 +1,11 @@
+#!/bin/sh
+set -e
+
 BASE=$(pwd)
-THREAD_OPT=$1
+JOPT=$1
 
 cd lib/libgpiod
-mkdir build
+mkdir -p build
 cd build
 export PATH=$PATH:$BASE/build/gcc/bin:$BASE/build/gcc/arm-linux-gnueabihf/bin
 ../autogen.sh \
@@ -10,5 +13,5 @@ export PATH=$PATH:$BASE/build/gcc/bin:$BASE/build/gcc/arm-linux-gnueabihf/bin
 	--host=arm-linux-gnueabihf \
 	--target=arm-linux-gnueabihf \
 	--enable-bindings-cxx
-make $THREAD_OPT
+make $JOPT
 make install
