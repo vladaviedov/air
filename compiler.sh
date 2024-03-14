@@ -64,7 +64,7 @@ binutils() {
 gcc_stage1() {
 	cd compiler/gcc
 	contrib/download_prerequisites
-	mkdir -p; build
+	mkdir -p build
 	cd build
 	../configure \
 		--prefix=$PREFIX \
