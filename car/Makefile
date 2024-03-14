@@ -4,7 +4,7 @@ LDFLAGS=-L ../build/lib/ -ldriver -lgpiod -lgpiodcxx
 
 OUT=../build/bin/car
 SUBDIRS=$(shell cd src/ && find * -type d -printf "%p/\n")
-MKSUBDIRS=$(addprefix ../build/obj/car/, $(SUBDIRS_CAR))
+MKSUBDIRS=$(addprefix ../build/obj/car/, $(SUBDIRS))
 SRCS=$(shell cd src/ && find * -type f -name '*.cpp')
 OBJS=$(addprefix ../build/obj/car/, $(SRCS:.cpp=.o))
 

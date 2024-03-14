@@ -1,0 +1,4 @@
+-Wall
+-Wextra
+-std=c++20
+-I../build/include

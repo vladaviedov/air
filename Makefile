@@ -1,7 +1,7 @@
 GPIOD_LIB=build/lib/libgpiodcxx.so
 
 .PHONY: all
-all: builddirs car
+all: builddirs car control
 
 .PHONY: builddirs
 builddirs:
@@ -21,6 +21,10 @@ driver: $(GPIOD_LIB)
 .PHONY: car
 car: driver
 	$(MAKE) -C car
+
+.PHONY: control
+control: driver
+	$(MAKE) -C control
 
 .PHONY: clean
 clean:
