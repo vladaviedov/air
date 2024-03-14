@@ -26,6 +26,9 @@ git submodule update
 You need a cross-compiler for ARMv6 with threading and C++ support.
 Run `compiler.sh` to build a properly configured cross-compiler (takes a while).
 
+Build tested with:
+- gcc 13, x86_64, archlinux
+
 ## Compile
 Compile with make
 ```
@@ -35,6 +38,7 @@ make
 Output files:
 ```
 build/bin/car
+build/bin/control
 ```
 
 Copy over to the pi
