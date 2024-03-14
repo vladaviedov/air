@@ -33,8 +33,11 @@ clean:
 
 .PHONY: libclean
 libclean:
-	$(MAKE) -C lib/libgpiod clean
+	rm -rf lib/libgpiod/build
 
 .PHONY: fullclean
-fullclean:
+fullclean: libclean
 	rm -rf build
+	rm -rf compiler/binutils-gdb/build
+	rm -rf compiler/gcc/build
+	rm -rf compiler/glibc/build

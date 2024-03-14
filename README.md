@@ -37,10 +37,20 @@ Compile with make
 make
 ```
 
+Clean commands:
+- `make clean` - clean `air` code
+- `make libclean` - clean libraries
+- `make fullclean` - clean everything including compiler
+
+## Binaries
 Output files:
 ```
 build/bin/car
 build/bin/control
 ```
 
-Copy over to the pi
+## Runtime Dependencies
+Raspbian Packages:
+```
+libgpiod2
+```
