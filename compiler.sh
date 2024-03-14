@@ -90,7 +90,7 @@ $PREFIX/bin/arm-linux-gnueabihf-gcc \
 	-shared \
 	-x c /dev/null \
 	-o $PREFIX/arm-linux-gnueabihf/lib/libc.so
-mkdir $PREFIX/arm-linux-gnueabihf/include/gnu
+mkdir -p $PREFIX/arm-linux-gnueabihf/include/gnu
 touch $PREFIX/arm-linux-gnueabihf/include/gnu/stubs.h
 cd $BASE
 

@@ -14,6 +14,8 @@ Archlinux Packages:
 ```
 base-devel
 autoconf-archive
+python
+rsync
 ```
 
 ## Setup
