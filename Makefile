@@ -18,12 +18,16 @@ $(GPIOD_LIB): lib/libgpiod
 driver: $(GPIOD_LIB)
 	$(MAKE) -C driver
 
+.PHONY: shared
+shared:
+	$(MAKE) -C shared
+
 .PHONY: car
-car: driver
+car: driver shared
 	$(MAKE) -C car
 
 .PHONY: control
-control: driver
+control: driver shared
 	$(MAKE) -C control
 
 .PHONY: clean
