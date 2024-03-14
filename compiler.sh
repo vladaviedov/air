@@ -1,10 +1,16 @@
+set -e
+
 # Directories
 BASE=$(pwd)
 BUILD=$BASE/build
 PREFIX=$BUILD/gcc
 
 # Variables
-THREAD_OPT=$1
+JOPT=$1
+if [[ $JOPT == "" ]]; then
+	read -p "-j flag is not set. Are you sure? [y/N]: " ans
+	[[ $ans == [yY] ]] || exit 1
+fi
 
 # Create dirs
 mkdir -p $BUILD
@@ -29,7 +35,7 @@ cd build
 	--disable-gdb \
 	--disable-werror \
 	--disable-multilib
-make $THREAD_OPT
+make $JOPT
 make install
 cd $BASE
 
@@ -50,7 +56,7 @@ cd build
 	--with-glibc-version=2.36 \
 	--disable-multilib \
 	--disable-libsanitizer
-make $THREAD_OPT all-gcc
+make $JOPT all-gcc
 make install-gcc
 cd $BASE
 
@@ -76,7 +82,7 @@ CC=$PREFIX/bin/arm-linux-gnueabihf-gcc \
 	libc_cv_forced_unwind=yes \
 	libc_cv_cxx_link_ok=no
 make install-bootstrap-headers=yes install-headers
-make $THREAD_OPT csu/subdir_lib
+make $JOPT csu/subdir_lib
 install csu/crt1.o csu/crti.o csu/crtn.o $PREFIX/arm-linux-gnueabihf/lib
 $PREFIX/bin/arm-linux-gnueabihf-gcc \
 	-nostdlib \
@@ -90,17 +96,17 @@ cd $BASE
 
 # Step 5: Compile libgcc
 cd compiler/gcc/build
-make $THREAD_OPT all-target-libgcc
+make $JOPT all-target-libgcc
 make install-target-libgcc
 cd $BASE
 
 # Step 6: Finish compiling glibc
 cd compiler/glibc/build
-make $THREAD_OPT
+make $JOPT
 make install
 cd $BASE
 
 # Step 7: Finish building gcc
 cd compiler/gcc/build
-make $THREAD_OPT
+make $JOPT
 make install
