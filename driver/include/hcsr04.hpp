@@ -20,7 +20,7 @@ public:
 	 * @param[in] trig_pin - US_TRIG libgpiod pin number.
 	 * @param[in] echo_pin - US_ECHO libgpiod pin number.
 	 */
-	hc_sr04(gpiod::chip &chip, uint32_t trig_pin, uint32_t echo_pin);
+	hc_sr04(const gpiod::chip &chip, uint32_t trig_pin, uint32_t echo_pin);
 
 	~hc_sr04();
 

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <gpiod.hpp>
 #include <driver/pinmap.hpp>
+#include <driver/device.hpp>
 #include <driver/drf7020d20.hpp>
 #include <thread>
 
@@ -11,8 +12,7 @@
 #define TAG "/2"
 
 int main() {
-	gpiod::chip chip("gpiochip0");
-	drf7020d20 rf_test(chip, RASPI_40, RASPI_37, RASPI_38, 0);
+	drf7020d20 rf_test(gpio_pins, RASPI_40, RASPI_37, RASPI_38, 0);
 	rf_test.enable();
 	rf_test.configure(433900, drf7020d20::DR9600, 9, drf7020d20::DR9600, drf7020d20::NONE);
 	
@@ -24,17 +24,17 @@ int main() {
 	std::cin >> input;
 
 	if (input == "rx") {
-		std::cout << rf_test.receive();
+		std::cout << rf_test.receive(std::chrono::seconds(100));
 		rf_test.transmit(ack_msg);
-		std::cout << rf_test.receive();
+		std::cout << rf_test.receive(std::chrono::seconds(100));
 		rf_test.transmit(ack_msg);
 	}
 
 	if (input == "tx") {
 		rf_test.transmit(hello_msg);
-		std::cout << rf_test.receive();
+		std::cout << rf_test.receive(std::chrono::seconds(100));
 		rf_test.transmit(bye_msg);
-		std::cout << rf_test.receive();
+		std::cout << rf_test.receive(std::chrono::seconds(100));
 	}
 
 	return 0;
