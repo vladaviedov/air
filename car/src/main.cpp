@@ -24,17 +24,17 @@ int main() {
 	std::cin >> input;
 
 	if (input == "rx") {
-		std::cout << rf_test.receive();
+		std::cout << rf_test.receive(std::chrono::seconds(100));
 		rf_test.transmit(ack_msg);
-		std::cout << rf_test.receive();
+		std::cout << rf_test.receive(std::chrono::seconds(100));
 		rf_test.transmit(ack_msg);
 	}
 
 	if (input == "tx") {
 		rf_test.transmit(hello_msg);
-		std::cout << rf_test.receive();
+		std::cout << rf_test.receive(std::chrono::seconds(100));
 		rf_test.transmit(bye_msg);
-		std::cout << rf_test.receive();
+		std::cout << rf_test.receive(std::chrono::seconds(100));
 	}
 
 	return 0;

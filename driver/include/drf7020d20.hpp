@@ -5,6 +5,7 @@
 #pragma once
 
 #include <cstdint>
+#include <chrono>
 #include <gpiod.hpp>
 
 #include "uart.hpp"
@@ -86,11 +87,12 @@ public:
 
 	/**
 	 * @brief Receive message over radio.
-	 * @note Blocks until a message is received.
+	 * @note Blocks until a message is received or timeout.
 	 *
-	 * @return Received message. Empty string on error.
+	 * @param[in] timeout - Wait timeout.
+	 * @return Received message. Empty string on timeout.
 	 */
-	std::string receive() const;
+	std::string receive(std::chrono::milliseconds timeout) const;
 
 private:
 	const uart serial;

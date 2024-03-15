@@ -117,19 +117,23 @@ bool drf7020d20::configure(
 
 bool drf7020d20::transmit(const std::string &msg) const {
 	if (!enable_flag) {
-		return false;
+		throw std::logic_error("Radio is disabled, cannot transmit");
 	}
 
 	return serial.write(msg);
 }
 
-std::string drf7020d20::receive() const {
+std::string drf7020d20::receive(std::chrono::milliseconds timeout) const {
 	if (!enable_flag) {
-		return "";
+		throw std::logic_error("Radio is disabled, cannot receive");
 	}
 
 	// AUX will fall when data is ready to read
-	aux.event_wait(std::chrono::seconds(1000));
+	if (!aux.event_wait(timeout)) {
+		return "";
+	}
+
+	// Clear event
 	aux.event_read();
 
 	return serial.read();
