@@ -19,7 +19,7 @@ public:
 	 * @param[in] chip - libgpiod GPIO chip object.
 	 * @param[in] pin - libgpiod pin number.
 	 */
-	pwm_worker(gpiod::chip &chip, uint32_t pin);
+	pwm_worker(const gpiod::chip &chip, uint32_t pin);
 
 	~pwm_worker();
 	

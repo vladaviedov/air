@@ -14,7 +14,7 @@
 #define TOTAL_TIME 2000
 #define TIME_PER_PERCENT (TOTAL_TIME / 100)
 
-pwm_worker::pwm_worker(gpiod::chip &chip, uint32_t pin) :
+pwm_worker::pwm_worker(const gpiod::chip &chip, uint32_t pin) :
 	line(chip.get_line(pin)) {
 	// Set pin to output
 	line.request({

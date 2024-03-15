@@ -39,7 +39,7 @@ public:
 	 * @param[in] uart_port - Number ID of the UART port to use.
 	 */
 	drf7020d20(
-		gpiod::chip &chip,
+		const gpiod::chip &chip,
 		uint32_t en_pin,
 		uint32_t aux_pin,
 		uint32_t set_pin,

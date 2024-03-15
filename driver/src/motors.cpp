@@ -10,7 +10,7 @@
 #include "defines.hpp"
 #include "pwm.hpp"
 
-motor::motor(gpiod::chip &chip, uint32_t in1_pin, uint32_t in2_pin, uint32_t pwm_pin) :
+motor::motor(const gpiod::chip &chip, uint32_t in1_pin, uint32_t in2_pin, uint32_t pwm_pin) :
 	ain1(chip.get_line(in1_pin)),
 	ain2(chip.get_line(in2_pin)),
 	pwm(chip, pwm_pin) {
