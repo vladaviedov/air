@@ -27,3 +27,5 @@
 [submodule "lib/i2c-tools"]
 	path = lib/i2c-tools
 	url = https://git.kernel.org/pub/scm/utils/i2c-tools/i2c-tools.git
+	shallow = true
+	ignore = dirty
