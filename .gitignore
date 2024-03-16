@@ -3,3 +3,6 @@ build/
 # OS specific stuff
 .DS_Store
 *~
+
+# Docker
+Dockerfile
