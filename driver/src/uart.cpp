@@ -24,7 +24,8 @@ uart::uart(uint32_t port) {
 
 	// Turn off ECHO and ICANON
 	struct termios settings = old_settings;
-	settings.c_lflag &= ~(ECHO | ICANON);
+	cfmakeraw(&settings);
+	settings.c_lflag &= ~ECHO;
 	tcsetattr(fd, TCSANOW, &settings);
 }
 
