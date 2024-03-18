@@ -13,6 +13,7 @@
 // NOLINTBEGIN: temporary code
 #define CALLSIGN ""
 #define TAG "/2"
+
 // NOLINTEND
 
 int main() {

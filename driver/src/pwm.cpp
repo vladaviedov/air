@@ -12,7 +12,7 @@
 
 // 500 Hz PWM -> 2000us / period
 constexpr uint32_t TOTAL_TIME = 2000;
-constexpr uint32_t TIME_PER_PERCENT (TOTAL_TIME / 100);
+constexpr uint32_t TIME_PER_PERCENT = TOTAL_TIME / 100;
 
 pwm_worker::pwm_worker(const gpiod::chip &chip, uint32_t pin)
 	: line(chip.get_line(pin)) {
