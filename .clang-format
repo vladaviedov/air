@@ -1,5 +1,5 @@
 BasedOnStyle: "LLVM"
-AlignAfterOpenBracket: "AlwaysBreak"
+AlignAfterOpenBracket: "DontAlign"
 AllowShortEnumsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: "Empty"
 AllowShortLambdasOnASingleLine: "Empty"
@@ -23,6 +23,7 @@ IndentGotoLabels: false
 IndentPPDirectives: "BeforeHash"
 IndentWidth: 4
 InsertNewlineAtEOF: true
+InsertTrailingCommas: "None"
 KeepEmptyLinesAtTheStartOfBlocks: false
 Language: "Cpp"
 LineEnding: "LF"
