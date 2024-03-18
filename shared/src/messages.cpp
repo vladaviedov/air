@@ -9,13 +9,12 @@ std::string format_message(const msg_t &msg) {
 
 msg_t parse_message(const std::string &str_msg) {
 
-    size_t start_msg = str_msg.find("SM");
-    size_t end_msg = str_msg.find("EM");
-    std::string msg_header = "AIRv1.0";
-    size_t header_length =  msg_header.length();
+    const size_t start_msg = str_msg.find("SM");
+    const size_t end_msg = str_msg.find("EM");
+    const std::string msg_header = "AIRv1.0";
+    const size_t header_length =  msg_header.length();
     
     //checking validity of message
-    
     if (str_msg.substr(0,header_length) != msg_header) {
         throw std::invalid_argument("No AIRv1.0 header found");
     } 
