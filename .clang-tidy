@@ -28,4 +28,5 @@ Checks:
   -readability-magic-numbers
   "
 FormatStyle: "file"
-WarningsAsErrors: true
+SystemHeaders: false
+WarningsAsErrors: '*'

@@ -32,6 +32,6 @@ public:
 	uint64_t pulse() const;
 
 private:
-	const gpiod::line trig;
-	const gpiod::line echo;
+	gpiod::line trig;
+	gpiod::line echo;
 };

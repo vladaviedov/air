@@ -28,5 +28,5 @@ public:
 	bool read() const;
 
 private:
-	const gpiod::line input;
+	gpiod::line input;
 };

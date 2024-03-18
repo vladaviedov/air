@@ -26,5 +26,5 @@ light_sens::~light_sens() {
 
 bool light_sens::read() const {
 	// Sensor goes LOW when edge is detected
-	return !input.get_value();
+	return input.get_value() == LOW;
 }

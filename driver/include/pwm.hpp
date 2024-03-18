@@ -33,7 +33,7 @@ public:
 	}
 
 private:
-	const gpiod::line line;
+	gpiod::line line;
 	std::unique_ptr<std::thread> pwm_thread;
 	std::atomic_bool active = true;
 	uint32_t duty_percent = 0;

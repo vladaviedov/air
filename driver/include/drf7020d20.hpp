@@ -93,10 +93,10 @@ public:
 	std::string receive(std::chrono::milliseconds timeout) const;
 
 private:
-	const uart serial;
-	const gpiod::line en;
-	const gpiod::line aux;
-	const gpiod::line set;
+	uart serial;
+	gpiod::line en;
+	gpiod::line aux;
+	gpiod::line set;
 
 	bool enable_flag = false;
 };

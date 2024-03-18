@@ -10,8 +10,10 @@
 #include <driver/drf7020d20.hpp>
 #include <driver/pinmap.hpp>
 
+// NOLINTBEGIN: temporary code
 #define CALLSIGN ""
 #define TAG "/2"
+// NOLINTEND
 
 int main() {
 	drf7020d20 rf_test(gpio_pins, RASPI_40, RASPI_37, RASPI_38, 0);

@@ -4,5 +4,11 @@
  */
 #pragma once
 
+#include <string>
+
 // libgpiod consumer name
-#define GPIO_CONSUMER "air_driver"
+constexpr std::string GPIO_CONSUMER = "air_driver";
+
+// Logic levels
+constexpr int LOW = 0;
+constexpr int HIGH = 1;
