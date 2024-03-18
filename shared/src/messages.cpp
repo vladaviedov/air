@@ -8,8 +8,8 @@ std::string format_message(const msg_t &msg) {
 msg_t parse_message(std::string str_msg) {
     const msg_t msg = {
         .caller_id = str_msg.substr(8,9),
-        .receiver_id = str_msg.substr(20,21),
-        .body = str_msg.substr(12,15)
+        .receiver_id = str_msg.substr(str_msg.find("EM") + 2, str_msg.length()),
+        .body = str_msg.substr(str_msg.find("SM") + 2, str_msg.find(" EM"))
     };
     return msg;
 }
