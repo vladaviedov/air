@@ -11,4 +11,4 @@ struct msg_t {
 
 
 std::string format_message(const msg_t &msg);
-msg_t parse_message(std::string str_msg);
+msg_t parse_message(const std::string &str_msg);
