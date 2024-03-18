@@ -1,11 +1,9 @@
-#ifndef MESSAGES_HPP
-#define MESSAGES_HPP
+#pragma once
 
 #include <cstdint>
 #include <string>
 
-struct msg_t
-{
+struct msg_t {
     std::string caller_id;
     std::string receiver_id;
     std::string body;
@@ -14,5 +12,3 @@ struct msg_t
 
 std::string format_message(const msg_t &msg);
 msg_t parse_message(std::string str_msg);
-
-#endif

@@ -3,3 +3,7 @@ build/
 # OS specific stuff
 .DS_Store
 *~
+
+# VSCODE
+.vscode/settings.json
+.vscode/
