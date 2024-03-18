@@ -5,11 +5,10 @@
 #pragma once
 
 #include <cstdint>
-#include <termios.h>
 #include <string>
+#include <termios.h>
 
 class uart {
-
 public:
 	/**
 	 * @brief Constructor.
@@ -56,5 +55,4 @@ public:
 private:
 	int fd;
 	struct termios old_settings;
-
 };

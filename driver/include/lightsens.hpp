@@ -5,10 +5,10 @@
 #pragma once
 
 #include <cstdint>
+
 #include <gpiod.hpp>
 
 class light_sens {
-
 public:
 	/**
 	 * @brief Constructor.
@@ -29,5 +29,4 @@ public:
 
 private:
 	const gpiod::line input;
-
 };

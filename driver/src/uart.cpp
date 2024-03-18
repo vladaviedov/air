@@ -4,13 +4,13 @@
  */
 #include "uart.hpp"
 
-#include <cstdio>
 #include <cstdint>
-#include <string>
-#include <stdexcept>
-#include <unistd.h>
+#include <cstdio>
 #include <fcntl.h>
+#include <stdexcept>
+#include <string>
 #include <termios.h>
+#include <unistd.h>
 
 uart::uart(uint32_t port) {
 	char serial[32];

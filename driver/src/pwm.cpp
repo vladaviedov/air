@@ -4,8 +4,8 @@
  */
 #include "pwm.hpp"
 
-#include <memory>
 #include <chrono>
+#include <memory>
 #include <thread>
 
 #include "defines.hpp"
@@ -14,17 +14,17 @@
 #define TOTAL_TIME 2000
 #define TIME_PER_PERCENT (TOTAL_TIME / 100)
 
-pwm_worker::pwm_worker(const gpiod::chip &chip, uint32_t pin) :
-	line(chip.get_line(pin)) {
+pwm_worker::pwm_worker(const gpiod::chip &chip, uint32_t pin)
+	: line(chip.get_line(pin)) {
 	// Set pin to output
 	line.request({
 		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::DIRECTION_OUTPUT,
-		.flags = 0
-	}, 0);
+		.flags = 0,
+	});
 
 	// Thread function
-	auto executor = [&](){
+	auto executor = [&]() {
 		while (active) {
 			// sleep_for(0) would still create a small HIGH spike
 			if (duty_percent != 0) {
@@ -36,8 +36,8 @@ pwm_worker::pwm_worker(const gpiod::chip &chip, uint32_t pin) :
 			// Same here
 			if (duty_percent != 100) {
 				line.set_value(0);
-				std::this_thread::sleep_for(
-					std::chrono::microseconds((100 - duty_percent) * TIME_PER_PERCENT));
+				std::this_thread::sleep_for(std::chrono::microseconds(
+					(100 - duty_percent) * TIME_PER_PERCENT));
 			}
 		}
 	};

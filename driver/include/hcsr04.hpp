@@ -5,13 +5,13 @@
 #pragma once
 
 #include <cstdint>
-#include <thread>
 #include <functional>
 #include <mutex>
+#include <thread>
+
 #include <gpiod.hpp>
 
 class hc_sr04 {
-
 public:
 	/**
 	 * @brief Constructor.

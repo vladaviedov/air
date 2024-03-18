@@ -1,4 +1,5 @@
 BasedOnStyle: "LLVM"
+AccessModifierOffset: -4
 AlignAfterOpenBracket: "DontAlign"
 AllowShortEnumsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: "Empty"

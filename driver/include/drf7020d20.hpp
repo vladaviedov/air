@@ -4,14 +4,14 @@
  */
 #pragma once
 
-#include <cstdint>
 #include <chrono>
+#include <cstdint>
+
 #include <gpiod.hpp>
 
 #include "uart.hpp"
 
 class drf7020d20 {
-
 public:
 	enum rate {
 		DR1200 = 0,
@@ -38,20 +38,19 @@ public:
 	 * @param[in] set_pin - SET libgpiod pin number.
 	 * @param[in] uart_port - Number ID of the UART port to use.
 	 */
-	drf7020d20(
-		const gpiod::chip &chip,
+	drf7020d20(const gpiod::chip &chip,
 		uint32_t en_pin,
 		uint32_t aux_pin,
 		uint32_t set_pin,
 		uint32_t uart_port);
 
 	~drf7020d20();
-	
+
 	/**
 	 * @brief Enable module.
 	 */
 	void enable();
-	
+
 	/**
 	 * @brief Disable module.
 	 *
@@ -70,13 +69,12 @@ public:
 	 * @param[in] parity - Parity configuration.
 	 * @return Boolean result.
 	 */
-	bool configure(
-		uint32_t freq,
+	bool configure(uint32_t freq,
 		rate fsk_rate,
 		uint32_t power_level,
 		rate uart_rate,
 		parity parity) const;
-	
+
 	/**
 	 * @brief Transmit message over radio.
 	 *
@@ -101,5 +99,4 @@ private:
 	const gpiod::line set;
 
 	bool enable_flag = false;
-
 };

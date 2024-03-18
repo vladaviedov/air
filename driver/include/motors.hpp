@@ -5,6 +5,7 @@
 #pragma once
 
 #include <cstdint>
+
 #include <gpiod.hpp>
 
 #include "pwm.hpp"
@@ -15,7 +16,6 @@ enum direction {
 };
 
 class motor {
-
 public:
 	/**
 	 * @brief Constructor.
@@ -25,7 +25,10 @@ public:
 	 * @param[in] in2_pin - MxIN2 libgpiod pin number.
 	 * @param[in] pwm_pin - MxPWM libgpiod pin number.
 	 */
-	motor(const gpiod::chip &chip, uint32_t in1_pin, uint32_t in2_pin, uint32_t pwm_pin);
+	motor(const gpiod::chip &chip,
+		uint32_t in1_pin,
+		uint32_t in2_pin,
+		uint32_t pwm_pin);
 
 	~motor();
 
@@ -55,5 +58,4 @@ private:
 	const gpiod::line ain2;
 	pwm_worker pwm;
 	bool inverted;
-
 };

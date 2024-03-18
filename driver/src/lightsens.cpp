@@ -5,17 +5,18 @@
 #include "lightsens.hpp"
 
 #include <cstdint>
+
 #include <gpiod.hpp>
 
 #include "defines.hpp"
 
-light_sens::light_sens(const gpiod::chip &chip, uint32_t input_pin) :
-	input(chip.get_line(input_pin)) {
+light_sens::light_sens(const gpiod::chip &chip, uint32_t input_pin)
+	: input(chip.get_line(input_pin)) {
 	// Set input pin to input
 	input.request({
 		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::DIRECTION_INPUT,
-		.flags = 0
+		.flags = 0,
 	});
 }
 
