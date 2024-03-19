@@ -4,40 +4,40 @@
  */
 #include "pwm.hpp"
 
-#include <memory>
 #include <chrono>
+#include <memory>
 #include <thread>
 
 #include "defines.hpp"
 
 // 500 Hz PWM -> 2000us / period
-#define TOTAL_TIME 2000
-#define TIME_PER_PERCENT (TOTAL_TIME / 100)
+constexpr uint32_t TOTAL_TIME = 2000;
+constexpr uint32_t TIME_PER_PERCENT = TOTAL_TIME / 100;
 
-pwm_worker::pwm_worker(const gpiod::chip &chip, uint32_t pin) :
-	line(chip.get_line(pin)) {
+pwm_worker::pwm_worker(const gpiod::chip &chip, uint32_t pin)
+	: line(chip.get_line(pin)) {
 	// Set pin to output
 	line.request({
 		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::DIRECTION_OUTPUT,
-		.flags = 0
-	}, 0);
+		.flags = 0,
+	});
 
 	// Thread function
-	auto executor = [&](){
+	auto executor = [&]() {
 		while (active) {
 			// sleep_for(0) would still create a small HIGH spike
 			if (duty_percent != 0) {
-				line.set_value(1);
+				line.set_value(HIGH);
 				std::this_thread::sleep_for(
 					std::chrono::microseconds(duty_percent * TIME_PER_PERCENT));
 			}
 
 			// Same here
 			if (duty_percent != 100) {
-				line.set_value(0);
-				std::this_thread::sleep_for(
-					std::chrono::microseconds((100 - duty_percent) * TIME_PER_PERCENT));
+				line.set_value(LOW);
+				std::this_thread::sleep_for(std::chrono::microseconds(
+					(100 - duty_percent) * TIME_PER_PERCENT));
 			}
 		}
 	};
@@ -52,6 +52,6 @@ pwm_worker::~pwm_worker() {
 	pwm_thread->join();
 
 	// Reset gpio line
-	line.set_value(0);
+	line.set_value(LOW);
 	line.release();
 }

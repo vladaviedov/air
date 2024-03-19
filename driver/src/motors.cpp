@@ -5,26 +5,30 @@
 #include "motors.hpp"
 
 #include <cstdint>
+
 #include <gpiod.hpp>
 
 #include "defines.hpp"
 #include "pwm.hpp"
 
-motor::motor(const gpiod::chip &chip, uint32_t in1_pin, uint32_t in2_pin, uint32_t pwm_pin) :
-	ain1(chip.get_line(in1_pin)),
-	ain2(chip.get_line(in2_pin)),
-	pwm(chip, pwm_pin) {
+motor::motor(const gpiod::chip &chip,
+	uint32_t in1_pin,
+	uint32_t in2_pin,
+	uint32_t pwm_pin)
+	: ain1(chip.get_line(in1_pin)),
+	  ain2(chip.get_line(in2_pin)),
+	  pwm(chip, pwm_pin) {
 	// Set control pins to output
 	ain1.request({
 		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::DIRECTION_OUTPUT,
-		.flags = 0
-	}, 0);
+		.flags = 0,
+	});
 	ain2.request({
 		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::DIRECTION_OUTPUT,
-		.flags = 0
-	}, 0);
+		.flags = 0,
+	});
 }
 
 motor::~motor() {
@@ -40,7 +44,8 @@ void motor::stop() {
 
 void motor::set(uint32_t speed, direction dir) {
 	if (inverted) {
-		dir = direction::FORWARD ? direction::BACKWARD : direction::FORWARD;
+		dir = (dir == direction::FORWARD) ? direction::BACKWARD
+										  : direction::FORWARD;
 	}
 
 	if (dir == direction::FORWARD) {

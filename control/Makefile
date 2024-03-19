@@ -8,6 +8,12 @@ MKSUBDIRS=$(addprefix ../build/obj/control/, $(SUBDIRS))
 SRCS=$(shell cd src/ && find * -type f -name '*.cpp')
 OBJS=$(addprefix ../build/obj/control/, $(SRCS:.cpp=.o))
 
+FORMAT=clang-format
+FORMAT_FIX_FLAGS=-i
+FORMAT_CHECK_FLAGS=--dry-run --Werror
+LINT=clang-tidy
+LINT_FLAGS=--quiet
+
 .PHONY:
 all: ../build/obj/control $(MKSUBDIRS) $(OUT)
 
@@ -39,3 +45,18 @@ $(foreach subdir, $(SUBDIRS), $(eval $(call compile_subdir,$(subdir))))
 clean:
 	rm -rf ../build/obj/control
 	rm ../build/bin/control
+
+SRC_DIR_FILES=$(shell find src -type f)
+
+.PHONY: format
+format:
+	$(FORMAT) $(FORMAT_FIX_FLAGS) $(SRC_DIR_FILES)
+
+# Quality checks
+.PHONY: checklint
+runlint:
+	$(LINT) $(LINT_FLAGS) $(SRC_DIR_FILES)
+
+.PHONY: checkformat
+checkformat:
+	$(FORMAT) $(FORMAT_CHECK_FLAGS) $(SRC_DIR_FILES)
