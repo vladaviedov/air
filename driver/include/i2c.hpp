@@ -17,6 +17,8 @@ public:
      */
     i2c(const uint8_t addr, const int adapter_nr);
 
+    ~i2c();
+
     /** 
      * @brief I2C read.
      *

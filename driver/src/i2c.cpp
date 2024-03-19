@@ -24,6 +24,10 @@ i2c::i2c(const uint8_t addr, const int adapter_nr) {
     }
 }
 
+i2c::~i2c() {
+    fd.close();
+}
+
 int i2c::read(char* data, const uint32_t size) {
     return read(fd, data, size);
 }
