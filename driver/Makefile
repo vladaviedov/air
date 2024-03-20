@@ -9,6 +9,12 @@ MKSUBDIRS=$(addprefix ../build/obj/driver/, $(SUBDIRS_CAR))
 SRCS=$(shell cd src/ && find * -type f -name '*.cpp')
 OBJS=$(addprefix ../build/obj/driver/, $(SRCS:.cpp=.o))
 
+FORMAT=clang-format
+FORMAT_FIX_FLAGS=-i
+FORMAT_CHECK_FLAGS=--dry-run --Werror
+LINT=clang-tidy
+LINT_FLAGS=--quiet
+
 .PHONY:
 all: ../build/obj/driver $(MKSUBDIRS) $(OUT) headers
 
@@ -44,3 +50,22 @@ $(foreach subdir, $(SUBDIRS), $(eval $(call compile_subdir,$(subdir))))
 clean:
 	rm -rf ../build/obj/driver
 	rm ../build/lib/libdriver.a
+
+SRC_DIR_FILES=$(shell find src -type f)
+INC_DIR_FILES=$(shell find include -type f)
+
+.PHONY: format
+format:
+	$(FORMAT) $(FORMAT_FIX_FLAGS) $(INC_DIR_FILES)
+	$(FORMAT) $(FORMAT_FIX_FLAGS) $(SRC_DIR_FILES)
+
+# Quality checks
+.PHONY: checklint
+runlint:
+	$(LINT) $(LINT_FLAGS) $(INC_DIR_FILES)
+	$(LINT) $(LINT_FLAGS) $(SRC_DIR_FILES)
+
+.PHONY: checkformat
+checkformat:
+	$(FORMAT) $(FORMAT_CHECK_FLAGS) $(INC_DIR_FILES)
+	$(FORMAT) $(FORMAT_CHECK_FLAGS) $(SRC_DIR_FILES)

@@ -60,3 +60,25 @@ fullclean: libclean
 	rm -rf compiler/binutils-gdb/build
 	rm -rf compiler/gcc/build
 	rm -rf compiler/glibc/build
+
+.PHONY: format
+format:
+	$(MAKE) -C driver format
+	$(MAKE) -C shared format
+	$(MAKE) -C car format
+	$(MAKE) -C control format
+
+# Quality checks
+.PHONY: checklint
+runlint:
+	$(MAKE) -C driver runlint
+	$(MAKE) -C shared runlint
+	$(MAKE) -C car runlint
+	$(MAKE) -C control runlint
+
+.PHONY: checkformat
+checkformat:
+	$(MAKE) -C driver checkformat
+	$(MAKE) -C shared checkformat
+	$(MAKE) -C car checkformat
+	$(MAKE) -C control checkformat

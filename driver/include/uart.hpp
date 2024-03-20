@@ -5,11 +5,10 @@
 #pragma once
 
 #include <cstdint>
-#include <termios.h>
 #include <string>
+#include <termios.h>
 
 class uart {
-
 public:
 	/**
 	 * @brief Constructor.
@@ -51,10 +50,9 @@ public:
 	 * @param[in] max_length - Maximum bytes to write to buffer.
 	 * @return Bytes read from serial.
 	 */
-	int32_t read(char *buffer, uint32_t max_length) const;
+	int64_t read(char *buffer, uint32_t max_length) const;
 
 private:
 	int fd;
 	struct termios old_settings;
-
 };

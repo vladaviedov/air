@@ -4,14 +4,16 @@
  */
 #include "uart.hpp"
 
-#include <cstdio>
 #include <cstdint>
-#include <string>
-#include <stdexcept>
-#include <unistd.h>
+#include <cstdio>
 #include <fcntl.h>
+#include <stdexcept>
+#include <string>
 #include <termios.h>
+#include <unistd.h>
 
+// termios struct is initialized with tcgetattr
+// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 uart::uart(uint32_t port) {
 	char serial[32];
 	std::snprintf(serial, 32, "/dev/serial%u", port);
@@ -54,6 +56,6 @@ std::string uart::read() const {
 	return std::string(buffer);
 }
 
-int32_t uart::read(char *buffer, uint32_t max_length) const {
+int64_t uart::read(char *buffer, uint32_t max_length) const {
 	return ::read(fd, buffer, max_length);
 }
