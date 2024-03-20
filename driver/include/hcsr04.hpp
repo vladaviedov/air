@@ -5,13 +5,13 @@
 #pragma once
 
 #include <cstdint>
-#include <thread>
 #include <functional>
 #include <mutex>
+#include <thread>
+
 #include <gpiod.hpp>
 
 class hc_sr04 {
-
 public:
 	/**
 	 * @brief Constructor.
@@ -32,6 +32,6 @@ public:
 	uint64_t pulse() const;
 
 private:
-	const gpiod::line trig;
-	const gpiod::line echo;
+	gpiod::line trig;
+	gpiod::line echo;
 };

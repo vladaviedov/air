@@ -5,43 +5,43 @@
 #include "drf7020d20.hpp"
 
 #include <chrono>
-#include <cstdio>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
+#include <fcntl.h>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <thread>
 #include <unistd.h>
-#include <fcntl.h>
+
 #include <gpiod.hpp>
 
 #include "defines.hpp"
 
-drf7020d20::drf7020d20(
-		const gpiod::chip &chip,
-		uint32_t en_pin,
-		uint32_t aux_pin,
-		uint32_t set_pin,
-		uint32_t uart_port) :
-	serial(uart_port),
-	en(chip.get_line(en_pin)),
-	aux(chip.get_line(aux_pin)),
-	set(chip.get_line(set_pin)) {
+drf7020d20::drf7020d20(const gpiod::chip &chip,
+	uint32_t en_pin,
+	uint32_t aux_pin,
+	uint32_t set_pin,
+	uint32_t uart_port)
+	: serial(uart_port),
+	  en(chip.get_line(en_pin)),
+	  aux(chip.get_line(aux_pin)),
+	  set(chip.get_line(set_pin)) {
 	en.request({
 		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::DIRECTION_OUTPUT,
-		.flags = 0
+		.flags = 0,
 	});
 	aux.request({
 		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::EVENT_FALLING_EDGE,
-		.flags = 0
+		.flags = 0,
 	});
 	set.request({
 		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::DIRECTION_OUTPUT,
-		.flags = 0
+		.flags = 0,
 	});
 
 	en.set_value(0);
@@ -66,13 +66,11 @@ void drf7020d20::disable() {
 	enable_flag = false;
 }
 
-bool drf7020d20::configure(
-	uint32_t freq,
+bool drf7020d20::configure(uint32_t freq,
 	rate fsk_rate,
 	uint32_t power_level,
 	rate uart_rate,
-	parity parity
-) const {
+	parity parity) const {
 	// Input validation
 	if (freq < 418000 || freq > 455000) {
 		return false;
@@ -90,14 +88,14 @@ bool drf7020d20::configure(
 
 	// Send command
 	char buf[22];
-	std::snprintf(buf, 22, "WR %u %u %u %u %u\r\n",
-		freq, fsk_rate, power_level, uart_rate, parity);
+	std::snprintf(buf, 22, "WR %u %u %u %u %u\r\n", freq, fsk_rate, power_level,
+		uart_rate, parity);
 	serial.write(buf, std::strlen(buf));
 
 	// Expected response
 	char expect[22];
-	std::snprintf(expect, 22, "PARA %u %u %u %u %u\r\n",
-		freq, fsk_rate, power_level, uart_rate, parity);
+	std::snprintf(expect, 22, "PARA %u %u %u %u %u\r\n", freq, fsk_rate,
+		power_level, uart_rate, parity);
 
 	// Get response
 	std::this_thread::sleep_for(std::chrono::milliseconds(200));
