@@ -1,5 +1,4 @@
 #!/bin/sh
-set -e
 
 BASE=$(pwd)
 JOPT=$1
@@ -13,5 +12,9 @@ export PATH=$PATH:$BASE/build/gcc/bin:$BASE/build/gcc/arm-linux-gnueabihf/bin
 	--host=arm-linux-gnueabihf \
 	--target=arm-linux-gnueabihf \
 	--enable-bindings-cxx
+
+# Patch cxx examples to build on debian
+sed -i 's/-lgpiodcxx/-lgpiod -lgpiodcxx/g' ../bindings/cxx/tests/Makefile.am
+
 make $JOPT
 make install

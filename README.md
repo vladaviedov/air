@@ -70,4 +70,5 @@ build/bin/control
 Raspbian Packages:
 ```
 libgpiod2
+i2c-tools
 ```

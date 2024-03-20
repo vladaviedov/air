@@ -4,30 +4,31 @@
  */
 #include "hcsr04.hpp"
 
+#include <chrono>
 #include <cstdint>
+#include <mutex>
 #include <stdexcept>
 #include <thread>
-#include <chrono>
-#include <mutex>
+
 #include <gpiod.hpp>
 
 #include "defines.hpp"
 
-hc_sr04::hc_sr04(const gpiod::chip &chip, uint32_t trig_pin, uint32_t echo_pin) :
-	trig(chip.get_line(trig_pin)),
-	echo(chip.get_line(echo_pin)) {
+hc_sr04::hc_sr04(const gpiod::chip &chip, uint32_t trig_pin, uint32_t echo_pin)
+	: trig(chip.get_line(trig_pin)),
+	  echo(chip.get_line(echo_pin)) {
 	// Set trig pin to output
 	trig.request({
 		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::DIRECTION_OUTPUT,
-		.flags = 0
-	}, 0);
-	
+		.flags = 0,
+	});
+
 	// Set echo pin to input
 	echo.request({
 		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::DIRECTION_INPUT,
-		.flags = 0
+		.flags = 0,
 	});
 }
 
@@ -38,12 +39,12 @@ hc_sr04::~hc_sr04() {
 
 uint64_t hc_sr04::pulse() const {
 	// Send trig pulse
-	trig.set_value(1);
+	trig.set_value(HIGH);
 	std::this_thread::sleep_for(std::chrono::microseconds(10));
-	trig.set_value(0);
-	
+	trig.set_value(LOW);
+
 	// Wait for pulse start
-	while (!echo.get_value()) {
+	while (echo.get_value() == LOW) {
 		std::this_thread::sleep_for(std::chrono::microseconds(10));
 	}
 
@@ -51,7 +52,7 @@ uint64_t hc_sr04::pulse() const {
 	auto initial = std::chrono::steady_clock::now();
 
 	// Wait for pulse
-	while (echo.get_value()) {
+	while (echo.get_value() == HIGH) {
 		std::this_thread::sleep_for(std::chrono::microseconds(10));
 	}
 
@@ -59,5 +60,7 @@ uint64_t hc_sr04::pulse() const {
 	auto final = std::chrono::steady_clock::now();
 
 	// Compute & return delta
-	return std::chrono::duration_cast<std::chrono::microseconds>(final - initial).count();
+	return std::chrono::duration_cast<std::chrono::microseconds>(
+		final - initial)
+		.count();
 }
