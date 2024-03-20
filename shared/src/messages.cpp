@@ -2,6 +2,8 @@
 #include <iostream>
 #include <stdexcept>
 
+constexpr std::string msg_header = "AIRv1.0";
+
 std::string format_message(const msg_t &msg) {
     std::string str_msg("AIRv1.0 " + msg.receiver_id + " SM\n" + msg.body + "\nEM " + msg.caller_id);
     return str_msg;
@@ -11,7 +13,6 @@ msg_t parse_message(const std::string &str_msg) {
 
     const size_t start_msg = str_msg.find("SM");
     const size_t end_msg = str_msg.find("EM");
-    const std::string msg_header = "AIRv1.0";
     const size_t header_length =  msg_header.length();
     
     //checking validity of message
@@ -30,7 +31,7 @@ msg_t parse_message(const std::string &str_msg) {
     msg_t msg = {
         .caller_id = str_msg.substr(header_length + 1, start_msg - header_length - 1),
         .receiver_id = str_msg.substr(end_msg + 3),
-        .body = str_msg.substr(start_msg + 4, end_msg - start_msg - 6),
+        .body = str_msg.substr(start_msg + 3, end_msg - start_msg - 4),
     };
    
     return msg;
