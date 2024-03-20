@@ -6,3 +6,6 @@ build/
 
 # Docker
 Dockerfile
+
+#vscode moment
+.vscode/
