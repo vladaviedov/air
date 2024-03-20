@@ -28,7 +28,7 @@ msg_t parse_message(const std::string &str_msg) {
 
     //parsing message
     msg_t msg = {
-        .caller_id = str_msg.substr(header_length+1, start_msg - header_length - 1),
+        .caller_id = str_msg.substr(header_length + 1, start_msg - header_length - 1),
         .receiver_id = str_msg.substr(end_msg + 3),
         .body = str_msg.substr(start_msg + 4, end_msg - start_msg - 6),
     };

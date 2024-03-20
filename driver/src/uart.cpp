@@ -40,11 +40,11 @@ uart::~uart() {
 }
 
 bool uart::write(const std::string &data) const {
-	return ::write(fd, data.c_str(), data.length()) < 0;
+	return ::write(fd, data.c_str(), data.length()) == (ssize_t)data.length();
 }
 
 bool uart::write(const char *data, uint32_t length) const {
-	return ::write(fd, data, length) < 0;
+	return ::write(fd, data, length) == (ssize_t)length;
 }
 
 std::string uart::read() const {
@@ -56,6 +56,10 @@ std::string uart::read() const {
 	return std::string(buffer);
 }
 
+<<<<<<< HEAD
 int64_t uart::read(char *buffer, uint32_t max_length) const {
+=======
+ssize_t uart::read(char *buffer, uint32_t max_length) const {
+>>>>>>> 8bc0ad2ea7aeae8481714a860d9920671597084e
 	return ::read(fd, buffer, max_length);
 }

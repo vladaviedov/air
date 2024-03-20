@@ -4,6 +4,8 @@ build/
 .DS_Store
 *~
 
-# VSCODE
-.vscode/settings.json
+# Docker
+Dockerfile
+
+#vscode moment
 .vscode/
