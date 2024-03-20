@@ -9,7 +9,6 @@
 #include <cstdio>
 #include <cstring>
 #include <fcntl.h>
-#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <thread>
