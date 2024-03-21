@@ -43,6 +43,4 @@ int main() {
 		std::cout << "c-id: " << air_msg.caller_id << std::endl;
 		std::cout << "body: " << air_msg.body << std::endl;
 	}
-	
-
 }
