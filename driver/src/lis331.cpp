@@ -18,7 +18,7 @@ lis331::lis331(i2c *i2c)
 	i2cd->read(WHO_AM_I, data);
 	if (data[0] != 0b00110010) {
 		throw std::runtime_error("Failed to initialize LIS331");
-    }
+	}
 }
 
 lis331::~lis331() {}
