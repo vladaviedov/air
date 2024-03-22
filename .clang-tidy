@@ -30,3 +30,9 @@ Checks:
 FormatStyle: "file"
 SystemHeaders: false
 WarningsAsErrors: '*'
+ExtraArgs:
+  [
+    "-I../lib/libgpiod/include",
+    "-I../lib/libgpiod/bindings/cxx",
+    "-I../lib/i2c-tools/include"
+  ]

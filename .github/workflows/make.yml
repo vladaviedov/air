@@ -20,7 +20,7 @@ jobs:
         version: 1.0
     - name: gcc cache
       id: gcc-cache
-      uses: actions/cache@v4
+      uses: actions/cache/restore@v4
       with:
         path: build/gcc
         key: gcc
@@ -42,11 +42,6 @@ jobs:
         key: gcc
     - name: make
       run: make -j$(nproc) || make -j$(nproc)
-    - name: save headers
-      uses: actions/cache/save@v4
-      with:
-        path: build/include
-        key: headers
 
   lint:
 
@@ -57,12 +52,9 @@ jobs:
     - uses: actions/checkout@v3
     - name: get clang tidy 17
       run: wget https://apt.llvm.org/llvm.sh && chmod +x ./llvm.sh && sudo ./llvm.sh 17 && sudo apt install clang-tidy-17
-    - name: restore headers
-      uses: actions/cache/restore@v4
-      with:
-        path: build/include
-        key: headers
-    - name: linter
+    - name: get library submodules
+      run: git submodule init lib/libgpiod lib/i2c-tools && git submodule update
+    - name: run linter
       run: clang-tidy-17 --version; make runlint LINT=clang-tidy-17
 
   format:
@@ -74,10 +66,5 @@ jobs:
     - uses: actions/checkout@v3
     - name: get clang format 17
       run: wget https://apt.llvm.org/llvm.sh && chmod +x ./llvm.sh && sudo ./llvm.sh 17 && sudo apt install clang-format-17
-    - name: restore headers
-      uses: actions/cache/restore@v4
-      with:
-        path: build/include
-        key: headers
     - name: check format
       run: clang-format-17 --version; make checkformat FORMAT=clang-format-17
