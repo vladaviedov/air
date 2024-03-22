@@ -15,8 +15,8 @@
 #define CALLSIGN ""
 #define TAG "/2"
 
-#define C_ID "1"
-#define R_ID "2"
+#define C_ID "01039"
+#define R_ID "254"
 
 // NOLINTEND
 
@@ -49,7 +49,7 @@ int main() {
 		rf_test.transmit(hello_msg);
 	}
 	*/
-	
+
 	if (input == "tx") {
 		rf_test.transmit(hello_str);
 		std::cout << rf_test.receive(std::chrono::seconds(100));
