@@ -69,8 +69,10 @@ format:
 	$(MAKE) -C control format
 
 # Quality checks
-.PHONY: checklint
+.PHONY: runlint
 runlint:
+	$(MAKE) -C driver headers
+	$(MAKE) -C shared headers
 	$(MAKE) -C driver runlint
 	$(MAKE) -C shared runlint
 	$(MAKE) -C car runlint
