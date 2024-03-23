@@ -32,7 +32,7 @@ public:
 	 *
 	 * @param[in] callback - functoin to call on interrupt
 	 */
-	void subscribe_int(std::function<void()> callback);
+	void on_interrupt(std::function<void()> callback);
 
 	/**
 	 * @brief Read x-axis acceleration
@@ -86,5 +86,5 @@ private:
 	gpiod::line interrupt;
 	std::unique_ptr<std::thread> int_thread;
 	std::atomic_bool active = true;
-	i2c *i2cd;
+	i2c i2cd;
 };

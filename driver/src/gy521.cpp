@@ -11,13 +11,17 @@
 #include "defines.hpp"
 #include "device.hpp"
 
-constexpr uint8_t INT_STATUS = 0x3A, ACCEL_X = 0x3B, ACCEL_Y = 0x3D,
-				  ACCEL_Z = 0x3F, GYRO_X = 0x43, GYRO_Y = 0x45, GYRO_Z = 0x47;
+constexpr uint8_t REG_INTERRUPT_STATUS = 0x3A;
+constexpr uint8_t REG_ACCEL_X = 0x3B;
+constexpr uint8_t REG_ACCEL_Y = 0x3D;
+constexpr uint8_t REG_ACCEL_Z = 0x3F;
+constexpr uint8_t REG_GYRO_X = 0x43;
+constexpr uint8_t REG_GYRO_Y = 0x45;
+constexpr uint8_t REG_GYRO_Z = 0x47;
 
 gy521::gy521(const gpiod::chip &chip, uint32_t int_pin)
-	: interrupt(chip.get_line(int_pin)) {
-	i2c i2cd = i2c(GY521_DEV_ADDR, I2C_ADAPTER_NUMBER);
-
+	: interrupt(chip.get_line(int_pin)),
+	  i2cd(i2c(GY521_DEV_ADDR, I2C_ADAPTER_NUMBER)) {
 	interrupt.request({
 		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::EVENT_RISING_EDGE,
@@ -31,12 +35,13 @@ gy521::~gy521() {
 	interrupt.release();
 }
 
-void gy521::subscribe_int(std::function<void()> callback) {
+void gy521::on_interrupt(std::function<void()> callback) {
 	// Thread function
 	auto executor = [&]() {
 		while (active) {
 			if (interrupt.event_wait(std::chrono::milliseconds(100))) {
 				interrupt.event_read();
+				i2cd.read_byte(REG_INTERRUPT_STATUS);
 				callback();
 			}
 		}
@@ -52,7 +57,7 @@ void gy521::subscribe_int(std::function<void()> callback) {
  * @return Number of btyes read
  */
 uint16_t gy521::read_x_axis() const {
-	return i2cd->read_word(ACCEL_X);
+	return i2cd.read_word(REG_ACCEL_X);
 }
 
 /**
@@ -62,7 +67,7 @@ uint16_t gy521::read_x_axis() const {
  * @return Number of btyes read
  */
 uint16_t gy521::read_y_axis() const {
-	return i2cd->read_word(ACCEL_Y);
+	return i2cd.read_word(REG_ACCEL_Y);
 }
 
 /**
@@ -72,7 +77,7 @@ uint16_t gy521::read_y_axis() const {
  * @return Number of btyes read
  */
 uint16_t gy521::read_z_axis() const {
-	return i2cd->read_word(ACCEL_Z);
+	return i2cd.read_word(REG_ACCEL_Z);
 }
 
 /**
@@ -82,7 +87,7 @@ uint16_t gy521::read_z_axis() const {
  * @return Number of btyes read
  */
 uint16_t gy521::read_x_rot() const {
-	return i2cd->read_word(GYRO_X);
+	return i2cd.read_word(REG_GYRO_X);
 }
 
 /**
@@ -92,7 +97,7 @@ uint16_t gy521::read_x_rot() const {
  * @return Number of btyes read
  */
 uint16_t gy521::read_y_rot() const {
-	return i2cd->read_word(GYRO_Y);
+	return i2cd.read_word(REG_GYRO_Y);
 }
 
 /**
@@ -102,5 +107,5 @@ uint16_t gy521::read_y_rot() const {
  * @return Number of btyes read
  */
 uint16_t gy521::read_z_rot() const {
-	return i2cd->read_word(GYRO_Z);
+	return i2cd.read_word(REG_GYRO_Z);
 }
