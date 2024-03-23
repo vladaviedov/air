@@ -11,11 +11,8 @@
 #include "defines.hpp"
 #include "device.hpp"
 
-constexpr uint8_t INT_STATUS = 0x3A, ACCEL_X_H = 0x3B, ACCEL_X_L = 0x3C,
-				  ACCEL_Y_H = 0x3D, ACCEL_Y_L = 0x3E, ACCEL_Z_H = 0x3F,
-				  ACCEL_Z_L = 0x40, GYRO_X_H = 0x43, GYRO_X_L = 0x44,
-				  GYRO_Y_H = 0x45, GYRO_Y_L = 0x46, GYRO_Z_H = 0x47,
-				  GYRO_Z_L = 0x48;
+constexpr uint8_t INT_STATUS = 0x3A, ACCEL_X = 0x3B, ACCEL_Y = 0x3D,
+				  ACCEL_Z = 0x3F, GYRO_X = 0x43, GYRO_Y = 0x45, GYRO_Z = 0x47;
 
 gy521::gy521(const gpiod::chip &chip, uint32_t int_pin)
 	: interrupt(chip.get_line(int_pin)) {
@@ -55,7 +52,7 @@ void gy521::subscribe_int(std::function<void()> callback) {
  * @return Number of btyes read
  */
 uint16_t gy521::read_x_axis() const {
-	return i2cd->read_word(ACCEL_X_H);
+	return i2cd->read_word(ACCEL_X);
 }
 
 /**
@@ -65,7 +62,7 @@ uint16_t gy521::read_x_axis() const {
  * @return Number of btyes read
  */
 uint16_t gy521::read_y_axis() const {
-	return i2cd->read_word(ACCEL_Y_H);
+	return i2cd->read_word(ACCEL_Y);
 }
 
 /**
@@ -75,7 +72,7 @@ uint16_t gy521::read_y_axis() const {
  * @return Number of btyes read
  */
 uint16_t gy521::read_z_axis() const {
-	return i2cd->read_word(ACCEL_Z_H);
+	return i2cd->read_word(ACCEL_Z);
 }
 
 /**
@@ -85,7 +82,7 @@ uint16_t gy521::read_z_axis() const {
  * @return Number of btyes read
  */
 uint16_t gy521::read_x_rot() const {
-	return i2cd->read_word(GYRO_X_H);
+	return i2cd->read_word(GYRO_X);
 }
 
 /**
@@ -95,7 +92,7 @@ uint16_t gy521::read_x_rot() const {
  * @return Number of btyes read
  */
 uint16_t gy521::read_y_rot() const {
-	return i2cd->read_word(GYRO_Y_H);
+	return i2cd->read_word(GYRO_Y);
 }
 
 /**
@@ -105,5 +102,5 @@ uint16_t gy521::read_y_rot() const {
  * @return Number of btyes read
  */
 uint16_t gy521::read_z_rot() const {
-	return i2cd->read_word(GYRO_Z_H);
+	return i2cd->read_word(GYRO_Z);
 }
