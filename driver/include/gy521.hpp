@@ -21,48 +21,47 @@ public:
 	 * @brief Initializer
 	 *
 	 * @param[in] chip - libgpiod GPIO chip object.
-	 * @param[in] en_pin - Interrupt libgpiod pin number.
+	 * @param[in] int_pin - Interrupt libgpiod pin number.
 	 */
-	gy521(const gpiod::chip &chip, uint32_t int_pin);
+	gy521(const gpiod::chip &chip,
+		uint32_t int_pin,
+		uint8_t dev_addr,
+		int adapter);
 
 	~gy521();
 
 	/**
 	 * @brief Call callback on interrupt.
 	 *
-	 * @param[in] callback - functoin to call on interrupt
+	 * @param[in] callback - Function to call on interrupt
 	 */
 	void on_interrupt(std::function<void()> callback);
 
 	/**
 	 * @brief Read x-axis acceleration
 	 *
-	 * @param[out] data - Word to read.
-	 * @return Number of btyes read
+	 * @return X axis acceleration.
 	 */
 	uint16_t read_x_axis() const;
 
 	/**
 	 * @brief Read y-axis acceleration
 	 *
-	 * @param[out] data - Word to read.
-	 * @return Number of btyes read
+	 * @return Y axis acceleration.
 	 */
 	uint16_t read_y_axis() const;
 
 	/**
 	 * @brief Read z-axis acceleration
 	 *
-	 * @param[out] data -Word to read.
-	 * @return Number of btyes read
+	 * @return Z axis acceleration.
 	 */
 	uint16_t read_z_axis() const;
 
 	/**
 	 * @brief Read x-axis acceleration
 	 *
-	 * @param[out] data - Word to read.
-	 * @return Number of btyes read
+	 * @return X rotation.
 	 */
 	uint16_t read_x_rot() const;
 
@@ -70,15 +69,14 @@ public:
 	 * @brief Read y-axis acceleration
 	 *
 	 * @param[out] data - Word to read.
-	 * @return Number of btyes read
+	 * @return Y rotation.
 	 */
 	uint16_t read_y_rot() const;
 
 	/**
 	 * @brief Read z-axis acceleration
 	 *
-	 * @param[out] data - Word to read.
-	 * @return Number of btyes read
+	 * @return Z rotation.
 	 */
 	uint16_t read_z_rot() const;
 

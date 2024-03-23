@@ -19,9 +19,10 @@ constexpr uint8_t REG_GYRO_X = 0x43;
 constexpr uint8_t REG_GYRO_Y = 0x45;
 constexpr uint8_t REG_GYRO_Z = 0x47;
 
-gy521::gy521(const gpiod::chip &chip, uint32_t int_pin)
+gy521::gy521(
+	const gpiod::chip &chip, uint32_t int_pin, uint8_t dev_addr, int adapter)
 	: interrupt(chip.get_line(int_pin)),
-	  i2cd(i2c(GY521_DEV_ADDR, I2C_ADAPTER_NUMBER)) {
+	  i2cd(i2c(dev_addr, adapter)) {
 	interrupt.request({
 		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::EVENT_RISING_EDGE,
@@ -50,62 +51,26 @@ void gy521::on_interrupt(std::function<void()> callback) {
 	int_thread = std::make_unique<std::thread>(executor);
 }
 
-/**
- * @brief Read x-axis acceleration
- *
- * @param[out] data - Word to read.
- * @return Number of btyes read
- */
 uint16_t gy521::read_x_axis() const {
 	return i2cd.read_word(REG_ACCEL_X);
 }
 
-/**
- * @brief Read y-axis acceleration
- *
- * @param[out] data - Word to read.
- * @return Number of btyes read
- */
 uint16_t gy521::read_y_axis() const {
 	return i2cd.read_word(REG_ACCEL_Y);
 }
 
-/**
- * @brief Read z-axis acceleration
- *
- * @param[out] data -Word to read.
- * @return Number of btyes read
- */
 uint16_t gy521::read_z_axis() const {
 	return i2cd.read_word(REG_ACCEL_Z);
 }
 
-/**
- * @brief Read x-axis acceleration
- *
- * @param[out] data - Word to read.
- * @return Number of btyes read
- */
 uint16_t gy521::read_x_rot() const {
 	return i2cd.read_word(REG_GYRO_X);
 }
 
-/**
- * @brief Read y-axis acceleration
- *
- * @param[out] data - Word to read.
- * @return Number of btyes read
- */
 uint16_t gy521::read_y_rot() const {
 	return i2cd.read_word(REG_GYRO_Y);
 }
 
-/**
- * @brief Read z-axis acceleration
- *
- * @param[out] data - Word to read.
- * @return Number of btyes read
- */
 uint16_t gy521::read_z_rot() const {
 	return i2cd.read_word(REG_GYRO_Z);
 }
