@@ -22,6 +22,8 @@ public:
 	 *
 	 * @param[in] chip - libgpiod GPIO chip object.
 	 * @param[in] int_pin - Interrupt libgpiod pin number.
+     * @param[in] dev_addr - I2C device address.
+     * @param[in] adapter - I2C ioctl adapter number.
 	 */
 	gy521(const gpiod::chip &chip,
 		uint32_t int_pin,

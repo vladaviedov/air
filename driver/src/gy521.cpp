@@ -9,7 +9,6 @@
 #include <cstdint>
 
 #include "defines.hpp"
-#include "device.hpp"
 
 constexpr uint8_t REG_INTERRUPT_STATUS = 0x3A;
 constexpr uint8_t REG_ACCEL_X = 0x3B;
