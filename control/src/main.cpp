@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <thread>
+#include <fstream>
 
 #include <gpiod.hpp>
 
@@ -16,6 +17,9 @@ int main() {
 	rf_test.enable();
 	rf_test.configure(
 		433900, drf7020d20::DR9600, 9, drf7020d20::DR9600, drf7020d20::NONE);
+
+	std::ofstream outfile;
+	outfile.open("/etc/airid.txt");
 
 	msg_t ack_msg = {
 		.caller_id = "1",
@@ -31,9 +35,9 @@ int main() {
 
 	if (input == "rx") {
 		new_msg_str = rf_test.receive(std::chrono::seconds(100));
-		std::cout << "message: " << new_msg_str;
 		try {
 			new_msg = parse_message(new_msg_str);
+			outfile << new_msg.caller_id;
 		} catch (std::exception &e) {
 			std::cout << e.what();
 		}
