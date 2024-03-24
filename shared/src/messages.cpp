@@ -1,3 +1,7 @@
+/**
+ * @file src/messages.cpp
+ * @brief Methods to format and parse messages in the AIRv1.0 format
+ */
 #include "messages.hpp"
 
 #include <iostream>
