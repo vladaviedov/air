@@ -8,6 +8,7 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
+#include <fstream>
 
 constexpr std::string MSG_HEADER = "AIRv1.0";
 constexpr std::string START_MSG = "SM";
@@ -20,6 +21,13 @@ std::string format_message(const msg_t &msg) {
 	std::string str_msg(MSG_HEADER + " " + msg.receiver_id + " " + START_MSG +
 						"\n" + msg.body + "\n" + END_MSG + " " + msg.caller_id);
 	return str_msg;
+}
+
+void read_caller_id(msg_t &msg, const std::string filename) {
+	std::ifstream infile;
+	infile.open(filename);
+
+	infile >> msg.caller_id;
 }
 
 bool check_line1(const std::string &line1, std::string &r_id) {
