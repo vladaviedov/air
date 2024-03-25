@@ -16,4 +16,3 @@ struct msg_t {
 
 std::string format_message(const msg_t &msg);
 msg_t parse_message(const std::string &str_msg);
-void read_caller_id(msg_t &msg, const std::string filename);

@@ -29,8 +29,6 @@ int main() {
 	std::string new_msg_str;
 	msg_t new_msg;
 
-	read_caller_id(new_msg, "/etc/airid");
-
 	if (input == "rx") {
 		new_msg_str = rf_test.receive(std::chrono::seconds(100));
 		try {

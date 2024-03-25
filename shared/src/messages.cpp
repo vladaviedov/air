@@ -8,7 +8,6 @@
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
-#include <fstream>
 
 constexpr std::string MSG_HEADER = "AIRv1.0";
 constexpr std::string START_MSG = "SM";
@@ -23,45 +22,39 @@ std::string format_message(const msg_t &msg) {
 	return str_msg;
 }
 
-void read_caller_id(msg_t &msg, const std::string filename) {
-	std::ifstream infile;
-	infile.open(filename);
-
-	infile >> msg.caller_id;
-}
-
 bool check_line1(const std::string &line1, std::string &r_id) {
 	std::istringstream parts(line1);
 	std::string token;
 
+	// Protocol header
 	parts >> token;
 	if (parts.eof() || token != MSG_HEADER) {
 		return false;
 	}
 
+	// Receiver ID
 	parts >> token;
 	if (parts.eof() || token == START_MSG || token == END_MSG) {
 		return false;
 	}
 	r_id = token;
 
+	// Start message marker
 	parts >> token;
-	if (token != START_MSG || !parts.eof()) {
-		return false;
-	}
-
-	return true;
+	return token == START_MSG && parts.eof();
 }
 
 bool check_line3(const std::string &line3, std::string &c_id) {
 	std::istringstream parts(line3);
 	std::string token;
 
+	// End message marker
 	parts >> token;
 	if (parts.eof() || token != END_MSG) {
 		return false;
 	}
 
+	// Caller ID
 	parts >> token;
 	if (token == START_MSG || token == END_MSG || !parts.eof()) {
 		return false;
@@ -102,6 +95,9 @@ msg_t parse_message(const std::string &str_msg) {
 		throw std::invalid_argument("Line 3 is invalid");
 	}
 
+	// clang-tidy cannot understand the greatness of C
+	// NOLINTBEGIN(readability-identifier-length,
+	// 		readability-implicit-bool-conversion)
 	for (size_t i = 0; i < receiver_id.length(); i++) {
 		char c = receiver_id[i];
 		if (!isalnum(c) && c != '/' && c != '-') {
@@ -115,6 +111,8 @@ msg_t parse_message(const std::string &str_msg) {
 			throw std::invalid_argument("Caller ID is invalid");
 		}
 	}
+	// NOLINTEND(readability-identifier-length,
+	// 		readability-implicit-bool-conversion)
 
 	/* Parse Messages */
 	msg_t msg = {
