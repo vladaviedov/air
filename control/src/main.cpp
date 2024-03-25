@@ -33,7 +33,6 @@ int main() {
 		new_msg_str = rf_test.receive(std::chrono::seconds(100));
 		try {
 			new_msg = parse_message(new_msg_str);
-			read_caller_id(new_msg, "etc/airid");
 		} catch (std::exception &e) {
 			std::cout << e.what();
 		}
