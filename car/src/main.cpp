@@ -48,15 +48,5 @@ int main() {
 	std::string input;
 	std::cin >> input;
 
-	if (input == "rx") {
-		std::cout << rf_test.receive(std::chrono::seconds(100));
-		rf_test.transmit(format_message(ack_msg));
-	}
-
-	if (input == "tx") {
-		rf_test.transmit(format_message(ack_msg));
-		std::cout << rf_test.receive(std::chrono::seconds(100));
-	}
-
 	return 0;
 }
