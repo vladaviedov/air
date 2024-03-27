@@ -42,7 +42,7 @@ void motor::stop() {
 	pwm.set_duty(0);
 }
 
-void motor::set(uint32_t speed, direction dir) {
+void motor::set(float speed, direction dir) {
 	if (inverted) {
 		dir = (dir == direction::FORWARD) ? direction::BACKWARD
 										  : direction::FORWARD;
