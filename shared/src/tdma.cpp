@@ -38,7 +38,7 @@ std::string tdma::rx_sync(uint32_t max_frames) const {
 		sleep_until_next_slot();
 		std::string res = rf_dev->receive(TIMESLOT_DURATION);
 
-		if (res.empty()) {
+		if (!res.empty()) {
 			return res;
 		}
 	}
