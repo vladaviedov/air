@@ -23,20 +23,5 @@ int main() {
 		.body = "ACK",
 	};
 
-	std::string input;
-	std::cin >> input;
-
-	std::string new_msg_str;
-	msg_t new_msg;
-
-	if (input == "rx") {
-		new_msg_str = rf_test.receive(std::chrono::seconds(100));
-		try {
-			new_msg = parse_message(new_msg_str);
-		} catch (std::exception &e) {
-			std::cout << e.what();
-		}
-	}
-
 	return 0;
 }
