@@ -73,10 +73,18 @@ void drive_test() {
 		char dir;
 		std::cin >> dir;
 
-		if (dir == 'f') {
-			m.set(50, FORWARD);
-		} else {
-			m.set(50, BACKWARD);
+		switch (dir) {
+			case 'f':
+				m.set(100, FORWARD);
+				break;
+			case 'b':
+				m.set(100, BACKWARD);
+				break;
+			case 's':
+				m.stop();
+				break;
+			default:
+				break;
 		}
 	}
 }
