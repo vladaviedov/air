@@ -10,21 +10,15 @@
 #include <stdexcept>
 
 constexpr std::string MSG_HEADER = "AIRv1.0";
-constexpr std::string UN = "UN";
+constexpr std::string UNSUPPORTED = "UN";
 
 bool validate_header(const std::string &str) {
-	if (str == MSG_HEADER)
-		return true;
-	return false;
+	return str == MSG_HEADER;
 }
 
-id_status validateId(const std::string &str) {
-	if (str.length() < 2 || str.length() > 12) {
-		return ERROR;
-	}
-
-	if (str.substr(0, 2) == UN) {
-		return UNSUPPORTED;
+bool validate_id(const std::string &str) {
+	if (str.length() > 12) {
+		return false;
 	}
 
 	// clang-tidy cannot understand the greatness of C
@@ -33,11 +27,11 @@ id_status validateId(const std::string &str) {
 	for (size_t i = 0; i < str.length(); i++) {
 		char c = str[i];
 		if (!isalnum(c) && c != '/' && c != '-') {
-			return ERROR;
+			return false;
 		}
 	}
 	// NOLINTEND(readability-identifier-length,
 	// 		readability-implicit-bool-conversion)
 
-	return OK;
+	return str.length() >= 2 && str.substr(0, 2) == UNSUPPORTED;
 }

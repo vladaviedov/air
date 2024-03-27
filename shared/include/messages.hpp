@@ -14,11 +14,5 @@ struct msg_t {
 	std::string body;
 };
 
-enum id_status {
-	OK,
-	ERROR,
-	UNSUPPORTED,
-};
-
 bool validate_header(const std::string &str);
-id_status validateId(const std::string &str);
+bool validate_id(const std::string &str);
