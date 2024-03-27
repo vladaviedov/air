@@ -31,14 +31,17 @@ pwm_worker::pwm_worker(const gpiod::chip &chip, uint32_t pin, uint32_t freq)
 			if (duty_percent != 0) {
 				line.set_value(HIGH);
 				auto duration = (uint64_t)(duty_percent * percent_us);
-				std::this_thread::sleep_for(std::chrono::microseconds(duration));
+				std::this_thread::sleep_for(
+					std::chrono::microseconds(duration));
 			}
 
 			// Same here
 			if (duty_percent != 100) {
 				line.set_value(LOW);
-				auto duration = (uint64_t)((100.0F - duty_percent) * percent_us);
-				std::this_thread::sleep_for(std::chrono::microseconds(duration));
+				auto duration =
+					(uint64_t)((100.0F - duty_percent) * percent_us);
+				std::this_thread::sleep_for(
+					std::chrono::microseconds(duration));
 			}
 		}
 	};
