@@ -10,11 +10,9 @@
 
 #include "defines.hpp"
 
-// 500 Hz PWM -> 2000us / period
-constexpr uint32_t TOTAL_TIME = 2000;
-constexpr uint32_t TIME_PER_PERCENT = TOTAL_TIME / 100;
+static constexpr uint32_t SECOND_US = 1000000;
 
-pwm_worker::pwm_worker(const gpiod::chip &chip, uint32_t pin)
+pwm_worker::pwm_worker(const gpiod::chip &chip, uint32_t pin, uint32_t freq)
 	: line(chip.get_line(pin)) {
 	// Set pin to output
 	line.request({
@@ -23,21 +21,24 @@ pwm_worker::pwm_worker(const gpiod::chip &chip, uint32_t pin)
 		.flags = 0,
 	});
 
+	// Time for 1% duty
+	uint32_t percent_us = SECOND_US / freq / 100;
+
 	// Thread function
-	auto executor = [&]() {
+	auto executor = [&, percent_us]() {
 		while (active) {
 			// sleep_for(0) would still create a small HIGH spike
 			if (duty_percent != 0) {
 				line.set_value(HIGH);
 				std::this_thread::sleep_for(
-					std::chrono::microseconds(duty_percent * TIME_PER_PERCENT));
+					std::chrono::microseconds(duty_percent * percent_us));
 			}
 
 			// Same here
 			if (duty_percent != 100) {
 				line.set_value(LOW);
 				std::this_thread::sleep_for(std::chrono::microseconds(
-					(100 - duty_percent) * TIME_PER_PERCENT));
+					(100 - duty_percent) * percent_us));
 			}
 		}
 	};

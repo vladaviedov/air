@@ -18,8 +18,9 @@ public:
 	 *
 	 * @param[in] chip - libgpiod GPIO chip object.
 	 * @param[in] pin - libgpiod pin number.
+	 * @param[in] freq - PWM frequency in Hz.
 	 */
-	pwm_worker(const gpiod::chip &chip, uint32_t pin);
+	pwm_worker(const gpiod::chip &chip, uint32_t pin, uint32_t freq = 500);
 
 	~pwm_worker();
 
