@@ -8,6 +8,7 @@
 
 #include <driver/device.hpp>
 #include <driver/drf7020d20.hpp>
+#include <driver/motors.hpp>
 #include <driver/pinmap.hpp>
 #include <shared/messages.hpp>
 
@@ -17,7 +18,11 @@
 
 // NOLINTEND
 
+void drive_test();
+
 int main() {
+	drive_test();
+
 	drf7020d20 rf_test(gpio_pins, RASPI_40, RASPI_37, RASPI_38, 0);
 	rf_test.enable();
 	rf_test.configure(
@@ -59,4 +64,19 @@ int main() {
 	}
 
 	return 0;
+}
+
+void drive_test() {
+	motor m(gpiochip0, RASPI_15, RASPI_13, RASPI_11);
+
+	while (true) {
+		char dir;
+		std::cin >> dir;
+
+		if (dir == 'f') {
+			m.set(50, FORWARD);
+		} else {
+			m.set(50, BACKWARD);
+		}
+	}
 }
