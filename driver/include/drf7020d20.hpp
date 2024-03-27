@@ -84,6 +84,15 @@ public:
 	bool transmit(const std::string &msg) const;
 
 	/**
+	 * @brief Transmit message over radio.
+	 *
+	 * @param[in] msg - Message to send.
+	 * @param[in] length - Message length.
+	 * @return Boolean result.
+	 */
+	bool transmit(const char *msg, uint32_t length) const;
+
+	/**
 	 * @brief Receive message over radio.
 	 * @note Blocks until a message is received or timeout.
 	 *

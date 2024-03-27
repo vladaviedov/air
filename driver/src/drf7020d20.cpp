@@ -120,6 +120,14 @@ bool drf7020d20::transmit(const std::string &msg) const {
 	return serial.write(msg);
 }
 
+bool drf7020d20::transmit(const char *msg, uint32_t length) const {
+	if (!enable_flag) {
+		throw std::logic_error("Radio is disabled, cannot transmit");
+	}
+
+	return serial.write(msg, length);
+}
+
 std::string drf7020d20::receive(std::chrono::milliseconds timeout) const {
 	if (!enable_flag) {
 		throw std::logic_error("Radio is disabled, cannot receive");
