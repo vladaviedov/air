@@ -20,7 +20,7 @@ bool validate_header(const std::string &str) {
 
 id_status validateId(const std::string &str) {
 	if (str.length() < 2 || str.length() > 12) {
-		return 	ERROR;
+		return ERROR;
 	}
 
 	if (str.substr(0, 2) == UN) {
