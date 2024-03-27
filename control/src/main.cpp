@@ -10,32 +10,20 @@
 #include <driver/drf7020d20.hpp>
 #include <driver/pinmap.hpp>
 #include <shared/messages.hpp>
+#include <shared/tdma.hpp>
 
 int main() {
-	drf7020d20 rf_test(gpio_pins, RASPI_12, RASPI_11, RASPI_7, 0);
-	rf_test.enable();
-	rf_test.configure(
+	auto rf_test = std::make_shared<drf7020d20>(gpio_pins, RASPI_40, RASPI_37, RASPI_38, 0);
+
+	rf_test->enable();
+	rf_test->configure(
 		433900, drf7020d20::DR9600, 9, drf7020d20::DR9600, drf7020d20::NONE);
 
-	msg_t ack_msg = {
-		.caller_id = "1",
-		.receiver_id = "1",
-		.body = "ACK",
-	};
+	tdma tdma_test(rf_test, 0, tdma::AIR_A);
 
-	std::string input;
-	std::cin >> input;
-
-	std::string new_msg_str;
-	msg_t new_msg;
-
-	if (input == "rx") {
-		new_msg_str = rf_test.receive(std::chrono::seconds(100));
-		try {
-			new_msg = parse_message(new_msg_str);
-		} catch (std::exception &e) {
-			std::cout << e.what();
-		}
+	tdma_test.tx_sync("AAA");
+	while (true) {
+		std::cout << tdma_test.rx_sync(1000);
 	}
 
 	return 0;

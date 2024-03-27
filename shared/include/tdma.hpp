@@ -5,6 +5,7 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 #include <string>
 
 #include <driver/drf7020d20.hpp>
@@ -17,7 +18,12 @@ public:
 		AIR_C
 	};
 
-	tdma(drf7020d20 &rf_dev_in, uint32_t timeslot, scheme div);
+	struct scheme_info {
+		uint32_t frame_duration_ms;
+		uint32_t frames_per_second;
+	};
+
+	tdma(const std::shared_ptr<drf7020d20> &rf_dev_in, uint32_t timeslot, scheme div);
 
 	/**
 	 * @brief Transmit message synchronously.
@@ -47,8 +53,8 @@ public:
 private:
 	void sleep_until_next_slot() const;
 
-	drf7020d20 &rf_dev;
+	std::shared_ptr<drf7020d20> rf_dev;
 	uint32_t slot;
-	scheme sch;
+	scheme_info sch_info;
 	int32_t offset_ms = 0;
 };
