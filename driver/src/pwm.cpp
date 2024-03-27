@@ -10,7 +10,7 @@
 
 #include "defines.hpp"
 
-static constexpr uint32_t SECOND_US = 1000000;
+static constexpr float SECOND_US = 1000000.0F;
 
 pwm_worker::pwm_worker(const gpiod::chip &chip, uint32_t pin, uint32_t freq)
 	: line(chip.get_line(pin)) {
@@ -22,7 +22,7 @@ pwm_worker::pwm_worker(const gpiod::chip &chip, uint32_t pin, uint32_t freq)
 	});
 
 	// Time for 1% duty
-	uint32_t percent_us = SECOND_US / freq / 100;
+	float percent_us = SECOND_US / (float)freq / 100.0F;
 
 	// Thread function
 	auto executor = [&, percent_us]() {
@@ -30,15 +30,15 @@ pwm_worker::pwm_worker(const gpiod::chip &chip, uint32_t pin, uint32_t freq)
 			// sleep_for(0) would still create a small HIGH spike
 			if (duty_percent != 0) {
 				line.set_value(HIGH);
-				std::this_thread::sleep_for(
-					std::chrono::microseconds(duty_percent * percent_us));
+				auto duration = (uint64_t)(duty_percent * percent_us);
+				std::this_thread::sleep_for(std::chrono::microseconds(duration));
 			}
 
 			// Same here
 			if (duty_percent != 100) {
 				line.set_value(LOW);
-				std::this_thread::sleep_for(std::chrono::microseconds(
-					(100 - duty_percent) * percent_us));
+				auto duration = (uint64_t)((100.0F - duty_percent) * percent_us);
+				std::this_thread::sleep_for(std::chrono::microseconds(duration));
 			}
 		}
 	};

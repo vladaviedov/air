@@ -29,7 +29,7 @@ public:
 	 *
 	 * @param[in] percent - New duty cycle (in percent).
 	 */
-	inline void set_duty(uint32_t percent) {
+	inline void set_duty(float percent) {
 		duty_percent = percent;
 	}
 
@@ -37,5 +37,5 @@ private:
 	gpiod::line line;
 	std::unique_ptr<std::thread> pwm_thread;
 	std::atomic_bool active = true;
-	uint32_t duty_percent = 0;
+	float duty_percent = 0.0F;
 };
