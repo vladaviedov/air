@@ -22,6 +22,6 @@ int main() {
 		.receiver_id = "1",
 		.body = "ACK",
 	};
-  
+
 	return 0;
 }
