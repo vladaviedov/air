@@ -33,5 +33,5 @@ bool validate_id(const std::string &str) {
 	// NOLINTEND(readability-identifier-length,
 	// 		readability-implicit-bool-conversion)
 
-	return str.length() >= 2 && str.substr(0, 2) == UNSUPPORTED;
+	return str.length() < 2 || str.substr(0, 2) != UNSUPPORTED;
 }
