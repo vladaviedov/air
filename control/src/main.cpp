@@ -19,12 +19,11 @@ int main() {
 	rf_test->configure(
 		433900, drf7020d20::DR9600, 9, drf7020d20::DR9600, drf7020d20::NONE);
 
-	tdma tdma_test(rf_test, 0, tdma::AIR_A);
-
-	tdma_test.tx_sync("AAA");
-	while (true) {
-		std::cout << tdma_test.rx_sync(1000);
-	}
+	msg_t ack_msg = {
+		.caller_id = "1",
+		.receiver_id = "1",
+		.body = "ACK",
+	};
 
 	return 0;
 }

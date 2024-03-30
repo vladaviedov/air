@@ -19,10 +19,5 @@ int main() {
 	rf_test->configure(
 		433900, drf7020d20::DR9600, 9, drf7020d20::DR9600, drf7020d20::NONE);
 
-	tdma tdma_test(rf_test, 0, tdma::AIR_A);
-	while (true) {
-		tdma_test.tx_sync("KC1TNB");
-	}
-
 	return 0;
 }
