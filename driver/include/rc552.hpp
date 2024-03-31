@@ -38,11 +38,23 @@ public:
 	 */
 	void on_interrupt(std::function<void()> callback);
 
-    
+    /** 
+     * @brief Read RFID information
+     * 
+     * @param[in] data - Buffer to store read information
+     * @return Number of bytes read
+    */
+    int read_card(uint8_t blockAddr, uint8_t *data) const;
+
+    // Pointer to the data to transfer to the FIFO for CRC calculation.
+    // The number of bytes to transfer.
+    // Pointer to result buffer. Result is written to result[0..1], low byte first.
+    int rc552::CalculateCRC(uint8_t *data, uint8_t length, uint8_t *result);
+					 
 
 private:
 	gpiod::line interrupt;
-	std::unique_ptr<std::thread> int_thread;
+	std::unique_ptr<std::thread> interrupt_thread;
 	std::atomic_bool active = true;
 	i2c i2cd;
 };

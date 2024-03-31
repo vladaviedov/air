@@ -32,8 +32,8 @@ i2c::~i2c() {
 	close(fd);
 }
 
-int i2c::read(uint8_t reg, uint8_t *data) const {
-	return i2c_smbus_read_block_data(fd, reg, data);
+int i2c::read(uint8_t reg, uint8_t size, uint8_t *data) const {
+    return i2c_smbus_read_i2c_block_data(fd, reg, size, data);
 }
 
 bool i2c::write(uint8_t reg, const uint8_t *data, uint8_t size) const {

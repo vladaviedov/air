@@ -21,11 +21,11 @@ public:
 	 * @brief Read up to 32 bytes.
 	 *
 	 * @param[in] reg - Register to read from.
-	 * @param[out] data - Data buffer to write to.
-	 * @param[in] size - Size of data buffer.
+     * @param[in] size - Size of data buffer.
+	 * @param[out] data - Data buffer to read to.
 	 * @return number of bytes read.
 	 */
-	int read(uint8_t reg, uint8_t *data) const;
+	int read(uint8_t reg, uint8_t size, uint8_t *data) const;
 
 	/**
 	 * @brief Write up to 32 bytes.
