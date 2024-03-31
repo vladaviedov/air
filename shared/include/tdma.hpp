@@ -50,6 +50,13 @@ public:
 		offset_ms = new_offset;
 	}
 
+	/**
+	 * @brief get the timeslot of device
+	 */
+	inline int32_t get_timeslot() {
+		return slot;
+	}
+
 private:
 	void sleep_until_next_slot() const;
 

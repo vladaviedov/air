@@ -1,10 +1,16 @@
 #include "messageworker.hpp"
 #include <shared/messages.hpp>
+#include <fstream>
 #include <sstream>
 #include <stdexcept>
 #include <chrono>
 
-message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in): tdma_handler(tdma_handler_in) {}
+message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in): tdma_handler(tdma_handler_in) {
+    std::ifstream infile;
+    infile.open("/etc/airid");
+    
+    infile >> control_id;
+}
 
 void message_worker::await_checkin() {
 
@@ -33,7 +39,7 @@ void message_worker::await_checkin() {
     tdma_handler->tx_sync(format_checkin());
 }
 
-std::pair<std::string, std::string> message_worker::await_request() {
+std::pair<std::string, uint32_t> message_worker::await_request() {
     std::string rx_msg;
     while(rx_msg.empty()) {
         rx_msg = tdma_handler->rx_sync(UINT32_MAX);
@@ -42,22 +48,17 @@ std::pair<std::string, std::string> message_worker::await_request() {
     std::istringstream parts(rx_msg);
 
     std::string car_id;
-    std::string current_pos;
-    std::string desired_pos;
+    std::string request;
 
     parts >> car_id;
     if (parts.eof() || !validate_id(car_id)) {
         tdma_handler->tx_sync(format_command(STANDBY));
     }
-    parts >> current_pos;
-    if (parts.eof()) {
-        tdma_handler->tx_sync(format_command(STANDBY));
-    }
-    parts >> desired_pos;
+    parts >> request;
 
     tdma_handler->tx_sync("COMMAND"); //TO-DO command logic
 
-    return std::pair<std::string, std::string>(car_id, current_pos);
+    return std::pair<std::string, uint32_t>(car_id, tdma_handler->get_timeslot());
 }
 
 void message_worker::await_clear() {
@@ -67,7 +68,7 @@ void message_worker::await_clear() {
     }
 
     if (rx_msg != CLEAR) {
-        //handle error
+        //TO-DO: handle error
         return;
     }
 
