@@ -6,14 +6,6 @@
 
 #include <shared/tdma.hpp>
 
-constexpr std::string MSG_HEADER = "AIRv1.0";
-constexpr std::string CHECK = "CHK";
-constexpr std::string ACKNOWLEDGE = "ACK";
-constexpr std::string UNSUPPORTED = "UN";
-constexpr std::string STANDBY = "SBY";
-constexpr std::string CLEAR = "CLR";
-constexpr std::string FINAL = "FIN";
-
 class message_worker {
 public:
 	message_worker(const std::shared_ptr<tdma> &tdma_handler_in);
@@ -24,9 +16,9 @@ public:
 
 	std::string format_checkin();
 	std::string format_unsupported();
-	std::string format_command(std::string command);
+	std::string format_command(const std::string &command);
 
 private:
 	std::shared_ptr<tdma> tdma_handler;
-	std::string control_id;
+	std::shared_ptr<std::string> control_id;
 };

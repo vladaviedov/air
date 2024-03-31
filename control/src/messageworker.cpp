@@ -7,12 +7,17 @@
 
 #include <shared/messages.hpp>
 
+static constexpr std::string MSG_HEADER = "AIRv1.0";
+static constexpr std::string CHECK = "CHK";
+static constexpr std::string ACKNOWLEDGE = "ACK";
+static constexpr std::string UNSUPPORTED = "UN";
+static constexpr std::string STANDBY = "SBY";
+static constexpr std::string CLEAR = "CLR";
+static constexpr std::string FINAL = "FIN";
+
 message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in)
 	: tdma_handler(tdma_handler_in) {
-	std::ifstream infile;
-	infile.open("/etc/airid");
-
-	infile >> control_id;
+	control_id = read_id();
 }
 
 void message_worker::await_checkin() {
@@ -58,10 +63,12 @@ std::pair<std::string, uint32_t> message_worker::await_request() {
 	}
 	parts >> request;
 
-	tdma_handler->tx_sync("COMMAND"); // TO-DO command logic
+	request.c_str();
+	uint8_t current_pos =
+		(uint8_t)request[1]; /*TO-DO: this may need to be tested*/
+	uint8_t desired_pos = (uint8_t)request[2];
 
-	return std::pair<std::string, uint32_t>(
-		car_id, tdma_handler->get_timeslot());
+	return std::pair<std::string, uint8_t>(car_id, desired_pos);
 }
 
 void message_worker::await_clear() {
@@ -83,9 +90,9 @@ std::string message_worker::format_checkin() {
 }
 
 std::string message_worker::format_unsupported() {
-	return UNSUPPORTED + " ";
+	return UNSUPPORTED + " " + *control_id;
 }
 
-std::string message_worker::format_command(std::string command) {
+std::string message_worker::format_command(const std::string &command) {
 	return ACKNOWLEDGE + " " + command;
 }
