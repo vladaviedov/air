@@ -23,7 +23,9 @@ public:
 		uint32_t frames_per_second;
 	};
 
-	tdma(const std::shared_ptr<drf7020d20> &rf_dev_in, uint32_t timeslot, scheme div);
+	tdma(const std::shared_ptr<drf7020d20> &rf_dev_in,
+		uint32_t timeslot,
+		scheme div);
 
 	/**
 	 * @brief Transmit message synchronously.

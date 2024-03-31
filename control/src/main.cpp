@@ -13,7 +13,8 @@
 #include <shared/tdma.hpp>
 
 int main() {
-	auto rf_test = std::make_shared<drf7020d20>(gpio_pins, RASPI_40, RASPI_37, RASPI_38, 0);
+	auto rf_test = std::make_shared<drf7020d20>(
+		gpio_pins, RASPI_40, RASPI_37, RASPI_38, 0);
 
 	rf_test->enable();
 	rf_test->configure(
