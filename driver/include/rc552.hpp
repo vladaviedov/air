@@ -38,19 +38,60 @@ public:
 	 */
 	void on_interrupt(std::function<void()> callback);
 
-    /** 
-     * @brief Read RFID information
-     * 
-     * @param[in] data - Buffer to store read information
-     * @return Number of bytes read
-    */
-    int read_card(uint8_t blockAddr, uint8_t *data) const;
+	/**
+	 * @brief Read RFID information
+	 *
+	 * @param[in] data - Buffer to store read information
+	 * @return Number of bytes read
+	 */
+	int read_block(uint8_t blockAddr, uint8_t *data, uint8_t bufferSize);
 
-    // Pointer to the data to transfer to the FIFO for CRC calculation.
-    // The number of bytes to transfer.
-    // Pointer to result buffer. Result is written to result[0..1], low byte first.
-    int rc552::CalculateCRC(uint8_t *data, uint8_t length, uint8_t *result);
-					 
+	// Pointer to the data to transfer to the FIFO for CRC calculation.
+	// The number of bytes to transfer.
+	// Pointer to result buffer. Result is written to result[0..1], low byte
+	// first.
+	int calculateCRC(uint8_t *data, uint8_t length, uint8_t *result);
+
+	int transcieveData(
+		uint8_t *sendData,  ///< Pointer to the data to transfer to the FIFO.
+		uint8_t sendLen,    ///< Number of bytes to transfer to the FIFO.
+		uint8_t *backData,  ///< nullptr or pointer to buffer if data should be
+							///< read back after executing the command.
+		uint8_t *backLen,   ///< In: Max number of bytes to write to *backData.
+							///< Out: The number of bytes returned.
+		uint8_t *validBits, ///< In/Out: The number of valid bits in the last
+							///< byte. 0 for 8 valid bits. Default nullptr.
+		uint8_t rxAlign,    ///< In: Defines the bit position in backData[0] for
+							///< the first bit received. Default 0.
+		bool checkCRC ///< In: True => The last two bytes of the response is
+					  ///< assumed to be a CRC_A that must be validated.
+	);
+
+	int communicateWithCard(
+		uint8_t
+			command, ///< The command to execute. One of the PCD_Command enums.
+		uint8_t waitIRq,    ///< The bits in the ComIrqReg register that signals
+							///< successful completion of the command.
+		uint8_t *sendData,  ///< Pointer to the data to transfer to the FIFO.
+		uint8_t sendLen,    ///< Number of bytes to transfer to the FIFO.
+		uint8_t *backData,  ///< nullptr or pointer to buffer if data should be
+							///< read back after executing the command.
+		uint8_t *backLen,   ///< In: Max number of bytes to write to *backData.
+							///< Out: The number of bytes returned.
+		uint8_t *validBits, ///< In/Out: The number of valid bits in the last
+							///< byte. 0 for 8 valid bits.
+		uint8_t rxAlign,    ///< In: Defines the bit position in backData[0] for
+							///< the first bit received. Default 0.
+		bool checkCRC ///< In: True => The last two bytes of the response is
+					  ///< assumed to be a CRC_A that must be validated.
+	);
+	/**
+	 * Sets the bits given in mask in register reg.
+	 */
+	void setRegisterBitMask(
+		uint8_t reg, ///< The register to update. One of the PCD_Register enums.
+		uint8_t mask ///< The bits to set.
+	);
 
 private:
 	gpiod::line interrupt;

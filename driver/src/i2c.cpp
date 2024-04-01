@@ -32,7 +32,6 @@ i2c::~i2c() {
 	close(fd);
 }
 
-
 uint8_t i2c::read_byte(uint8_t reg) const {
 	return i2c_smbus_read_byte_data(fd, reg);
 }
