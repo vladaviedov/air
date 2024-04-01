@@ -10,13 +10,13 @@
 
 #include "defines.hpp"
 
-constexpr uint8_t REG_INTERRUPT_STATUS = 0x3A;
-constexpr uint8_t REG_ACCEL_X = 0x3B;
-constexpr uint8_t REG_ACCEL_Y = 0x3D;
-constexpr uint8_t REG_ACCEL_Z = 0x3F;
-constexpr uint8_t REG_GYRO_X = 0x43;
-constexpr uint8_t REG_GYRO_Y = 0x45;
-constexpr uint8_t REG_GYRO_Z = 0x47;
+static constexpr uint8_t REG_INTERRUPT_STATUS = 0x3A;
+static constexpr uint8_t REG_ACCEL_X = 0x3B;
+static constexpr uint8_t REG_ACCEL_Y = 0x3D;
+static constexpr uint8_t REG_ACCEL_Z = 0x3F;
+static constexpr uint8_t REG_GYRO_X = 0x43;
+static constexpr uint8_t REG_GYRO_Y = 0x45;
+static constexpr uint8_t REG_GYRO_Z = 0x47;
 
 gy521::gy521(
 	const gpiod::chip &chip, uint32_t int_pin, uint8_t dev_addr, int adapter)

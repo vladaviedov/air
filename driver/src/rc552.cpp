@@ -14,7 +14,7 @@ static constexpr uint8_t commandReg = 0x01;
 static constexpr uint8_t comIrqReg = 0x04;
 static constexpr uint8_t divIqrReg = 0x05;
 static constexpr uint8_t errorReg = 0x06;
-static constexpr uint8_t status1Reg = 0x07;
+// static constexpr uint8_t status1Reg = 0x07;
 static constexpr uint8_t FIFODataReg = 0x09;
 static constexpr uint8_t FIFOLevelReg = 0x0A;
 static constexpr uint8_t controlReg = 0x0C;
@@ -24,14 +24,14 @@ static constexpr uint8_t bitFramingReg = 0x0D;
 
 // Commands to write to command register
 static constexpr uint8_t idle = 0x0;
-static constexpr uint8_t mem = 0b0001;
-static constexpr uint8_t genRandomId = 0b0010;
+// static constexpr uint8_t mem = 0b0001;
+// static constexpr uint8_t genRandomId = 0b0010;
 static constexpr uint8_t calcCRC = 0b0011;
-static constexpr uint8_t transmit = 0b0100;
-static constexpr uint8_t noCmd = 0b0111;
-static constexpr uint8_t receive = 0b1000;
+// static constexpr uint8_t transmit = 0b0100;
+// static constexpr uint8_t noCmd = 0b0111;
+// static constexpr uint8_t receive = 0b1000;
 static constexpr uint8_t transcieve = 0b1100;
-static constexpr uint8_t mfAuthent = 0b1110;
+// static constexpr uint8_t mfAuthent = 0b1110;
 
 // MIFARE commands
 static constexpr uint8_t PICC_CMD_MF_READ = 0x30;
@@ -86,44 +86,36 @@ int rc552::read_block(uint8_t blockAddr, uint8_t *data, uint8_t bufferSize) {
 	return transcieveData(data, 4, data, &bufferSize, nullptr, 0, true);
 }
 
-int rc552::transcieveData(
-	uint8_t *sendData,  ///< Pointer to the data to transfer to the FIFO.
-	uint8_t sendLen,    ///< Number of bytes to transfer to the FIFO.
-	uint8_t *backData,  ///< nullptr or pointer to buffer if data should be read
-						///< back after executing the command.
-	uint8_t *backLen,   ///< In: Max number of bytes to write to *backData. Out:
-						///< The number of bytes returned.
-	uint8_t *validBits, ///< In/Out: The number of valid bits in the last byte.
-						///< 0 for 8 valid bits. Default nullptr.
-	uint8_t rxAlign,    ///< In: Defines the bit position in backData[0] for the
-						///< first bit received. Default 0.
-	bool checkCRC ///< In: True => The last two bytes of the response is assumed
-				  ///< to be a CRC_A that must be validated.
-) {
+int rc552::transcieveData(uint8_t *sendData,
+	uint8_t sendLen,
+	uint8_t *backData,
+	uint8_t *backLen,
+	uint8_t *validBits,
+	uint8_t rxAlign,
+	bool checkCRC) {
 	uint8_t waitIRq = 0x30; // RxIRq and IdleIRq
 	return communicateWithCard(transcieve, waitIRq, sendData, sendLen, backData,
 		backLen, validBits, rxAlign, checkCRC);
 }
 
-int rc552::communicateWithCard(
-	uint8_t command, ///< The command to execute. One of the PCD_Command enums.
-	uint8_t waitIRq, ///< The bits in the ComIrqReg register that signals
-					 ///< successful completion of the command.
-	uint8_t *sendData,  ///< Pointer to the data to transfer to the FIFO.
-	uint8_t sendLen,    ///< Number of bytes to transfer to the FIFO.
-	uint8_t *backData,  ///< nullptr or pointer to buffer if data should be read
-						///< back after executing the command.
-	uint8_t *backLen,   ///< In: Max number of bytes to write to *backData. Out:
-						///< The number of bytes returned.
-	uint8_t *validBits, ///< In/Out: The number of valid bits in the last byte.
-						///< 0 for 8 valid bits.
-	uint8_t rxAlign,    ///< In: Defines the bit position in backData[0] for the
-						///< first bit received. Default 0.
-	bool checkCRC ///< In: True => The last two bytes of the response is assumed
-				  ///< to be a CRC_A that must be validated.
+int rc552::communicateWithCard(uint8_t command,
+	uint8_t waitIRq,
+	uint8_t *sendData,
+	uint8_t sendLen,
+	uint8_t *backData,
+	uint8_t *backLen,
+	uint8_t *validBits,
+	uint8_t rxAlign,
+	bool checkCRC
+
 ) {
 	// Prepare values for BitFramingReg
-	uint8_t txLastBits = validBits ? *validBits : 0;
+	uint8_t txLastBits;
+	if (validBits) {
+		txLastBits = *validBits;
+	} else {
+		txLastBits = 0;
+	}
 	uint8_t bitFraming =
 		(rxAlign << 4) + txLastBits; // RxAlign = BitFramingReg[6..4].
 									 // TxLastBits = BitFramingReg[2..0]
@@ -154,14 +146,16 @@ int rc552::communicateWithCard(
 	bool completed = false;
 	std::this_thread::sleep_for(std::chrono::milliseconds(36));
 
-	uint8_t n = i2cd.read_byte(
-		comIrqReg); // ComIrqReg[7..0] bits are: Set1 TxIRq RxIRq IdleIRq
-					// HiAlertIRq LoAlertIRq ErrIRq TimerIRq
-	if (n &
-		waitIRq) { // One of the interrupts that signal success has been set.
+	// ComIrqReg[7..0] bits are: Set1 TxIRq RxIRq IdleIRq
+	// HiAlertIRq LoAlertIRq ErrIRq TimerIRq
+	uint8_t irqReg = i2cd.read_byte(comIrqReg);
+
+	// One of the interrupts that signal success has been set.
+	if (irqReg & waitIRq > 0) {
 		completed = true;
 	}
-	if (n & 0x01) { // Timer interrupt - nothing received in 25ms
+
+	if (irqReg & 0x01 > 0) { // Timer interrupt - nothing received in 25ms
 		return 1;
 	}
 
@@ -174,19 +168,20 @@ int rc552::communicateWithCard(
 	// ErrorReg[7..0] bits are: WrErr TempErr reserved BufferOvfl
 	uint8_t errorRegValue = i2cd.read_byte(errorReg);
 	// CollErr CRCErr ParityErr ProtocolErr
-	if (errorRegValue & 0x13) { // BufferOvfl ParityErr ProtocolErr
+	if (errorRegValue & 0x13 > 0) { // BufferOvfl ParityErr ProtocolErr
 		return 1;
 	}
 
 	uint8_t _validBits = 0;
 
 	// If the caller wants data back, get it from the MFRC522.
-	if (backData && backLen) {
-		uint8_t n = i2cd.read_byte(FIFOLevelReg); // Number of bytes in the FIFO
-		if (n > *backLen) {
+	if (backData != nullptr && backLen != nullptr) {
+		uint8_t fifoLevel =
+			i2cd.read_byte(FIFOLevelReg); // Number of bytes in the FIFO
+		if (fifoLevel > *backLen) {
 			return 2; // no room
 		}
-		*backLen = n;                            // Number of bytes returned
+		*backLen = fifoLevel;                    // Number of bytes returned
 		*backData = i2cd.read_byte(FIFODataReg); // Get received data from FIFO
 		// RxLastBits[2:0] indicates the number of valid bits
 		_validBits = uint8_t(controlReg) & 0x07;
@@ -198,12 +193,12 @@ int rc552::communicateWithCard(
 	}
 
 	// Tell about collisions
-	if (errorRegValue & 0x08) { // CollErr
+	if (errorRegValue & 0x08 > 0) { // CollErr
 		return 3;
 	}
 
 	// Perform CRC_A validation if requested.
-	if (backData && backLen && checkCRC) {
+	if (backData != nullptr && backLen != nullptr && checkCRC) {
 		// In this case a MIFARE Classic NAK is not OK.
 		if (*backLen == 1 && _validBits == 4) {
 			return 3;
@@ -228,18 +223,14 @@ int rc552::communicateWithCard(
 	}
 
 	return 0;
-} // End PCD_CommunicateWithPICC()
+}
 
-int rc552::calculateCRC(uint8_t *data, ///< In: Pointer to the data to transfer
-									   ///< to the FIFO for CRC calculation.
-	uint8_t length,                    ///< In: The number of bytes to transfer.
-	uint8_t *result ///< Out: Pointer to result buffer. Result is written to
-					///< result[0..1], low byte first.
-) {
+int rc552::calculateCRC(uint8_t *data, uint8_t length, uint8_t *result) {
 	uint8_t clear_inters = 0x04;
 	uint8_t flush_buffer = 0x80;
-	i2cd.write(commandReg, &idle, 1); // Stop any active command.
-									  // Clear the CRCIRq interrupt request bit
+	// Stop any active command.
+	i2cd.write(commandReg, &idle, 1);
+	// Clear the CRCIRq interrupt request bit
 	i2cd.write(divIqrReg, &clear_inters, 1);
 	// FlushBuffer = 1, FIFO initialization
 	i2cd.write(FIFOLevelReg, &flush_buffer, 1);
@@ -258,9 +249,9 @@ int rc552::calculateCRC(uint8_t *data, ///< In: Pointer to the data to transfer
 	// TODO: Set a timeout.
 	// DivIrqReg[7..0] bits are: Set2 reserved reserved MfinActIRq reserved
 	// CRCIRq reserved reserved
-	uint8_t n = i2cd.read_byte(divIqrReg);
-	if (n & 0x04) { // CRCIRq bit set - calculation done
-					// Stop calculating CRC for new content in the FIFO.
+	uint8_t divIrq = i2cd.read_byte(divIqrReg);
+	if (divIrq & 0x04 > 0) { // CRCIRq bit set - calculation done
+		// Stop calculating CRC for new content in the FIFO.
 		i2cd.write(commandReg, &idle, 1);
 		// Transfer the result from the registers to the result buffer
 		result[0] = i2cd.read_byte(CRCResultRegL);
@@ -274,10 +265,7 @@ int rc552::calculateCRC(uint8_t *data, ///< In: Pointer to the data to transfer
 /**
  * Sets the bits given in mask in register reg.
  */
-void rc552::setRegisterBitMask(
-	uint8_t reg, ///< The register to update. One of the PCD_Register enums.
-	uint8_t mask ///< The bits to set.
-) {
+void rc552::setRegisterBitMask(uint8_t reg, uint8_t mask) {
 	uint8_t tmp;
 	tmp = i2cd.read_byte(reg);
 	i2cd.write(reg, (uint8_t *)(tmp | mask), 1); // set bit mask
