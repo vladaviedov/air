@@ -50,7 +50,7 @@ public:
 	 * @param[in] max_length - Maximum bytes to write to buffer.
 	 * @return Bytes read from serial.
 	 */
-	int64_t read(char *buffer, uint32_t max_length) const;
+	ssize_t read(char *buffer, uint32_t max_length) const;
 
 private:
 	int fd;

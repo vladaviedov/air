@@ -9,9 +9,10 @@
 #include <driver/device.hpp>
 #include <driver/drf7020d20.hpp>
 #include <driver/pinmap.hpp>
+#include <shared/messages.hpp>
 
 // NOLINTBEGIN: temporary code
-#define CALLSIGN ""
+#define CALLSIGN "?"
 #define TAG "/2"
 
 // NOLINTEND
@@ -22,26 +23,30 @@ int main() {
 	rf_test.configure(
 		433900, drf7020d20::DR9600, 9, drf7020d20::DR9600, drf7020d20::NONE);
 
-	std::string hello_msg("HELLO " CALLSIGN TAG "\n");
-	std::string ack_msg("ACK " CALLSIGN TAG "\n");
-	std::string bye_msg("BYE " CALLSIGN TAG "\n");
+	std::string hello_msg_body("HELLO");
+	std::string ack_msg_body("ACK");
+	std::string bye_msg_body("BYE");
+
+	msg_t ack_msg = {
+		.caller_id = CALLSIGN TAG,
+		.receiver_id = CALLSIGN TAG,
+		.body = ack_msg_body,
+	};
+
+	msg_t bye_msg = {
+		.caller_id = CALLSIGN TAG,
+		.receiver_id = CALLSIGN TAG,
+		.body = bye_msg_body,
+	};
+
+	msg_t hello_msg = {
+		.caller_id = CALLSIGN TAG,
+		.receiver_id = CALLSIGN TAG,
+		.body = hello_msg_body,
+	};
 
 	std::string input;
 	std::cin >> input;
-
-	if (input == "rx") {
-		std::cout << rf_test.receive(std::chrono::seconds(100));
-		rf_test.transmit(ack_msg);
-		std::cout << rf_test.receive(std::chrono::seconds(100));
-		rf_test.transmit(ack_msg);
-	}
-
-	if (input == "tx") {
-		rf_test.transmit(hello_msg);
-		std::cout << rf_test.receive(std::chrono::seconds(100));
-		rf_test.transmit(bye_msg);
-		std::cout << rf_test.receive(std::chrono::seconds(100));
-	}
 
 	return 0;
 }

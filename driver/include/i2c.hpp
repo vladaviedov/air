@@ -12,9 +12,9 @@ public:
 	 * @brief Constructor. Initializes I2C device.
 	 *
 	 * @param[in] addr - Device address of the I2C slave device.
-	 * @param[in] adapter - The number of the I2C adapter.
+	 * @param[in] adapter_nr - The number of the I2C adapter.
 	 */
-	i2c(uint8_t addr, int adapter);
+	i2c(uint8_t addr, int adapter_nr);
 
 	~i2c();
 
