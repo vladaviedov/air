@@ -98,4 +98,14 @@ private:
 	std::unique_ptr<std::thread> interrupt_thread;
 	std::atomic_bool active = true;
 	i2c i2cd;
+
+	/**
+	 * @brief Validate CRC A
+	 *
+	 * @param backData - Pointer to data from rc552
+	 * @param backLen - Length of data
+	 *
+	 * @return error status
+	 */
+	int validateCRCA(uint8_t *backData, uint8_t *backLen, uint8_t *_validBits);
 };

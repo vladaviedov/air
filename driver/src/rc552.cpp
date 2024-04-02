@@ -187,7 +187,7 @@ int rc552::communicateWithCard(uint8_t command,
 		_validBits = uint8_t(controlReg) & 0x07;
 		// in the last received byte. If this value is 000b,
 		// the whole byte is valid.
-		if (validBits) {
+		if (validBits != nullptr) {
 			*validBits = _validBits;
 		}
 	}
@@ -199,26 +199,9 @@ int rc552::communicateWithCard(uint8_t command,
 
 	// Perform CRC_A validation if requested.
 	if (backData != nullptr && backLen != nullptr && checkCRC) {
-		// In this case a MIFARE Classic NAK is not OK.
-		if (*backLen == 1 && _validBits == 4) {
-			return 3;
-		}
-		// We need at least the CRC_A value and all 8 bits of the last byte must
-		// be received.
-		if (*backLen < 2 || _validBits != 0) {
-			return 4;
-		}
-		// Verify CRC_A - do our own calculation and store the control in
-		// controlBuffer.
-		uint8_t controlBuffer[2];
-		int status =
-			calculateCRC(&backData[0], *backLen - 2, &controlBuffer[0]);
-		if (status != 0) {
-			return status;
-		}
-		if ((backData[*backLen - 2] != controlBuffer[0]) ||
-			(backData[*backLen - 1] != controlBuffer[1])) {
-			return 4;
+		int res = validateCRCA(backData, backLen, &_validBits);
+		if (res != 0) {
+			return res;
 		}
 	}
 
@@ -270,4 +253,29 @@ void rc552::setRegisterBitMask(uint8_t reg, uint8_t mask) {
 	tmp = i2cd.read_byte(reg);
 	uint8_t bitMask = (tmp | mask);
 	i2cd.write(reg, &bitMask, 1); // set bit mask
+}
+
+int rc552::validateCRCA(
+	uint8_t *backData, uint8_t *backLen, uint8_t *_validBits) {
+	// In this case a MIFARE Classic NAK is not OK.
+	if (*backLen == 1 && *_validBits == 4) {
+		return 3;
+	}
+	// We need at least the CRC_A value and all 8 bits of the last byte must
+	// be received.
+	if (*backLen < 2 || _validBits != 0) {
+		return 4;
+	}
+	// Verify CRC_A - do our own calculation and store the control in
+	// controlBuffer.
+	uint8_t controlBuffer[2];
+	int status = calculateCRC(&backData[0], *backLen - 2, &controlBuffer[0]);
+	if (status != 0) {
+		return status;
+	}
+	if ((backData[*backLen - 2] != controlBuffer[0]) ||
+		(backData[*backLen - 1] != controlBuffer[1])) {
+		return 4;
+	}
+    return 0;
 }
