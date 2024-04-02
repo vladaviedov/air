@@ -30,22 +30,22 @@ gy521::gy521(
 		.flags = 0,
 	});
 
-    uint8_t whoami = i2cd.read_byte(REG_WHOAMI);
-    // 0x68 is the expected return value
-    if (whoami != 0x68) {
-        printf("I2C ERROR, WHOAMI RESULT: %X", whoami);
-    }
+	uint8_t whoami = i2cd.read_byte(REG_WHOAMI);
+	// 0x68 is the expected return value
+	if (whoami != 0x68) {
+		printf("I2C ERROR, WHOAMI RESULT: %X", whoami);
+	}
 
-    uint8_t wakeup = 0x00;
-    if (!i2cd.write(REG_PWR_MGMT_1, &wakeup, 1)) {
-        printf("WAKEUP WRITE FAIL");
-    }
+	uint8_t wakeup = 0x00;
+	if (!i2cd.write(REG_PWR_MGMT_1, &wakeup, 1)) {
+		printf("WAKEUP WRITE FAIL");
+	}
 }
 
 gy521::~gy521() {
-    // sleep device
-    uint8_t sleep = 0x40;
-    i2cd.write(REG_PWR_MGMT_1, &sleep, 1);
+	// sleep device
+	uint8_t sleep = 0x40;
+	i2cd.write(REG_PWR_MGMT_1, &sleep, 1);
 	active = false;
 	int_thread->join();
 	interrupt.release();
@@ -67,7 +67,7 @@ void gy521::on_interrupt(std::function<void()> callback) {
 }
 
 uint16_t gy521::read_x_axis() const {
-    return i2cd.read_word(REG_ACCEL_X);
+	return i2cd.read_word(REG_ACCEL_X);
 }
 
 uint16_t gy521::read_y_axis() const {
