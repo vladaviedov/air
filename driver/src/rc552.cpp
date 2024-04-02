@@ -111,7 +111,7 @@ int rc552::communicateWithCard(uint8_t command,
 ) {
 	// Prepare values for BitFramingReg
 	uint8_t txLastBits;
-	if (validBits) {
+	if (validBits != nullptr) {
 		txLastBits = *validBits;
 	} else {
 		txLastBits = 0;
@@ -151,11 +151,11 @@ int rc552::communicateWithCard(uint8_t command,
 	uint8_t irqReg = i2cd.read_byte(comIrqReg);
 
 	// One of the interrupts that signal success has been set.
-	if (irqReg & waitIRq > 0) {
+	if ((irqReg & waitIRq) > 0) {
 		completed = true;
 	}
 
-	if (irqReg & 0x01 > 0) { // Timer interrupt - nothing received in 25ms
+	if ((irqReg & 0x01) > 0) { // Timer interrupt - nothing received in 25ms
 		return 1;
 	}
 
@@ -168,7 +168,7 @@ int rc552::communicateWithCard(uint8_t command,
 	// ErrorReg[7..0] bits are: WrErr TempErr reserved BufferOvfl
 	uint8_t errorRegValue = i2cd.read_byte(errorReg);
 	// CollErr CRCErr ParityErr ProtocolErr
-	if (errorRegValue & 0x13 > 0) { // BufferOvfl ParityErr ProtocolErr
+	if ((errorRegValue & 0x13) > 0) { // BufferOvfl ParityErr ProtocolErr
 		return 1;
 	}
 
@@ -193,7 +193,7 @@ int rc552::communicateWithCard(uint8_t command,
 	}
 
 	// Tell about collisions
-	if (errorRegValue & 0x08 > 0) { // CollErr
+	if ((errorRegValue & 0x08) > 0) { // CollErr
 		return 3;
 	}
 
@@ -250,7 +250,7 @@ int rc552::calculateCRC(uint8_t *data, uint8_t length, uint8_t *result) {
 	// DivIrqReg[7..0] bits are: Set2 reserved reserved MfinActIRq reserved
 	// CRCIRq reserved reserved
 	uint8_t divIrq = i2cd.read_byte(divIqrReg);
-	if (divIrq & 0x04 > 0) { // CRCIRq bit set - calculation done
+	if ((divIrq & 0x04) > 0) { // CRCIRq bit set - calculation done
 		// Stop calculating CRC for new content in the FIFO.
 		i2cd.write(commandReg, &idle, 1);
 		// Transfer the result from the registers to the result buffer
@@ -268,5 +268,6 @@ int rc552::calculateCRC(uint8_t *data, uint8_t length, uint8_t *result) {
 void rc552::setRegisterBitMask(uint8_t reg, uint8_t mask) {
 	uint8_t tmp;
 	tmp = i2cd.read_byte(reg);
-	i2cd.write(reg, (uint8_t *)(tmp | mask), 1); // set bit mask
+	uint8_t bitMask = (tmp | mask);
+	i2cd.write(reg, &bitMask, 1); // set bit mask
 }
