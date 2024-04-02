@@ -10,13 +10,15 @@
 
 #include "defines.hpp"
 
-constexpr uint8_t REG_INTERRUPT_STATUS = 0x3A;
-constexpr uint8_t REG_ACCEL_X = 0x3B;
-constexpr uint8_t REG_ACCEL_Y = 0x3D;
-constexpr uint8_t REG_ACCEL_Z = 0x3F;
-constexpr uint8_t REG_GYRO_X = 0x43;
-constexpr uint8_t REG_GYRO_Y = 0x45;
-constexpr uint8_t REG_GYRO_Z = 0x47;
+static constexpr uint8_t REG_INTERRUPT_STATUS = 0x3A;
+static constexpr uint8_t REG_ACCEL_X = 0x3B;
+static constexpr uint8_t REG_ACCEL_Y = 0x3D;
+static constexpr uint8_t REG_ACCEL_Z = 0x3F;
+static constexpr uint8_t REG_GYRO_X = 0x43;
+static constexpr uint8_t REG_GYRO_Y = 0x45;
+static constexpr uint8_t REG_GYRO_Z = 0x47;
+static constexpr uint8_t REG_PWR_MGMT_1 = 0x6B;
+static constexpr uint8_t REG_WHOAMI = 0x75;
 
 gy521::gy521(
 	const gpiod::chip &chip, uint32_t int_pin, uint8_t dev_addr, int adapter)
@@ -27,9 +29,23 @@ gy521::gy521(
 		.request_type = gpiod::line_request::EVENT_RISING_EDGE,
 		.flags = 0,
 	});
+
+    uint8_t whoami = i2cd.read_byte(REG_WHOAMI);
+    // 0x68 is the expected return value
+    if (whoami != 0x68) {
+        printf("I2C ERROR, WHOAMI RESULT: %X", whoami);
+    }
+
+    uint8_t wakeup = 0x00;
+    if (!i2cd.write(REG_PWR_MGMT_1, &wakeup, 1)) {
+        printf("WAKEUP WRITE FAIL");
+    }
 }
 
 gy521::~gy521() {
+    // sleep device
+    uint8_t sleep = 0x40;
+    i2cd.write(REG_PWR_MGMT_1, &sleep, 1);
 	active = false;
 	int_thread->join();
 	interrupt.release();
@@ -51,7 +67,7 @@ void gy521::on_interrupt(std::function<void()> callback) {
 }
 
 uint16_t gy521::read_x_axis() const {
-	return i2cd.read_word(REG_ACCEL_X);
+    return i2cd.read_word(REG_ACCEL_X);
 }
 
 uint16_t gy521::read_y_axis() const {
