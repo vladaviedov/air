@@ -21,7 +21,9 @@ static const std::map<tdma::scheme, tdma::scheme_info> SCHEME_MAP = {
 	{ tdma::AIR_C, { .frame_duration_ms = 320, .frames_per_second = 3 } }
 };
 
-tdma::tdma(const std::shared_ptr<drf7020d20> &rf_dev_in, uint32_t timeslot, scheme div) : rf_dev(rf_dev_in), slot(timeslot), sch_info(SCHEME_MAP.at(div)) {}
+tdma::tdma(const std::shared_ptr<drf7020d20> &rf_dev_in, uint32_t timeslot, scheme div) : rf_dev(rf_dev_in), slot(timeslot), sch_info(SCHEME_MAP.at(div)) {
+	rf_dev->rejecter_on();
+}
 
 bool tdma::tx_sync(const std::string &msg) const {
 	if (msg.length() > 15) {
