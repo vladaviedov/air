@@ -11,9 +11,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-extern "C" {
 #include <i2c/smbus.h>
-}
 
 i2c::i2c(uint8_t addr, int adapter_nr)
 	: dev_addr(addr) {
