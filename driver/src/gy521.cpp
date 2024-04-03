@@ -7,6 +7,7 @@
 
 #include <chrono>
 #include <cstdint>
+#include <stdexcept>
 
 #include "defines.hpp"
 
@@ -24,21 +25,22 @@ gy521::gy521(
 	const gpiod::chip &chip, uint32_t int_pin, uint8_t dev_addr, int adapter)
 	: interrupt(chip.get_line(int_pin)),
 	  i2cd(i2c(dev_addr, adapter)) {
-	interrupt.request({
+	
+    interrupt.request({
 		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::EVENT_RISING_EDGE,
 		.flags = 0,
 	});
 
-	uint8_t whoami = i2cd.read_byte(REG_WHOAMI);
+	const uint8_t whoami = i2cd.read_byte(REG_WHOAMI);
 	// 0x68 is the expected return value
 	if (whoami != 0x68) {
-		printf("I2C ERROR, WHOAMI RESULT: %X", whoami);
+		throw std::runtime_error("WHOAMI read failed");
 	}
 
-	uint8_t wakeup = 0x00;
+	const uint8_t wakeup = 0x00;
 	if (!i2cd.write(REG_PWR_MGMT_1, &wakeup, 1)) {
-		printf("WAKEUP WRITE FAIL");
+		throw std::runtime_error("WAKEUP write fail");
 	}
 }
 
@@ -52,6 +54,14 @@ gy521::~gy521() {
 }
 
 void gy521::on_interrupt(std::function<void()> callback) {
+
+    if (int_thread != nullptr) {
+        active = false;
+        int_thread->join();
+    }
+
+    active = true;
+
 	// Thread function
 	auto executor = [&]() {
 		while (active) {
