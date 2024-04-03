@@ -17,6 +17,9 @@ int main() {
 		433900, drf7020d20::DR9600, 9, drf7020d20::DR9600, drf7020d20::NONE);
 
 	tdma tdma_slot(rf_test, 0, tdma::AIR_A);
+	tdma_slot.rx_set_offset(-5);
+	tdma_slot.tx_set_offset(-70);
+
 	while (true) {
 		tdma_slot.tx_sync(*get_id());
 		std::cout << tdma_slot.rx_sync(15) << std::endl;

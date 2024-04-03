@@ -39,14 +39,13 @@ bool tdma::tx_sync(const std::string &msg) const {
 		return false;
 	}
 
-	sleep_until_next_slot();
+	sleep_until_next_slot(tx_offset_ms);
 	return rf_dev->transmit(msg.data(), 15);
 }
 
 std::string tdma::rx_sync(uint32_t max_frames) const {
-	// TODO: need to clear events outside of ts?
 	for (uint32_t i = 0; i < max_frames; i++) {
-		sleep_until_next_slot();
+		sleep_until_next_slot(rx_offset_ms);
 		std::string res = rf_dev->receive(TIMESLOT_DURATION);
 
 		if (!res.empty()) {
@@ -57,13 +56,14 @@ std::string tdma::rx_sync(uint32_t max_frames) const {
 	return "";
 }
 
-void tdma::sleep_until_next_slot() const {
-	auto now = std::chrono::system_clock::now();
-	auto now_ms = now.time_since_epoch().count() / 1000000 % 1000;
+void tdma::sleep_until_next_slot(int32_t offset_ms) const {
+	auto timestamp = std::chrono::system_clock::now();
+	auto timestamp_adj = timestamp - std::chrono::milliseconds(offset_ms);
+	auto ms_part = timestamp_adj.time_since_epoch().count() / 1000000 % 1000;
 
 	// Current position
-	uint32_t cur_frame = now_ms / sch_info.frame_duration_ms;
-	uint32_t cur_slot = (now_ms % sch_info.frame_duration_ms) / TIMESLOT_DURATION_MS;
+	uint32_t cur_frame = ms_part / sch_info.frame_duration_ms;
+	uint32_t cur_slot = (ms_part % sch_info.frame_duration_ms) / TIMESLOT_DURATION_MS;
 
 	// Same frame if timeslot not passed, otherwise next frame
 	uint32_t send_frame = (cur_slot >= slot)
@@ -71,14 +71,14 @@ void tdma::sleep_until_next_slot() const {
 
 	// If above allowed frames, go to next second
 	auto second = (send_frame >= sch_info.frames_per_second)
-		? std::chrono::ceil<std::chrono::seconds>(now)
-		: std::chrono::floor<std::chrono::seconds>(now);
+		? std::chrono::ceil<std::chrono::seconds>(timestamp_adj)
+		: std::chrono::floor<std::chrono::seconds>(timestamp_adj);
 	if (send_frame >= sch_info.frames_per_second) {
 		send_frame = 0;
 	}
 
 	// Calculate offset from second start
-	auto offset = std::chrono::milliseconds(send_frame * sch_info.frame_duration_ms + slot * TIMESLOT_DURATION_MS);
+	auto ms_desired = std::chrono::milliseconds(send_frame * sch_info.frame_duration_ms + slot * TIMESLOT_DURATION_MS + offset_ms);
 	
-	std::this_thread::sleep_until(second + offset);
+	std::this_thread::sleep_until(second + ms_desired);
 }
