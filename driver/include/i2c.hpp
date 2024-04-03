@@ -35,14 +35,6 @@ public:
 	uint16_t read_word(uint8_t reg) const;
 
 	/**
-	 * @brief Read a word.
-	 *
-	 * @param[in] reg - Register to read from.
-	 * @return The number of bytes read
-	 */
-	uint8_t read(uint8_t reg, uint8_t) const;
-
-	/**
 	 * @brief Write up to 32 bytes.
 	 *
 	 * @param[in] reg - Register to write to.
