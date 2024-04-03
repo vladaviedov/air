@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <cstring>
 #include <fcntl.h>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -48,6 +49,7 @@ drf7020d20::drf7020d20(const gpiod::chip &chip,
 }
 
 drf7020d20::~drf7020d20() {
+	rejecter_off();
 	en.release();
 	aux.release();
 	set.release();
@@ -63,6 +65,29 @@ void drf7020d20::disable() {
 	en.set_value(0);
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	enable_flag = false;
+}
+
+void drf7020d20::rejecter_on() {
+	if (rejecter_thread != nullptr) {
+		return;
+	}
+
+	auto executor = [&]() {
+		while (rejecter) {
+			if (aux.event_wait(std::chrono::milliseconds(100))) {
+				aux.event_read();
+			}
+		}
+	};
+
+	rejecter = true;
+	rejecter_thread = std::make_unique<std::thread>(executor);
+}
+
+void drf7020d20::rejecter_off() {
+	rejecter = false;
+	rejecter_thread->join();
+	rejecter_thread.reset();
 }
 
 bool drf7020d20::configure(uint32_t freq,
@@ -139,7 +164,9 @@ std::string drf7020d20::receive(std::chrono::milliseconds timeout) const {
 	}
 
 	// Clear event
-	aux.event_read();
+	if (!rejecter) {
+		aux.event_read();
+	}
 
 	return serial.read();
 }
