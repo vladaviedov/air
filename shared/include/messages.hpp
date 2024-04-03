@@ -6,6 +6,7 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 #include <string>
 
 struct msg_t {
@@ -14,5 +15,6 @@ struct msg_t {
 	std::string body;
 };
 
-std::string format_message(const msg_t &msg);
-msg_t parse_message(const std::string &str_msg);
+bool validate_header(const std::string &str);
+bool validate_id(const std::string &str);
+const std::shared_ptr<std::string> &get_id();

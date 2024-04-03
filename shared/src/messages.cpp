@@ -5,121 +5,51 @@
 
 #include "messages.hpp"
 
+#include <fstream>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <stdexcept>
 
-constexpr std::string MSG_HEADER = "AIRv1.0";
-constexpr std::string START_MSG = "SM";
-constexpr std::string END_MSG = "EM";
+static constexpr std::string MSG_HEADER = "AIRv1.0";
+static constexpr std::string UNSUPPORTED = "UN";
+static constexpr std::string ID_FILE = "/etc/airid";
 
-bool check_line1(const std::string &line1, std::string &r_id);
-bool check_line3(const std::string &line3, std::string &c_id);
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
+static std::shared_ptr<std::string> control_id = nullptr;
 
-std::string format_message(const msg_t &msg) {
-	std::string str_msg(MSG_HEADER + " " + msg.receiver_id + " " + START_MSG +
-						"\n" + msg.body + "\n" + END_MSG + " " + msg.caller_id);
-	return str_msg;
+bool validate_header(const std::string &str) {
+	return str == MSG_HEADER;
 }
 
-bool check_line1(const std::string &line1, std::string &r_id) {
-	std::istringstream parts(line1);
-	std::string token;
-
-	// Protocol header
-	parts >> token;
-	if (parts.eof() || token != MSG_HEADER) {
+bool validate_id(const std::string &str) {
+	if (str.length() > 12) {
 		return false;
-	}
-
-	// Receiver ID
-	parts >> token;
-	if (parts.eof() || token == START_MSG || token == END_MSG) {
-		return false;
-	}
-	r_id = token;
-
-	// Start message marker
-	parts >> token;
-	return token == START_MSG && parts.eof();
-}
-
-bool check_line3(const std::string &line3, std::string &c_id) {
-	std::istringstream parts(line3);
-	std::string token;
-
-	// End message marker
-	parts >> token;
-	if (parts.eof() || token != END_MSG) {
-		return false;
-	}
-
-	// Caller ID
-	parts >> token;
-	if (token == START_MSG || token == END_MSG || !parts.eof()) {
-		return false;
-	}
-
-	c_id = token;
-	return true;
-}
-
-msg_t parse_message(const std::string &str_msg) {
-	std::istringstream lines(str_msg);
-
-	std::string line1;
-	std::string line2;
-	std::string line3;
-
-	/* Read lines */
-	std::getline(lines, line1, '\n');
-	if (lines.eof()) {
-		throw std::invalid_argument("line 2 not found");
-	}
-	std::getline(lines, line2, '\n');
-
-	if (lines.eof()) {
-		throw std::invalid_argument("line 3 not found");
-	}
-	std::getline(lines, line3, '\n');
-
-	std::string receiver_id;
-	std::string caller_id;
-
-	/* Check validity of lines and initialize ids*/
-	if (!check_line1(line1, receiver_id)) {
-		throw std::invalid_argument("Line 1 is invalid");
-	}
-
-	if (!check_line3(line3, caller_id)) {
-		throw std::invalid_argument("Line 3 is invalid");
 	}
 
 	// clang-tidy cannot understand the greatness of C
 	// NOLINTBEGIN(readability-identifier-length,
 	// 		readability-implicit-bool-conversion)
-	for (size_t i = 0; i < receiver_id.length(); i++) {
-		char c = receiver_id[i];
+	for (size_t i = 0; i < str.length(); i++) {
+		char c = str[i];
 		if (!isalnum(c) && c != '/' && c != '-') {
-			throw std::invalid_argument("Receiver ID is invalid");
-		}
-	}
-
-	for (size_t i = 0; i < caller_id.length(); i++) {
-		char c = caller_id[i];
-		if (!isalnum(c) && c != '/' && c != '-') {
-			throw std::invalid_argument("Caller ID is invalid");
+			return false;
 		}
 	}
 	// NOLINTEND(readability-identifier-length,
 	// 		readability-implicit-bool-conversion)
 
-	/* Parse Messages */
-	msg_t msg = {
-		.caller_id = caller_id,
-		.receiver_id = receiver_id,
-		.body = line2,
-	};
+	return str.length() < 2 || str.substr(0, 2) != UNSUPPORTED;
+}
 
-	return msg;
+const std::shared_ptr<std::string> &get_id() {
+	if (control_id == nullptr) {
+		control_id = std::make_shared<std::string>();
+
+		std::ifstream infile;
+		infile.open(ID_FILE);
+
+		infile >> *control_id;
+	}
+	return control_id;
 }
