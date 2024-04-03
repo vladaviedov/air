@@ -13,12 +13,21 @@
 
 #include <driver/drf7020d20.hpp>
 
-static constexpr auto TIMESLOT_DURATION = std::chrono::milliseconds(20);
+static constexpr uint32_t TIMESLOT_DURATION_MS = 20;
+static constexpr auto TIMESLOT_DURATION = std::chrono::milliseconds(TIMESLOT_DURATION_MS);
+
+static constexpr uint32_t A_FRAME_DUR = TIMESLOT_DURATION_MS * 4;
+static constexpr uint32_t B_FRAME_DUR = TIMESLOT_DURATION_MS * 8;
+static constexpr uint32_t C_FRAME_DUR = TIMESLOT_DURATION_MS * 16;
+
+static constexpr uint32_t A_FRAMES_PER_SEC = 1000 / A_FRAME_DUR;
+static constexpr uint32_t B_FRAMES_PER_SEC = 1000 / B_FRAME_DUR;
+static constexpr uint32_t C_FRAMES_PER_SEC = 1000 / C_FRAME_DUR;
 
 static const std::map<tdma::scheme, tdma::scheme_info> SCHEME_MAP = {
-	{ tdma::AIR_A, { .frame_duration_ms = 80, .frames_per_second = 12 } },
-	{ tdma::AIR_B, { .frame_duration_ms = 160, .frames_per_second = 6 } },
-	{ tdma::AIR_C, { .frame_duration_ms = 320, .frames_per_second = 3 } }
+	{ tdma::AIR_A, { .frame_duration_ms = A_FRAME_DUR, .frames_per_second = A_FRAMES_PER_SEC } },
+	{ tdma::AIR_B, { .frame_duration_ms = B_FRAME_DUR, .frames_per_second = B_FRAMES_PER_SEC } },
+	{ tdma::AIR_C, { .frame_duration_ms = C_FRAME_DUR, .frames_per_second = C_FRAMES_PER_SEC } }
 };
 
 tdma::tdma(const std::shared_ptr<drf7020d20> &rf_dev_in, uint32_t timeslot, scheme div) : rf_dev(rf_dev_in), slot(timeslot), sch_info(SCHEME_MAP.at(div)) {
@@ -54,7 +63,7 @@ void tdma::sleep_until_next_slot() const {
 
 	// Current position
 	uint32_t cur_frame = now_ms / sch_info.frame_duration_ms;
-	uint32_t cur_slot = (now_ms % sch_info.frame_duration_ms) / TIMESLOT_DURATION.count();
+	uint32_t cur_slot = (now_ms % sch_info.frame_duration_ms) / TIMESLOT_DURATION_MS;
 
 	// Same frame if timeslot not passed, otherwise next frame
 	uint32_t send_frame = (cur_slot >= slot)
@@ -69,7 +78,7 @@ void tdma::sleep_until_next_slot() const {
 	}
 
 	// Calculate offset from second start
-	auto offset = std::chrono::milliseconds(send_frame * sch_info.frame_duration_ms + slot * TIMESLOT_DURATION.count());
+	auto offset = std::chrono::milliseconds(send_frame * sch_info.frame_duration_ms + slot * TIMESLOT_DURATION_MS);
 	
 	std::this_thread::sleep_until(second + offset);
 }
