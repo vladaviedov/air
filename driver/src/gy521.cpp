@@ -25,8 +25,7 @@ gy521::gy521(
 	const gpiod::chip &chip, uint32_t int_pin, uint8_t dev_addr, int adapter)
 	: interrupt(chip.get_line(int_pin)),
 	  i2cd(i2c(dev_addr, adapter)) {
-	
-    interrupt.request({
+	interrupt.request({
 		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::EVENT_RISING_EDGE,
 		.flags = 0,
@@ -54,13 +53,12 @@ gy521::~gy521() {
 }
 
 void gy521::on_interrupt(std::function<void()> callback) {
+	if (int_thread != nullptr) {
+		active = false;
+		int_thread->join();
+	}
 
-    if (int_thread != nullptr) {
-        active = false;
-        int_thread->join();
-    }
-
-    active = true;
+	active = true;
 
 	// Thread function
 	auto executor = [&]() {
