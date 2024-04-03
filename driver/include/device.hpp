@@ -11,7 +11,7 @@ constexpr std::string gpiochip0 = "gpiochip0";
 extern const gpiod::chip gpio_pins;
 
 // TODO: FIGURE OUT DEV ADDR
-constexpr uint8_t RC552_DEV_ADDR = 0b1101000;
+constexpr uint8_t RC552_DEV_ADDR = 0b0101000;
 
 constexpr int I2C_ADAPTER_NUMBER = 0;
 

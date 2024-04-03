@@ -11,6 +11,7 @@
 #include "defines.hpp"
 
 static constexpr uint8_t commandReg = 0x01;
+static constexpr uint8_t commIEnReg = 0x02;
 static constexpr uint8_t comIrqReg = 0x04;
 static constexpr uint8_t divIqrReg = 0x05;
 static constexpr uint8_t errorReg = 0x06;
@@ -40,16 +41,22 @@ rc552::rc552(
 	const gpiod::chip &chip, uint32_t inter_pin, uint8_t dev_addr, int adapter)
 	: interrupt(chip.get_line(inter_pin)),
 	  i2cd(i2c(dev_addr, adapter)) {
-	interrupt.request({
+	
+    interrupt.request({
 		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::EVENT_RISING_EDGE,
 		.flags = 0,
 	});
+
+    uint8_t res = i2cd.read_byte(errorReg);
+    if (res != 0x80) {
+        printf("BIG STINKING ERROR %d\n", res);
+    }
 }
 
 rc552::~rc552() {
 	active = false;
-	interrupt_thread->join();
+	//interrupt_thread->join();
 	interrupt.release();
 }
 
@@ -161,7 +168,7 @@ int rc552::communicateWithCard(uint8_t command,
 
 	// 36ms and nothing happened. Communication with the MFRC522 might be down.
 	if (!completed) {
-		return 1;
+		return 2;
 	}
 
 	// Stop now if any errors except collisions were detected.
@@ -169,7 +176,7 @@ int rc552::communicateWithCard(uint8_t command,
 	uint8_t errorRegValue = i2cd.read_byte(errorReg);
 	// CollErr CRCErr ParityErr ProtocolErr
 	if ((errorRegValue & 0x13) > 0) { // BufferOvfl ParityErr ProtocolErr
-		return 1;
+		return 3;
 	}
 
 	uint8_t _validBits = 0;
@@ -179,10 +186,10 @@ int rc552::communicateWithCard(uint8_t command,
 		uint8_t fifoLevel =
 			i2cd.read_byte(FIFOLevelReg); // Number of bytes in the FIFO
 		if (fifoLevel > *backLen) {
-			return 2; // no room
+			return 5; // no room
 		}
 		*backLen = fifoLevel;                    // Number of bytes returned
-		*backData = i2cd.read_byte(FIFODataReg); // Get received data from FIFO
+		i2cd.read(FIFODataReg, backData, fifoLevel); // Get received data from FIFO
 		// RxLastBits[2:0] indicates the number of valid bits
 		_validBits = uint8_t(controlReg) & 0x07;
 		// in the last received byte. If this value is 000b,
@@ -194,7 +201,7 @@ int rc552::communicateWithCard(uint8_t command,
 
 	// Tell about collisions
 	if ((errorRegValue & 0x08) > 0) { // CollErr
-		return 3;
+		return 6;
 	}
 
 	// Perform CRC_A validation if requested.
@@ -229,7 +236,6 @@ int rc552::calculateCRC(uint8_t *data, uint8_t length, uint8_t *result) {
 	// down.
 	std::this_thread::sleep_for(std::chrono::milliseconds(89));
 
-	// TODO: Set a timeout.
 	// DivIrqReg[7..0] bits are: Set2 reserved reserved MfinActIRq reserved
 	// CRCIRq reserved reserved
 	uint8_t divIrq = i2cd.read_byte(divIqrReg);
@@ -242,7 +248,7 @@ int rc552::calculateCRC(uint8_t *data, uint8_t length, uint8_t *result) {
 		return 0;
 	}
 
-	return 1;
+	return 7;
 }
 
 /**
@@ -259,12 +265,12 @@ int rc552::validateCRCA(
 	uint8_t *backData, const uint8_t *backLen, const uint8_t *_validBits) {
 	// In this case a MIFARE Classic NAK is not OK.
 	if (*backLen == 1 && *_validBits == 4) {
-		return 3;
+		return 8;
 	}
 	// We need at least the CRC_A value and all 8 bits of the last byte must
 	// be received.
 	if (*backLen < 2 || *_validBits != 0) {
-		return 4;
+		return 9;
 	}
 	// Verify CRC_A - do our own calculation and store the control in
 	// controlBuffer.
@@ -275,7 +281,33 @@ int rc552::validateCRCA(
 	}
 	if ((backData[*backLen - 2] != controlBuffer[0]) ||
 		(backData[*backLen - 1] != controlBuffer[1])) {
-		return 4;
+		return 10;
 	}
 	return 0;
 }
+
+// MFRC522::StatusCode MFRC522::PCD_Authenticate( uint8_t command,		///< PICC_CMD_MF_AUTH_KEY_A or PICC_CMD_MF_AUTH_KEY_B
+// 											   uint8_t blockAddr, 	///< The block number. See numbering in the comments in the .h file.
+// 											   uint8_t *key,	///< Pointer to the Crypteo1 key to use (6 bytes)
+// 											   uint8_t *uid			///< Pointer to Uid struct. The first 4 bytes of the UID is used.
+// 											) {
+// 	byte waitIRq = 0x10;		// IdleIRq
+	
+// 	// Build command buffer
+// 	byte sendData[12];
+// 	sendData[0] = command;
+// 	sendData[1] = blockAddr;
+// 	for (byte i = 0; i < MF_KEY_SIZE; i++) {	// 6 key bytes
+// 		sendData[2+i] = key->keyByte[i];
+// 	}
+// 	// Use the last uid bytes as specified in http://cache.nxp.com/documents/application_note/AN10927.pdf
+// 	// section 3.2.5 "MIFARE Classic Authentication".
+// 	// The only missed case is the MF1Sxxxx shortcut activation,
+// 	// but it requires cascade tag (CT) byte, that is not part of uid.
+// 	for (byte i = 0; i < 4; i++) {				// The last 4 bytes of the UID
+// 		sendData[8+i] = uid->uidByte[i+uid->size-4];
+// 	}
+	
+// 	// Start the authentication.
+// 	return PCD_CommunicateWithPICC(PCD_MFAuthent, waitIRq, &sendData[0], sizeof(sendData));
+// } 

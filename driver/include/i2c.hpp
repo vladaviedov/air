@@ -38,9 +38,12 @@ public:
 	 * @brief Read a word.
 	 *
 	 * @param[in] reg - Register to read from.
-	 * @return The number of bytes read
+     * @param[out] data - Buffer to store data
+     * @param[in] size - Size of data
+	 * 
+     * @return Success of read
 	 */
-	uint8_t read(uint8_t reg, uint8_t) const;
+	bool read(uint8_t reg, uint8_t *data, uint8_t size) const;
 
 	/**
 	 * @brief Write up to 32 bytes.
