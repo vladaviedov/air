@@ -75,7 +75,9 @@ void drf7020d20::rejecter_on() {
 	auto executor = [&]() {
 		while (rejecter) {
 			if (aux.event_wait(std::chrono::milliseconds(100))) {
+				// Clear events and data buffer
 				aux.event_read();
+				serial.read();
 			}
 		}
 	};
