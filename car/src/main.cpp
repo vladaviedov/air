@@ -1,8 +1,4 @@
-#include <chrono>
-#include <cstdio>
 #include <iostream>
-#include <string>
-#include <thread>
 
 #include <gpiod.hpp>
 
@@ -13,15 +9,17 @@
 #include <shared/tdma.hpp>
 
 int main() {
-	auto rf_test = std::make_shared<drf7020d20>(gpio_pins, RASPI_40, RASPI_37, RASPI_38, 0);
+	/* auto rf_test = std::make_shared<drf7020d20>(gpio_pins, RASPI_40, RASPI_37, RASPI_38, 0); */
+	auto rf_test = std::make_shared<drf7020d20>(gpio_pins, RASPI_12, RASPI_16, RASPI_18, 0);
 
 	rf_test->enable();
 	rf_test->configure(
 		433900, drf7020d20::DR9600, 9, drf7020d20::DR9600, drf7020d20::NONE);
 
-	tdma tdma_test(rf_test, 0, tdma::AIR_A);
+	tdma tdma_slot(rf_test, 0, tdma::AIR_A);
 	while (true) {
-		tdma_test.tx_sync("KC1TNB");
+		tdma_slot.tx_sync(*get_id());
+		std::cout << tdma_slot.rx_sync(15) << std::endl;
 	}
 
 	return 0;
