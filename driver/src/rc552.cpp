@@ -255,15 +255,14 @@ void rc552::setRegisterBitMask(uint8_t reg, uint8_t mask) {
 	i2cd.write(reg, &bitMask, 1); // set bit mask
 }
 
-int rc552::validateCRCA(
-	uint8_t *backData, uint8_t *backLen, uint8_t *_validBits) {
+int rc552::validateCRCA(uint8_t *backData, const uint8_t *backLen, const uint8_t *_validBits) {
 	// In this case a MIFARE Classic NAK is not OK.
 	if (*backLen == 1 && *_validBits == 4) {
 		return 3;
 	}
 	// We need at least the CRC_A value and all 8 bits of the last byte must
 	// be received.
-	if (*backLen < 2 || _validBits != 0) {
+	if (*backLen < 2 || *_validBits != 0) {
 		return 4;
 	}
 	// Verify CRC_A - do our own calculation and store the control in

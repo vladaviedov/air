@@ -107,5 +107,5 @@ private:
 	 *
 	 * @return error status
 	 */
-	int validateCRCA(uint8_t *backData, uint8_t *backLen, uint8_t *_validBits);
+	int validateCRCA(uint8_t *backData, const uint8_t *backLen, const uint8_t *_validBits);
 };
