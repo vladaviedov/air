@@ -20,20 +20,20 @@ int main() {
 	auto ex0 = [&](){
 		tdma tdma_slot0(rf_test, 0, tdma::AIR_A);
 		tdma_slot0.rx_set_offset(-5);
-		tdma_slot0.tx_set_offset(-60);
+		tdma_slot0.tx_set_offset(-70);
 
 		while (true) {
-			std::cout << tdma_slot0.rx_sync(1000000) << std::endl;
+			std::cout << tdma_slot0.rx_sync(1000000) << '\n';
 			tdma_slot0.tx_sync("KC1TNB/SL0");
 		}
 	};
 	auto ex1 = [&](){
 		tdma tdma_slot2(rf_test, 2, tdma::AIR_A);
 		tdma_slot2.rx_set_offset(-5);
-		tdma_slot2.tx_set_offset(-60);
+		tdma_slot2.tx_set_offset(-70);
 
 		while (true) {
-			std::cout << tdma_slot2.rx_sync(1000000) << std::endl;
+			std::cout << tdma_slot2.rx_sync(1000000) << '\n';
 			tdma_slot2.tx_sync("KC1TNB/SL2");
 		}
 	};

@@ -74,7 +74,11 @@ void drf7020d20::rejecter_on() {
 
 	auto executor = [&]() {
 		while (rejecter) {
-			if (aux.event_wait(std::chrono::milliseconds(100))) {
+			while (rejecter_standby) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			}
+
+			if (aux.event_wait(std::chrono::milliseconds(1))) {
 				// Clear events and data buffer
 				aux.event_read();
 				serial.read();
@@ -160,15 +164,15 @@ std::string drf7020d20::receive(std::chrono::milliseconds timeout) const {
 		throw std::logic_error("Radio is disabled, cannot receive");
 	}
 
-	// AUX will fall when data is ready to read
-	if (!aux.event_wait(timeout)) {
+	rejecter_standby = true;
+	bool received = aux.event_wait(timeout);
+	rejecter_standby = false;
+
+	if (!received) {
 		return "";
 	}
 
-	// Clear event
-	if (!rejecter) {
-		aux.event_read();
-	}
-
+	// Clear event & read data
+	aux.event_read();
 	return serial.read();
 }

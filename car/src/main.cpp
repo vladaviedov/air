@@ -22,7 +22,7 @@ int main() {
 
 	while (true) {
 		tdma_slot.tx_sync(*get_id());
-		std::cout << tdma_slot.rx_sync(15) << std::endl;
+		std::cout << tdma_slot.rx_sync(15) << '\n';
 	}
 
 	return 0;

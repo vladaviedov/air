@@ -125,4 +125,5 @@ private:
 
 	std::unique_ptr<std::thread> rejecter_thread = nullptr;
 	std::atomic<bool> rejecter = false;
+	mutable std::atomic<bool> rejecter_standby = false;
 };

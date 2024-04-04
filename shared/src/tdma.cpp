@@ -78,7 +78,7 @@ void tdma::sleep_until_next_slot(int32_t offset_ms) const {
 	}
 
 	// Calculate offset from second start
-	auto ms_desired = std::chrono::milliseconds(send_frame * sch_info.frame_duration_ms + slot * TIMESLOT_DURATION_MS + offset_ms);
+	auto ms_desired = std::chrono::milliseconds((int32_t)(send_frame * sch_info.frame_duration_ms + slot * TIMESLOT_DURATION_MS) + offset_ms);
 	
 	std::this_thread::sleep_until(second + ms_desired);
 }
