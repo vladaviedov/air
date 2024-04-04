@@ -4,8 +4,10 @@
  */
 #pragma once
 
+#include <atomic>
 #include <chrono>
 #include <cstdint>
+#include <thread>
 
 #include <gpiod.hpp>
 
@@ -58,6 +60,18 @@ public:
 	void disable();
 
 	/**
+	 * @brief Enable message rejecter.
+	 *
+	 */
+	void rejecter_on();
+
+	/**
+	 * @brief Enable message rejecter.
+	 *
+	 */
+	void rejecter_off();
+
+	/**
 	 * @brief Configure RF module.
 	 *
 	 * @param[in] freq - Channel frequency in kHz.
@@ -108,4 +122,8 @@ private:
 	gpiod::line set;
 
 	bool enable_flag = false;
+
+	std::unique_ptr<std::thread> rejecter_thread = nullptr;
+	std::atomic<bool> rejecter = false;
+	mutable std::atomic<bool> rejecter_standby = false;
 };

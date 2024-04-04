@@ -42,19 +42,30 @@ public:
 	std::string rx_sync(uint32_t max_frames) const;
 
 	/**
-	 * @brief Adjust timing for clock desync.
+	 * @brief Adjust timing for receiving.
 	 *
 	 * @param[in] new_offset - ms offset for message start.
 	 */
-	inline void set_offset(int32_t new_offset) {
-		offset_ms = new_offset;
+	inline void rx_set_offset(int32_t new_offset_ms) {
+		rx_offset_ms = new_offset_ms;
+	}
+
+	/**
+	 * @brief Adjust timing for transmitting.
+	 *
+	 * @param[in] new_offset - ms offset for message start.
+	 */
+	inline void tx_set_offset(int32_t new_offset_ms) {
+		tx_offset_ms = new_offset_ms;
 	}
 
 private:
-	void sleep_until_next_slot() const;
+	void sleep_until_next_slot(int32_t offset_ms) const;
 
 	std::shared_ptr<drf7020d20> rf_dev;
 	uint32_t slot;
 	scheme_info sch_info;
-	int32_t offset_ms = 0;
+
+	int32_t rx_offset_ms = 0;
+	int32_t tx_offset_ms = 0;
 };
