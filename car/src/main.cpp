@@ -6,7 +6,15 @@
 #include <driver/drf7020d20.hpp>
 #include <driver/pinmap.hpp>
 #include <shared/messages.hpp>
-#include <shared/tdma.hpp>
+#include <driver/servo.hpp>
+#include <driver/motors.hpp>
+#include <driver/lightsens.hpp>
+
+// NOLINTBEGIN: temporary code
+#define CALLSIGN "?"
+#define TAG "/2"
+
+// NOLINTEND
 
 int main() {
 	/* auto rf_test = std::make_shared<drf7020d20>(gpio_pins, RASPI_40,
@@ -18,14 +26,8 @@ int main() {
 	rf_test->configure(
 		433900, drf7020d20::DR9600, 9, drf7020d20::DR9600, drf7020d20::NONE);
 
-	tdma tdma_slot(rf_test, 0, tdma::AIR_A);
-	tdma_slot.rx_set_offset(-5);
-	tdma_slot.tx_set_offset(-70);
-
-	while (true) {
-		tdma_slot.tx_sync(*get_id());
-		std::cout << tdma_slot.rx_sync(15) << '\n';
-	}
+	motor m(gpio_pins, RASPI_15, RASPI_13, RASPI_11);
+	servo s(gpio_pins, RASPI_19);
 
 	return 0;
 }
