@@ -13,7 +13,7 @@
 
 #include <driver/drf7020d20.hpp>
 
-static constexpr uint32_t TIMESLOT_DURATION_MS = 20;
+static constexpr uint32_t TIMESLOT_DURATION_MS = 50;
 static constexpr auto TIMESLOT_DURATION = std::chrono::milliseconds(TIMESLOT_DURATION_MS);
 
 static constexpr uint32_t A_FRAME_DUR = TIMESLOT_DURATION_MS * 4;
