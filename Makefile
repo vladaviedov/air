@@ -31,7 +31,7 @@ driver: $(GPIOD_LIB) $(I2C_LIB)
 	$(MAKE) -C driver
 
 .PHONY: shared
-shared:
+shared: driver
 	$(MAKE) -C shared
 
 .PHONY: car
