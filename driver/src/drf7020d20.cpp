@@ -49,7 +49,10 @@ drf7020d20::drf7020d20(const gpiod::chip &chip,
 }
 
 drf7020d20::~drf7020d20() {
-	rejecter_off();
+	if (rejecter) {
+		rejecter_off();
+	}
+
 	en.release();
 	aux.release();
 	set.release();
