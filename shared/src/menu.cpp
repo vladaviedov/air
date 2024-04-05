@@ -1,6 +1,6 @@
 /**
  * @file src/menu.cpp
- * @brief
+ * @brief Menu display module.
  */
 #include "menu.hpp"
 
@@ -32,35 +32,48 @@ void show_menu(const std::string &heading,
 		std::cout << CLEAR_TTY << std::flush;
 		set_tty();
 
+		auto digits = (uint32_t)std::log10(items.size() + 1) + 1;
+
 		// Print list
 		std::cout << heading << "\n\n";
 		uint32_t index = 0;
 		for (index = 0; index < items.size(); index++) {
-			printf("[%u] %s\n", index + 1, items[index].text.c_str());
+			printf("[%0*u] %s\n", digits, index + 1, items[index].text.c_str());
 		}
-		printf("[%u] %s\n\n", index + 1, is_submenu ? "Return" : "Quit");
+		printf(
+			"[%0*u] %s\n\n", digits, index + 1, is_submenu ? "Return" : "Quit");
 		std::cout << std::flush;
 
 		// Await input
-		auto digits = (uint32_t)std::log10(items.size());
 		uint32_t selection;
 		do {
+			// Clear selection
+			std::cout << '\r';
+			for (uint32_t i = 0; i < digits; i++) {
+				std::cout << ' ';
+			}
+			std::cout << '\r' << std::flush;
+
 			uint32_t digits_left = digits;
 			selection = 0;
 			while (digits_left > 0) {
 				selection *= 10;
 				int input = std::getchar();
 				if (input == 'q') {
+					std::cout << CLEAR_TTY << std::flush;
+					reset_tty();
 					return;
 				}
 
 				// NOLINTNEXTLINE(readability-implicit-bool-conversion)
 				if (isdigit(input)) {
-					selection += (input - '0');
+					uint32_t value = input - '0';
+					selection += value;
+					std::cout << value << std::flush;
 					digits_left--;
 				}
 			}
-		} while (selection == 0 && selection > index + 1);
+		} while (selection == 0 || selection > index + 1);
 
 		// Clear screen
 		std::cout << CLEAR_TTY << std::flush;

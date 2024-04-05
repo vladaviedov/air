@@ -1,6 +1,6 @@
 /**
  * @file src/menu.hpp
- * @brief
+ * @brief Menu display module.
  */
 #pragma once
 
