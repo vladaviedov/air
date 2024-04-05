@@ -48,14 +48,10 @@ void tdma_slots() {
 
 	// Configure RF Chip
 	std::cout << "Configuring RF Chip... " << std::flush;
-	try {
-		rf_test->enable();
-		rf_test->configure(433900, drf7020d20::DR9600, 9, drf7020d20::DR9600,
-			drf7020d20::NONE);
-	} catch (std::exception &ex) {
+	rf_test->enable();
+	if (!rf_test->configure(433900, drf7020d20::DR9600, 9, drf7020d20::DR9600,
+			drf7020d20::NONE)) {
 		std::cout << "Failed\n";
-		std::cerr << ex.what() << std::endl;
-
 		prompt_enter();
 		return;
 	}
