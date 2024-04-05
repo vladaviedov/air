@@ -120,17 +120,18 @@ void tdma_slots() {
 
 	// Set up exit condition
 	std::atomic<bool> finish = false;
-	(void)std::async(std::launch::async, [&finish]() {
+	auto exit_future = std::async(std::launch::async, [&finish]() {
 		std::getchar();
 		finish = true;
 	});
 
+	std::cout << "\nStarting demo. Hit the enter key at any time to exit.\n\n";
 	const auto &car_id = get_id();
 	while (!finish) {
 		std::cout << "Sending: " << *car_id << '\n';
 		tdma_slot.tx_sync(*get_id());
 
-		auto response = tdma_slot.rx_sync(15);
+		auto response = tdma_slot.rx_sync(5);
 		if (!response.empty()) {
 			std::cout << "Received: " << response << '\n';
 		} else {
