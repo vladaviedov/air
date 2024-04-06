@@ -248,7 +248,7 @@ private:
 	int validateCRCA(
 		uint8_t *backData, const uint8_t *backLen, const uint8_t *_validBits);
 
-	void parseSectorTrailerData(bool *isSectorTrailer,
+	static void parseSectorTrailerData(bool *isSectorTrailer,
 		bool *invertedError,
 		const uint8_t *buffer,
 		uint8_t *group);

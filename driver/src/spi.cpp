@@ -71,16 +71,13 @@ spi::~spi() {
 
 int spi::transfer(
 	const uint8_t *write_buf, const uint8_t *read_buf, uint32_t buf_len) const {
-	struct spi_ioc_transfer transfer;
+	spi_ioc_transfer transfer = {.tx_buf = (uint64_t)write_buf,
+		.rx_buf = (uint64_t)read_buf,
+		.len = buf_len,
+		.speed_hz = speed,
+		.bits_per_word = bpw,
+		.cs_change = 1};
 	int res;
-
-	memset(&transfer, 0, sizeof(transfer));
-	transfer.tx_buf = (unsigned long long)write_buf;
-	transfer.rx_buf = (unsigned long long)read_buf;
-	transfer.len = buf_len;
-	transfer.speed_hz = speed;
-	transfer.bits_per_word = bpw;
-	transfer.cs_change = 1;
 
 	res = ioctl(fd, SPI_IOC_MESSAGE(1), &transfer);
 	if (res < 0) {
@@ -117,7 +114,7 @@ int spi::read(uint8_t reg, uint8_t *buf, int buf_len) const {
 	return res;
 }
 
-uint8_t spi::read_byte(uint8_t reg) {
+uint8_t spi::read_byte(uint8_t reg) const {
 	uint8_t data = 0;
 	if (read(reg, &data, 1) != 0) {
 		throw std::runtime_error("SPI read fail");
@@ -148,6 +145,6 @@ int spi::write(uint8_t reg, uint8_t *buf, int buf_len) const {
 	return transfer(full_buf, nullptr, full_buf_len);
 }
 
-int spi::write_byte(uint8_t reg, uint8_t value) {
+int spi::write_byte(uint8_t reg, uint8_t value) const {
 	return write(reg, &value, 1);
 }

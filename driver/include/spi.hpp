@@ -45,9 +45,9 @@ public:
 
 	int write(uint8_t reg, uint8_t *buf, int buf_len) const;
 
-	uint8_t read_byte(uint8_t reg);
+	uint8_t read_byte(uint8_t reg) const;
 
-	int write_byte(uint8_t reg, uint8_t value);
+	int write_byte(uint8_t reg, uint8_t value) const;
 
 private:
 	int fd;
