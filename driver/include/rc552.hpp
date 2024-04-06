@@ -20,15 +20,12 @@ static constexpr uint8_t MF_KEY_SIZE = 6;
 class rc552 {
 public:
 	// A struct used for passing the UID of a PICC.
-	typedef struct {
+	struct Uid {
 		uint8_t size; // Number of bytes in the UID. 4, 7 or 10.
 		uint8_t uidByte[10];
 		uint8_t sak; // The SAK (Select acknowledge) byte returned from the PICC
 					 // after successful selection.
-	} Uid;
-
-	// Member variables
-	Uid uid; // Used by PICC_ReadCardSerial().
+	};
 
 	/**
 	 * @brief Initializer
@@ -234,6 +231,7 @@ public:
 	);
 
 private:
+	Uid uid; // Used by PICC_ReadCardSerial().
 	gpiod::line interrupt;
 	std::unique_ptr<std::thread> interrupt_thread;
 	std::atomic_bool active = true;
@@ -252,7 +250,7 @@ private:
 
 	void parseSectorTrailerData(bool *isSectorTrailer,
 		bool *invertedError,
-		uint8_t *buffer,
+		const uint8_t *buffer,
 		uint8_t *group);
 
 	void MIFARE_dump_sector(uint8_t blockAddr,

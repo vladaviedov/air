@@ -26,7 +26,9 @@ public:
 
 	~spi();
 
-	int transfer(uint8_t *write_buf, uint8_t *read_buf, uint32_t buf_len) const;
+	int transfer(const uint8_t *write_buf,
+		const uint8_t *read_buf,
+		uint32_t buf_len) const;
 
 	/*
 	 * Read data from a register of a SPI device.
@@ -39,9 +41,9 @@ public:
 	 * @return - 0 if the read procedure succeeded
 	 *         - negative if the read procedure failed
 	 */
-	int read(uint8_t reg, uint8_t *buf, int buf_len);
+	int read(uint8_t reg, uint8_t *buf, int buf_len) const;
 
-	int write(uint8_t reg, uint8_t *buf, int buf_len);
+	int write(uint8_t reg, uint8_t *buf, int buf_len) const;
 
 	uint8_t read_byte(uint8_t reg);
 

@@ -70,8 +70,8 @@ spi::~spi() {
 }
 
 int spi::transfer(
-	uint8_t *write_buf, uint8_t *read_buf, uint32_t buf_len) const {
-	struct spi_ioc_transfer transfer = {0};
+	const uint8_t *write_buf, const uint8_t *read_buf, uint32_t buf_len) const {
+	struct spi_ioc_transfer transfer;
 	int res;
 
 	memset(&transfer, 0, sizeof(transfer));
@@ -91,7 +91,7 @@ int spi::transfer(
 	return res;
 }
 
-int spi::read(uint8_t reg, uint8_t *buf, int buf_len) {
+int spi::read(uint8_t reg, uint8_t *buf, int buf_len) const {
 	int full_buf_len;
 	int res;
 
@@ -125,7 +125,7 @@ uint8_t spi::read_byte(uint8_t reg) {
 	return data;
 }
 
-int spi::write(uint8_t reg, uint8_t *buf, int buf_len) {
+int spi::write(uint8_t reg, uint8_t *buf, int buf_len) const {
 	int full_buf_len;
 
 	/*

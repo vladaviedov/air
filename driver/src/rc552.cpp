@@ -59,7 +59,8 @@ static constexpr int STATUS_TIMEOUT = 1;
 static constexpr int STATUS_ERROR = 2;
 
 rc552::rc552(const gpiod::chip &chip, uint32_t inter_pin, std::string adapter)
-	: interrupt(chip.get_line(inter_pin)),
+	: uid(4, {0}, 0),
+	  interrupt(chip.get_line(inter_pin)),
 	  spid(spi(0, 8, 4000000U, adapter.data())) {
 	interrupt.request({
 		.consumer = GPIO_CONSUMER,
@@ -71,10 +72,6 @@ rc552::rc552(const gpiod::chip &chip, uint32_t inter_pin, std::string adapter)
 	if (res != 0x80) {
 		throw std::runtime_error("RC552 spi read failure");
 	}
-
-	uid.size = 4;
-	memset(uid.uidByte, 0, 10);
-	uid.sak = 0;
 }
 
 rc552::~rc552() {
@@ -498,8 +495,7 @@ void rc552::PICC_DumpMifareClassicSectorToSerial(
 	uint8_t blockAddr;
 	isSectorTrailer = true;
 
-	for (int8_t blockOffset = no_of_blocks - 1; blockOffset >= 0;
-		 blockOffset--) {
+	for (int blockOffset = no_of_blocks - 1; blockOffset >= 0; blockOffset--) {
 		blockAddr = firstBlock + blockOffset;
 
 		MIFARE_dump_sector(blockAddr, isSectorTrailer, firstBlock, key, buffer,
@@ -510,9 +506,9 @@ void rc552::PICC_DumpMifareClassicSectorToSerial(
 
 void rc552::parseSectorTrailerData(bool *isSectorTrailer,
 	bool *invertedError,
-	uint8_t *buffer,
+	const uint8_t *buffer,
 	uint8_t *group) {
-	if (isSectorTrailer) {
+	if (*isSectorTrailer) {
 		uint8_t acc1 = buffer[7] >> 4;
 		uint8_t acc2 = buffer[8] & 0xF;
 		uint8_t acc3 = buffer[8] >> 4;
