@@ -7,6 +7,7 @@
 
 #include <chrono>
 #include <cstdint>
+#include <cstring>
 
 #include "defines.hpp"
 
@@ -59,7 +60,7 @@ static constexpr int STATUS_ERROR = 2;
 
 rc552::rc552(const gpiod::chip &chip, uint32_t inter_pin, std::string adapter)
 	: interrupt(chip.get_line(inter_pin)),
-	  spid(spi(0, 8, 4000000u, adapter.data())) {
+	  spid(spi(0, 8, 4000000U, adapter.data())) {
 	interrupt.request({
 		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::EVENT_RISING_EDGE,
@@ -72,6 +73,8 @@ rc552::rc552(const gpiod::chip &chip, uint32_t inter_pin, std::string adapter)
 	}
 
 	uid.size = 4;
+	memset(uid.uidByte, 0, 10);
+	uid.sak = 0;
 }
 
 rc552::~rc552() {
@@ -473,28 +476,11 @@ void rc552::PICC_DumpMifareClassicSectorToSerial(
 	uint8_t *key,  ///< Key A for the sector.
 	uint8_t sector ///< The sector to dump, 0..39.
 ) {
-	int status;
 	uint8_t firstBlock; // Address of lowest address to dump actually last block
 						// dumped)
 	uint8_t no_of_blocks; // Number of blocks in sector
 	bool isSectorTrailer; // Set to true while handling the "last" (ie highest
 						  // address) in the sector.
-
-	// The access bits are stored in a peculiar fashion.
-	// There are four groups:
-	//		g[3]	Access bits for the sector trailer, block 3 (for sectors
-	// 0-31) or block 15 (for sectors 32-39) 		g[2]	Access bits for
-	// block 2 (for sectors 0-31) or blocks 10-14 (for sectors 32-39) 		g[1]
-	// Access bits for block 1 (for sectors 0-31) or blocks 5-9 (for sectors
-	// 32-39) 		g[0]	Access bits for block 0 (for sectors 0-31) or blocks
-	// 0-4 (for sectors 32-39)
-	// Each group has access bits [C1 C2 C3]. In this code C1 is MSB and C3 is
-	// LSB. The four CX bits are stored together in a nible cx and an inverted
-	// nible cx_.
-	bool invertedError; // True if one of the inverted nibbles did not match
-	uint8_t gAcc[4];    // Access bits for each of the four groups.
-	uint8_t group;      // 0-3 - active group for access bits
-	bool firstInGroup;  // True for the first block dumped in the group
 
 	// Determine position and size of sector.
 	if (sector < 32) { // Sectors 0..31 has 4 blocks each
@@ -508,102 +494,16 @@ void rc552::PICC_DumpMifareClassicSectorToSerial(
 	}
 
 	// Dump blocks, highest address first.
-	uint8_t byteCount;
 	uint8_t buffer[18];
 	uint8_t blockAddr;
 	isSectorTrailer = true;
-	invertedError = false; // Avoid "unused variable" warning.
+
 	for (int8_t blockOffset = no_of_blocks - 1; blockOffset >= 0;
 		 blockOffset--) {
 		blockAddr = firstBlock + blockOffset;
-		// Sector number - only on first line
-		if (isSectorTrailer) {
-			if (sector < 10)
-				printf("   "); // Pad with spaces
-			else
-				printf("  "); // Pad with spaces
-			printf("%d", sector);
-			printf("   ");
-		} else {
-			printf("       ");
-		}
-		// Block number
-		if (blockAddr < 10)
-			printf("   "); // Pad with spaces
-		else {
-			if (blockAddr < 100)
-				printf("  "); // Pad with spaces
-			else
-				printf(" "); // Pad with spaces
-		}
-		printf("%d", blockAddr);
-		printf("  ");
-		// Establish encrypted communications before reading the first block
-		if (isSectorTrailer) {
-			status = PCD_Authenticate(PICC_CMD_MF_AUTH_KEY_A, firstBlock, key);
-			if (status != STATUS_OK) {
-				printf("PCD_Authenticate() failed: ");
-				printf("%d", status);
-				return;
-			}
-		}
-		// Read block
-		byteCount = sizeof(buffer);
-		status = MIFARE_Read(blockAddr, buffer, &byteCount);
-		if (status != STATUS_OK) {
-			printf("MIFARE_Read() failed: ");
-			printf("%d", status);
-			continue;
-		}
-		// Dump data
-		for (uint8_t index = 0; index < 16; index++) {
-			if (buffer[index] < 0x10)
-				printf(" 0");
-			else
-				printf(" ");
-			printf("%X", buffer[index]);
-			if ((index % 4) == 3) {
-				printf(" ");
-			}
-		}
-		// Parse sector trailer data
-		parseSectorTrailerData(&isSectorTrailer, &invertedError, buffer, gAcc);
 
-		// Which access group is this block in?
-		if (no_of_blocks == 4) {
-			group = blockOffset;
-			firstInGroup = true;
-		} else {
-			group = blockOffset / 5;
-			firstInGroup = (group == 3) || (group != (blockOffset + 1) / 5);
-		}
-
-		if (firstInGroup) {
-			// Print access bits
-			printf(" [ ");
-			printf("%d", (gAcc[group] >> 2) & 1);
-			printf(" ");
-			printf("%d", (gAcc[group] >> 1) & 1);
-			printf(" ");
-			printf("%d", (gAcc[group] >> 0) & 1);
-			printf(" ] ");
-			if (invertedError) {
-				printf(" Inverted access bits did not match! ");
-			}
-		}
-
-		if (group != 3 &&
-			(gAcc[group] == 1 ||
-				gAcc[group] == 6)) { // Not a sector trailer, a value block
-			int32_t value = (int32_t(buffer[3]) << 24) |
-							(int32_t(buffer[2]) << 16) |
-							(int32_t(buffer[1]) << 8) | int32_t(buffer[0]);
-			printf(" Value=0x");
-			printf("%X", value);
-			printf(" Adr=0x");
-			printf("%X", buffer[12]);
-		}
-		printf("\n");
+		MIFARE_dump_sector(blockAddr, isSectorTrailer, firstBlock, key, buffer,
+			no_of_blocks, blockOffset);
 	}
 
 } // End PICC_DumpMifareClassicSectorToSerial()
@@ -628,6 +528,95 @@ void rc552::parseSectorTrailerData(bool *isSectorTrailer,
 		group[3] = ((acc1 & 8) >> 1) | ((acc2 & 8) >> 2) | ((acc3Inv & 8) >> 3);
 		*isSectorTrailer = false;
 	}
+}
+
+void rc552::MIFARE_dump_sector(uint8_t blockAddr,
+	bool isSectorTrailer,
+	uint8_t firstBlock,
+	uint8_t *key,
+	uint8_t *buffer,
+	uint8_t no_of_blocks,
+	uint8_t blockOffset) {
+	bool invertedError = false; // Avoid "unused variable" warning.
+
+	// The access bits are stored in a peculiar fashion.
+	// There are four groups:
+	//		g[3]	Access bits for the sector trailer, block 3 (for sectors
+	// 0-31) or block 15 (for sectors 32-39) 		g[2]	Access bits for
+	// block 2 (for sectors 0-31) or blocks 10-14 (for sectors 32-39) 		g[1]
+	// Access bits for block 1 (for sectors 0-31) or blocks 5-9 (for sectors
+	// 32-39) 		g[0]	Access bits for block 0 (for sectors 0-31) or blocks
+	// 0-4 (for sectors 32-39)
+	// Each group has access bits [C1 C2 C3]. In this code C1 is MSB and C3 is
+	// LSB. The four CX bits are stored together in a nible cx and an inverted
+	// nible cx_.
+	uint8_t gAcc[4]; // Access bits for each of the four groups.
+	uint8_t group;   // 0-3 - active group for access bits
+
+	printf("%d  ", blockAddr);
+
+	// Establish encrypted communications before reading the first block
+	if (isSectorTrailer) {
+		int status = PCD_Authenticate(PICC_CMD_MF_AUTH_KEY_A, firstBlock, key);
+		if (status != STATUS_OK) {
+			printf("PCD_Authenticate() failed: ");
+			printf("%d", status);
+			return;
+		}
+	}
+
+	// Read block
+	uint8_t byteCount = sizeof(buffer);
+	int status = MIFARE_Read(blockAddr, buffer, &byteCount);
+	if (status != STATUS_OK) {
+		throw std::runtime_error("MIFARE READ FAIL");
+	}
+
+	// Dump data
+	for (uint8_t index = 0; index < 16; index++) {
+		printf("%X ", buffer[index]);
+	}
+
+	// Parse sector trailer data
+	parseSectorTrailerData(&isSectorTrailer, &invertedError, buffer, gAcc);
+
+	bool firstInGroup; // True for the first block dumped in the group
+
+	// Which access group is this block in?
+	if (no_of_blocks == 4) {
+		group = blockOffset;
+		firstInGroup = true;
+	} else {
+		group = blockOffset / 5;
+		firstInGroup = (group == 3) || (group != (blockOffset + 1) / 5);
+	}
+
+	if (firstInGroup) {
+		// Print access bits
+		printf(" [ ");
+		printf("%d", (gAcc[group] >> 2) & 1);
+		printf(" ");
+		printf("%d", (gAcc[group] >> 1) & 1);
+		printf(" ");
+		printf("%d", (gAcc[group] >> 0) & 1);
+		printf(" ] ");
+		if (invertedError) {
+			printf(" Inverted access bits did not match! ");
+		}
+	}
+
+	if (group != 3 &&
+		(gAcc[group] == 1 ||
+			gAcc[group] == 6)) { // Not a sector trailer, a value block
+		int32_t value = (int32_t(buffer[3]) << 24) |
+						(int32_t(buffer[2]) << 16) | (int32_t(buffer[1]) << 8) |
+						int32_t(buffer[0]);
+		printf(" Value=0x");
+		printf("%X", value);
+		printf(" Adr=0x");
+		printf("%X", buffer[12]);
+	}
+	printf("\n");
 }
 
 /**

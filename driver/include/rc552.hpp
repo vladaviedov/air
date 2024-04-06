@@ -254,4 +254,12 @@ private:
 		bool *invertedError,
 		uint8_t *buffer,
 		uint8_t *group);
+
+	void MIFARE_dump_sector(uint8_t blockAddr,
+		bool isSectorTrailer,
+		uint8_t firstBlock,
+		uint8_t *key,
+		uint8_t *buffer,
+		uint8_t no_of_blocks,
+		uint8_t blockOffset);
 };
