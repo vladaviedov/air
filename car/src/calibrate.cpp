@@ -171,7 +171,6 @@ void calibrate_servo() {
 	raw_tty();
 
 	// Print current values
-	std::cout << CLEAR_TTY << std::flush;
 	if (current.has_value()) {
 		std::cout << "Current values:\n\n";
 		std::cout << "Left: " << current->max_left << '\n';
