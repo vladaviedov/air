@@ -14,9 +14,8 @@
 
 #include "spi.hpp"
 
-#define MIFARE_Key 6
 // A Mifare Crypto1 key is 6 bytes.
-#define MF_KEY_SIZE 6
+static constexpr uint8_t MF_KEY_SIZE = 6;
 
 class rc552 {
 public:
