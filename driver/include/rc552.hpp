@@ -27,9 +27,6 @@ public:
 					 // after successful selection.
 	} Uid;
 
-	// MIFARE Crypto1 key
-	uint8_t keyByte[MF_KEY_SIZE];
-
 	// Member variables
 	Uid uid; // Used by PICC_ReadCardSerial().
 
@@ -41,7 +38,7 @@ public:
 	 * @param[in] dev_addr - I2C device address.
 	 * @param[in] adapter - I2C ioctl adapter number.
 	 */
-	rc552(const gpiod::chip &chip, uint32_t inter_pin, std::string adapter);
+	rc552(const gpiod::chip &chip, uint32_t inter_pin, char *adapter);
 
 	~rc552();
 
@@ -233,7 +230,7 @@ public:
 		uint8_t command,   ///< PICC_CMD_MF_AUTH_KEY_A or PICC_CMD_MF_AUTH_KEY_B
 		uint8_t blockAddr, ///< The block number. See numbering in the comments
 						   ///< in the .h file.
-		uint8_t *key       ///< Pointer to the Crypteo1 key to use (6 bytes)
+		const uint8_t *key ///< Pointer to the Crypteo1 key to use (6 bytes)
 	);
 
 private:
@@ -252,4 +249,9 @@ private:
 	 */
 	int validateCRCA(
 		uint8_t *backData, const uint8_t *backLen, const uint8_t *_validBits);
+
+	void parseSectorTrailerData(bool *isSectorTrailer,
+		bool *invertedError,
+		uint8_t *buffer,
+		uint8_t *group);
 };

@@ -11,4 +11,4 @@ constexpr std::string gpiochip0 = "gpiochip0";
 extern const gpiod::chip gpio_pins;
 
 // TODO: FIGURE OUT DEV ADDR
-constexpr std::string RC552_ADAPTER = "0.0";
+constexpr char *RC552_ADAPTER = "0.0";

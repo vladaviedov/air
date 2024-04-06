@@ -11,7 +11,7 @@
 #include "defines.hpp"
 
 static constexpr uint8_t commandReg = 0x01 << 1;
-static constexpr uint8_t commIEnReg = 0x02 << 1;
+// static constexpr uint8_t commIEnReg = 0x02 << 1;
 static constexpr uint8_t comIrqReg = 0x04 << 1;
 static constexpr uint8_t divIqrReg = 0x05 << 1;
 static constexpr uint8_t errorReg = 0x06 << 1;
@@ -57,7 +57,7 @@ static constexpr int STATUS_OK = 0;
 static constexpr int STATUS_TIMEOUT = 1;
 static constexpr int STATUS_ERROR = 2;
 
-rc552::rc552(const gpiod::chip &chip, uint32_t inter_pin, std::string adapter)
+rc552::rc552(const gpiod::chip &chip, uint32_t inter_pin, char *adapter)
 	: interrupt(chip.get_line(inter_pin)),
 	  spid(spi(0, 8, 4000000u, adapter)) {
 	interrupt.request({
@@ -70,6 +70,8 @@ rc552::rc552(const gpiod::chip &chip, uint32_t inter_pin, std::string adapter)
 	if (res != 0x80) {
 		throw std::runtime_error("RC552 spi read failure");
 	}
+
+	uid.size = 4;
 }
 
 rc552::~rc552() {
@@ -417,7 +419,7 @@ int rc552::PICC_HaltA() {
 	// after the end of the frame containing the 		HLTA command, this
 	// response shall be interpreted as 'not acknowledge'.
 	// We interpret that this way: Only STATUS_TIMEOUT is a success.
-	result = transcieveData(buffer, sizeof(buffer), nullptr, 0);
+	result = transcieveData(buffer, sizeof(buffer), nullptr, nullptr);
 	if (result == STATUS_TIMEOUT) {
 		return STATUS_OK;
 	}
@@ -452,12 +454,10 @@ void rc552::PICC_DumpMifareClassicToSerial() {
 	}
 
 	// Dump sectors, highest address first.
-	if (no_of_sectors) {
-		printf("Sector Block   0  1  2  3   4  5  6  7   8  9 10 11  "
-			   "12 13 14 15  AccessBits");
-		for (int8_t i = no_of_sectors - 1; i >= 0; i--) {
-			PICC_DumpMifareClassicSectorToSerial(key, i);
-		}
+	printf("Sector Block   0  1  2  3   4  5  6  7   8  9 10 11  "
+		   "12 13 14 15  AccessBits");
+	for (int i = no_of_sectors - 1; i >= 0; i--) {
+		PICC_DumpMifareClassicSectorToSerial(key, i);
 	}
 	PICC_HaltA(); // Halt the PICC before stopping the encrypted session.
 	PCD_StopCrypto1();
@@ -491,12 +491,10 @@ void rc552::PICC_DumpMifareClassicSectorToSerial(
 	// Each group has access bits [C1 C2 C3]. In this code C1 is MSB and C3 is
 	// LSB. The four CX bits are stored together in a nible cx and an inverted
 	// nible cx_.
-	uint8_t c1, c2, c3;    // Nibbles
-	uint8_t c1_, c2_, c3_; // Inverted nibbles
-	bool invertedError;    // True if one of the inverted nibbles did not match
-	uint8_t g[4];          // Access bits for each of the four groups.
-	uint8_t group;         // 0-3 - active group for access bits
-	bool firstInGroup;     // True for the first block dumped in the group
+	bool invertedError; // True if one of the inverted nibbles did not match
+	uint8_t gAcc[4];    // Access bits for each of the four groups.
+	uint8_t group;      // 0-3 - active group for access bits
+	bool firstInGroup;  // True for the first block dumped in the group
 
 	// Determine position and size of sector.
 	if (sector < 32) { // Sectors 0..31 has 4 blocks each
@@ -569,21 +567,7 @@ void rc552::PICC_DumpMifareClassicSectorToSerial(
 			}
 		}
 		// Parse sector trailer data
-		if (isSectorTrailer) {
-			c1 = buffer[7] >> 4;
-			c2 = buffer[8] & 0xF;
-			c3 = buffer[8] >> 4;
-			c1_ = buffer[6] & 0xF;
-			c2_ = buffer[6] >> 4;
-			c3_ = buffer[7] & 0xF;
-			invertedError = (c1 != (~c1_ & 0xF)) || (c2 != (~c2_ & 0xF)) ||
-							(c3 != (~c3_ & 0xF));
-			g[0] = ((c1 & 1) << 2) | ((c2 & 1) << 1) | ((c3 & 1) << 0);
-			g[1] = ((c1 & 2) << 1) | ((c2 & 2) << 0) | ((c3 & 2) >> 1);
-			g[2] = ((c1 & 4) << 0) | ((c2 & 4) >> 1) | ((c3 & 4) >> 2);
-			g[3] = ((c1 & 8) >> 1) | ((c2 & 8) >> 2) | ((c3 & 8) >> 3);
-			isSectorTrailer = false;
-		}
+		parseSectorTrailerData(&isSectorTrailer, &invertedError, buffer, gAcc);
 
 		// Which access group is this block in?
 		if (no_of_blocks == 4) {
@@ -597,11 +581,11 @@ void rc552::PICC_DumpMifareClassicSectorToSerial(
 		if (firstInGroup) {
 			// Print access bits
 			printf(" [ ");
-			printf("%d", (g[group] >> 2) & 1);
+			printf("%d", (gAcc[group] >> 2) & 1);
 			printf(" ");
-			printf("%d", (g[group] >> 1) & 1);
+			printf("%d", (gAcc[group] >> 1) & 1);
 			printf(" ");
-			printf("%d", (g[group] >> 0) & 1);
+			printf("%d", (gAcc[group] >> 0) & 1);
 			printf(" ] ");
 			if (invertedError) {
 				printf(" Inverted access bits did not match! ");
@@ -609,8 +593,8 @@ void rc552::PICC_DumpMifareClassicSectorToSerial(
 		}
 
 		if (group != 3 &&
-			(g[group] == 1 ||
-				g[group] == 6)) { // Not a sector trailer, a value block
+			(gAcc[group] == 1 ||
+				gAcc[group] == 6)) { // Not a sector trailer, a value block
 			int32_t value = (int32_t(buffer[3]) << 24) |
 							(int32_t(buffer[2]) << 16) |
 							(int32_t(buffer[1]) << 8) | int32_t(buffer[0]);
@@ -622,8 +606,29 @@ void rc552::PICC_DumpMifareClassicSectorToSerial(
 		printf("\n");
 	}
 
-	return;
 } // End PICC_DumpMifareClassicSectorToSerial()
+
+void rc552::parseSectorTrailerData(bool *isSectorTrailer,
+	bool *invertedError,
+	uint8_t *buffer,
+	uint8_t *group) {
+	if (isSectorTrailer) {
+		uint8_t acc1 = buffer[7] >> 4;
+		uint8_t acc2 = buffer[8] & 0xF;
+		uint8_t acc3 = buffer[8] >> 4;
+		uint8_t acc1Inv = buffer[6] & 0xF;
+		uint8_t acc2Inv = buffer[6] >> 4;
+		uint8_t acc3Inv = buffer[7] & 0xF;
+		*invertedError = (acc1 != (~acc1Inv & 0xF)) ||
+						 (acc2 != (~acc2Inv & 0xF)) ||
+						 (acc3 != (~acc3Inv & 0xF));
+		group[0] = ((acc1 & 1) << 2) | ((acc2 & 1) << 1) | ((acc3Inv & 1) << 0);
+		group[1] = ((acc1 & 2) << 1) | ((acc2 & 2) << 0) | ((acc3Inv & 2) >> 1);
+		group[2] = ((acc1 & 4) << 0) | ((acc2 & 4) >> 1) | ((acc3Inv & 4) >> 2);
+		group[3] = ((acc1 & 8) >> 1) | ((acc2 & 8) >> 2) | ((acc3Inv & 8) >> 3);
+		*isSectorTrailer = false;
+	}
+}
 
 /**
  * Executes the MFRC522 MFAuthent command.
@@ -645,7 +650,7 @@ int rc552::PCD_Authenticate(
 	uint8_t command,   ///< PICC_CMD_MF_AUTH_KEY_A or PICC_CMD_MF_AUTH_KEY_B
 	uint8_t blockAddr, ///< The block number. See numbering in the comments in
 					   ///< the .h file.
-	uint8_t *key       ///< Pointer to the Crypteo1 key to use (6 bytes)
+	const uint8_t *key ///< Pointer to the Crypteo1 key to use (6 bytes)
 ) {
 	uint8_t waitIRq = 0x10; // IdleIRq
 

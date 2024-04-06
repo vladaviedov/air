@@ -14,7 +14,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-spi::spi(uint8_t mode, uint8_t bpw, uint32_t speed, std::string adapter)
+spi::spi(uint8_t mode, uint8_t bpw, uint32_t speed, char *adapter)
 	: bpw(bpw),
 	  speed(speed) {
 	char filename[32];
@@ -69,13 +69,13 @@ spi::~spi() {
 	close(fd);
 }
 
-int spi::transfer(uint8_t *write_buf, uint8_t *read_buf, uint32_t buf_len) {
-	struct spi_ioc_transfer transfer;
+int spi::transfer(uint8_t *write_buf, uint8_t *read_buf, uint32_t buf_len) const {
+	struct spi_ioc_transfer transfer = {0};
 	int res;
 
 	memset(&transfer, 0, sizeof(transfer));
-	transfer.tx_buf = (uint32_t)write_buf;
-	transfer.rx_buf = (uint32_t)read_buf;
+	transfer.tx_buf = (unsigned long long)write_buf;
+	transfer.rx_buf = (unsigned long long)read_buf;
 	transfer.len = buf_len;
 	transfer.speed_hz = speed;
 	transfer.bits_per_word = bpw;
@@ -92,7 +92,7 @@ int spi::transfer(uint8_t *write_buf, uint8_t *read_buf, uint32_t buf_len) {
 
 int spi::read(uint8_t reg, uint8_t *buf, int buf_len) {
 	int full_buf_len;
-	int rc;
+	int res;
 
 	/*
 	 * Allocate a buffer that contains the instruction and
@@ -106,14 +106,14 @@ int spi::read(uint8_t reg, uint8_t *buf, int buf_len) {
 	/*
 	 * Transfer the instruction, register address and data.
 	 */
-	rc = transfer(full_buf, full_buf, full_buf_len);
+	res = transfer(full_buf, full_buf, full_buf_len);
 
 	/*
 	 * Copy the read data into the buffer.
 	 */
 	memcpy(buf, full_buf + 2, buf_len);
 
-	return rc;
+	return res;
 }
 
 uint8_t spi::read_byte(uint8_t reg) {
@@ -144,7 +144,7 @@ int spi::write(uint8_t reg, uint8_t *buf, int buf_len) {
 	/*
 	 * Transfer the instruction, register address and data.
 	 */
-	return transfer(full_buf, NULL, full_buf_len);
+	return transfer(full_buf, nullptr, full_buf_len);
 }
 
 int spi::write_byte(uint8_t reg, uint8_t value) {
