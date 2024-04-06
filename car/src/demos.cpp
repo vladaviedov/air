@@ -5,12 +5,15 @@
 #include "demos.hpp"
 
 #include <atomic>
+#include <chrono>
 #include <future>
 #include <iostream>
 #include <memory>
+#include <thread>
 
 #include <driver/device.hpp>
 #include <driver/drf7020d20.hpp>
+#include <driver/lightsens.hpp>
 #include <driver/motors.hpp>
 #include <driver/pinmap.hpp>
 #include <driver/servo.hpp>
@@ -23,10 +26,12 @@
 
 static void tdma_slots();
 static void manual_drive();
+static void simple_lines();
 
 static const std::vector<menu_item> demos = {
 	{.text = "TDMA slots", .action = &tdma_slots},
-	{.text = "Manual drive", .action = &manual_drive}};
+	{.text = "Manual drive", .action = &manual_drive},
+	{.text = "Simple line following", .action = &simple_lines}};
 
 void demo_submenu() {
 	show_menu("Car Demos", demos, true);
@@ -110,6 +115,8 @@ void tdma_slots() {
 	tdma_slot.rx_set_offset(-5);
 	tdma_slot.tx_set_offset(-70);
 
+	raw_tty();
+
 	// Set up exit condition
 	std::atomic<bool> finish = false;
 	auto exit_future = std::async(std::launch::async, [&finish]() {
@@ -117,7 +124,8 @@ void tdma_slots() {
 		finish = true;
 	});
 
-	std::cout << "\nStarting demo. Hit the enter key at any time to exit.\n\n";
+	std::cout << "\nStarting demo.\n";
+	std::cout << "Hit the space key at any time to exit.\n\n";
 	const auto &car_id = get_id();
 	while (!finish) {
 		std::cout << "Sending: " << *car_id << '\n';
@@ -130,6 +138,8 @@ void tdma_slots() {
 			std::cout << "No response" << '\n';
 		}
 	}
+
+	restore_tty();
 }
 
 void manual_drive() {
@@ -230,4 +240,63 @@ void manual_drive() {
 
 		std::cout << '\r';
 	}
+}
+
+void simple_lines() {
+	auto servo_profile = car_profile.get_servo();
+	if (!servo_profile.has_value()) {
+		std::cout << "No servo calibration data. Exiting...\n";
+		prompt_enter();
+		return;
+	}
+
+	// Init hardware
+	motor m_1(gpio_pins, RASPI_15, RASPI_13, RASPI_11);
+	motor m_2(gpio_pins, RASPI_33, RASPI_35, RASPI_37);
+	servo m_sv(gpio_pins, RASPI_32);
+	light_sens ir_left(gpio_pins, RASPI_22);
+	light_sens ir_right(gpio_pins, RASPI_24);
+
+	raw_tty();
+
+	std::cout << "Hardware initialized.\n";
+	std::cout << "Starting line following.\n";
+	std::cout << "Hit the space key at any time to exit.\n";
+
+	m_1.set(100, FORWARD);
+	m_2.set(100, FORWARD);
+	m_sv.set(servo_profile->center);
+
+	std::atomic<bool> finish = false;
+	auto exit_future = std::async(std::launch::async, [&finish]() {
+		std::getchar();
+		finish = true;
+	});
+
+	while (!finish) {
+		bool left_reading = ir_left.read();
+		bool right_reading = ir_right.read();
+
+		if (left_reading && right_reading) {
+			m_1.stop();
+			m_2.stop();
+
+			std::cout << "Car is off-road.\n";
+			prompt_enter();
+			restore_tty();
+			return;
+		}
+
+		if (left_reading) {
+			m_sv.set(servo_profile->max_right);
+		} else if (right_reading) {
+			m_sv.set(servo_profile->max_left);
+		} else {
+			m_sv.set(servo_profile->center);
+		}
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
+
+	restore_tty();
 }
