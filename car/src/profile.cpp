@@ -14,8 +14,8 @@
 // File parsing: servo profile
 static constexpr std::string CHECK_SERVO = "[servo]";
 static constexpr std::string CHECK_SERVO_MAX_LEFT = "left";
-static constexpr std::string CHECK_SERVO_MAX_RIGHT = "left";
-static constexpr std::string CHECK_SERVO_CENTER = "left";
+static constexpr std::string CHECK_SERVO_MAX_RIGHT = "right";
+static constexpr std::string CHECK_SERVO_CENTER = "center";
 
 // File parsing: tdma profile
 static constexpr std::string CHECK_TDMA = "[tdma]";
@@ -28,6 +28,9 @@ static void load_field(
 
 void profile::load(const std::string &filename) {
 	std::ifstream file(filename);
+	if (file.fail()) {
+		throw std::runtime_error("Cannot use provided file");
+	}
 
 	servo servo_load = {};
 	tdma tdma_load = {};
@@ -38,20 +41,23 @@ void profile::load(const std::string &filename) {
 			load_field(file, CHECK_SERVO_MAX_LEFT, servo_load.max_left);
 			load_field(file, CHECK_SERVO_MAX_RIGHT, servo_load.max_right);
 			load_field(file, CHECK_SERVO_CENTER, servo_load.center);
+
+			servo_profile = servo_load;
 		}
 		if (line == CHECK_TDMA) {
 			load_field(file, CHECK_TDMA_TX_OFFSET_MS, tdma_load.tx_offset_ms);
 			load_field(file, CHECK_TDMA_RX_OFFSET_MS, tdma_load.rx_offset_ms);
+
+			tdma_profile = tdma_load;
 		}
 	}
-
-	// Save into class
-	servo_profile = servo_load;
-	tdma_profile = tdma_load;
 }
 
 void profile::save(const std::string &filename) const {
 	std::ofstream file(filename);
+	if (file.fail()) {
+		throw std::runtime_error("Cannot use provided file");
+	}
 
 	if (servo_profile.has_value()) {
 		file << CHECK_SERVO << '\n';

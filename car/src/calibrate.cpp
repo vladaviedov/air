@@ -61,10 +61,7 @@ void load(const std::string &from_file) {
 	}
 
 	std::cout << "\nLoaded settings: \n";
-	std::cout << "----------";
 	print_calibration();
-
-	prompt_enter();
 }
 
 void save_default() {
@@ -104,20 +101,25 @@ void print_calibration() {
 	auto servo_profile = car_profile.get_servo();
 	auto tdma_profile = car_profile.get_tdma();
 
+	std::cout << "----------\n";
 	if (servo_profile.has_value()) {
-		std::cout << "Servo:\n";
-		std::cout << "\tMax left: " << servo_profile->max_left << '\n';
-		std::cout << "\tMax right: " << servo_profile->max_right << '\n';
-		std::cout << "\tCenter: " << servo_profile->center << '\n';
+		std::cout << "Servo:\n\n";
+		std::cout << "Max left: " << servo_profile->max_left << '\n';
+		std::cout << "Max right: " << servo_profile->max_right << '\n';
+		std::cout << "Center: " << servo_profile->center << '\n';
+		std::cout << '\n';
 	} else {
 		std::cout << "Servo: not defined\n";
 	}
 
 	if (tdma_profile.has_value()) {
-		std::cout << "TDMA:\n";
-		std::cout << "\tTX offset: " << tdma_profile->rx_offset_ms << " ms\n";
-		std::cout << "\tRX offset: " << tdma_profile->tx_offset_ms << " ms\n";
+		std::cout << "TDMA:\n\n";
+		std::cout << "TX offset: " << tdma_profile->rx_offset_ms << " ms\n";
+		std::cout << "RX offset: " << tdma_profile->tx_offset_ms << " ms\n";
 	} else {
 		std::cout << "TDMA: not defined\n";
 	}
+	std::cout << "----------\n";
+
+	prompt_enter();
 }

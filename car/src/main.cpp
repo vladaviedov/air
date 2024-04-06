@@ -2,20 +2,19 @@
  * @file src/main.cpp
  * @brief Car entry point.
  */
-#include <vector>
 #include <iostream>
+#include <vector>
 
 #include <shared/menu.hpp>
 
+#include "calibrate.hpp"
 #include "common.hpp"
 #include "demos.hpp"
-#include "calibrate.hpp"
 #include "profile.hpp"
 
 static const std::vector<menu_item> car_menu = {
 	{.text = "Demos", .action = &demo_submenu},
-	{.text = "Calibration", .action = &calibration_submenu}
-};
+	{.text = "Calibration", .action = &calibration_submenu}};
 
 int main() {
 	car_profile.load(default_profile);
