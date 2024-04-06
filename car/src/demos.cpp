@@ -6,6 +6,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <cstdlib>
 #include <future>
 #include <iostream>
 #include <memory>
@@ -25,12 +26,15 @@
 #include "common.hpp"
 
 static void tdma_slots();
+
 static void manual_drive();
+static void manual_drive_wasd();
 static void simple_lines();
 
 static const std::vector<menu_item> demos = {
 	{.text = "TDMA slots", .action = &tdma_slots},
 	{.text = "Manual drive", .action = &manual_drive},
+	{.text = "Manual drive WASD", .action = &manual_drive_wasd},
 	{.text = "Simple line following", .action = &simple_lines}};
 
 void demo_submenu() {
@@ -166,11 +170,12 @@ void manual_drive() {
 	printf("%-25s %-25s\n", "z x c", "j");
 	printf("\nHit space to exit\n");
 
-	uint32_t speed = 0.0F;
+	uint32_t speed = 0;
 	uint32_t servo = servo_profile->center;
 	direction dir = FORWARD;
 
 	while (true) {
+		// Set motors
 		if (speed == 0) {
 			m_1.stop();
 			m_2.stop();
@@ -179,11 +184,12 @@ void manual_drive() {
 		} else {
 			m_1.set((float)speed, dir);
 			m_2.set((float)speed, dir);
-			m_sv.set(servo);
 
 			printf("Current speed: %03u; ", speed);
 		}
 
+		// Set servo
+		m_sv.set(servo);
 		printf("Direction: %s ", dir == FORWARD ? "forw" : "back");
 		if (servo == servo_profile->max_left) {
 			printf("%-20s", "left  ");
@@ -299,4 +305,92 @@ void simple_lines() {
 	}
 
 	restore_tty();
+}
+
+void manual_drive_wasd() {
+	auto servo_profile = car_profile.get_servo();
+	if (!servo_profile.has_value()) {
+		std::cout << "No servo calibration data. Exiting...\n";
+		prompt_enter();
+		return;
+	}
+
+	// Init hardware
+	motor m_1(gpio_pins, RASPI_15, RASPI_13, RASPI_11);
+	motor m_2(gpio_pins, RASPI_33, RASPI_35, RASPI_37);
+	servo m_sv(gpio_pins, RASPI_32);
+
+	raw_tty();
+
+	std::cout << "Hardware initialized.\n";
+	std::cout << "Starting manual control.\n\n";
+
+	std::cout << "Controls: WASD; Hit E to stop the car.\n";
+	std::cout << "\nHit space to exit\n";
+
+	int32_t speed = 0;
+	uint32_t servo = servo_profile->center;
+
+	while (true) {
+		// Set motors
+		if (speed == 0) {
+			m_1.stop();
+			m_2.stop();
+
+			printf("Current speed: stp; ");
+		} else {
+			auto dir = speed > 0 ? FORWARD : BACKWARD;
+			uint32_t speed_abs = std::abs(speed);
+
+			m_1.set((float)speed_abs, dir);
+			m_2.set((float)speed_abs, dir);
+
+			printf("Current speed: %03u; ", speed_abs);
+		}
+
+		// Set servo
+		m_sv.set(servo);
+
+		auto offset = (int32_t)servo - (int32_t)servo_profile->center;
+		printf("Servo offset: %+2d ", offset);
+
+		int input = std::getchar();
+
+		switch (input) {
+		case ' ':
+			restore_tty();
+			return;
+		case 'w':
+			speed += 10;
+			break;
+		case 's':
+			speed -= 10;
+			break;
+		case 'a':
+			servo -= 10;
+			break;
+		case 'd':
+			servo += 10;
+			break;
+		case 'e':
+			speed = 0;
+			break;
+		}
+
+		// Don't go over max values
+		if (servo > servo_profile->max_right) {
+			servo = servo_profile->max_right;
+		}
+		if (servo < servo_profile->max_left) {
+			servo = servo_profile->max_left;
+		}
+		if (speed > 100) {
+			speed = 100;
+		}
+		if (speed < -100) {
+			speed = -100;
+		}
+
+		std::cout << '\r';
+	}
 }
