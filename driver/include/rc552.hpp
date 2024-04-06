@@ -38,7 +38,7 @@ public:
 	 * @param[in] dev_addr - I2C device address.
 	 * @param[in] adapter - I2C ioctl adapter number.
 	 */
-	rc552(const gpiod::chip &chip, uint32_t inter_pin, char *adapter);
+	rc552(const gpiod::chip &chip, uint32_t inter_pin, std::string adapter);
 
 	~rc552();
 

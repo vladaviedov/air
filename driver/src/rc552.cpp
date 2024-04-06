@@ -57,9 +57,9 @@ static constexpr int STATUS_OK = 0;
 static constexpr int STATUS_TIMEOUT = 1;
 static constexpr int STATUS_ERROR = 2;
 
-rc552::rc552(const gpiod::chip &chip, uint32_t inter_pin, char *adapter)
+rc552::rc552(const gpiod::chip &chip, uint32_t inter_pin, std::string adapter)
 	: interrupt(chip.get_line(inter_pin)),
-	  spid(spi(0, 8, 4000000u, adapter)) {
+	  spid(spi(0, 8, 4000000u, adapter.data())) {
 	interrupt.request({
 		.consumer = GPIO_CONSUMER,
 		.request_type = gpiod::line_request::EVENT_RISING_EDGE,

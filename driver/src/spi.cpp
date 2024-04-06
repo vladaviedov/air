@@ -69,7 +69,8 @@ spi::~spi() {
 	close(fd);
 }
 
-int spi::transfer(uint8_t *write_buf, uint8_t *read_buf, uint32_t buf_len) const {
+int spi::transfer(
+	uint8_t *write_buf, uint8_t *read_buf, uint32_t buf_len) const {
 	struct spi_ioc_transfer transfer = {0};
 	int res;
 
