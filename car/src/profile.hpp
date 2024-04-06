@@ -35,6 +35,14 @@ public:
 	 */
 	void save(const std::string &filename) const;
 
+	/**
+	 * @brief Check if the calibration is completed.
+	 *
+	 */
+	inline bool is_done() const {
+		return servo_profile.has_value() && tdma_profile.has_value();
+	}
+
 	/** Get/Set */
 
 	inline std::optional<servo> get_servo() const {
