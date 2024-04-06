@@ -17,7 +17,8 @@
 #include <shared/messages.hpp>
 #include <shared/tdma.hpp>
 
-static void prompt_enter();
+#include "common.hpp"
+
 static void tdma_slots();
 
 static const std::vector<menu_item> demos = {
@@ -25,15 +26,6 @@ static const std::vector<menu_item> demos = {
 
 void demo_submenu() {
 	show_menu("Car Demos", demos, true);
-}
-
-/**
- * @brief Prompt user to press any key.
- *
- */
-void prompt_enter() {
-	std::cout << "\nPress enter to exit." << std::flush;
-	std::getchar();
 }
 
 /**
