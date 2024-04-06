@@ -16,6 +16,7 @@
 #include <shared/menu.hpp>
 #include <shared/messages.hpp>
 #include <shared/tdma.hpp>
+#include <shared/utils.hpp>
 
 #include "common.hpp"
 

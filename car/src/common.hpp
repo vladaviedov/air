@@ -6,14 +6,6 @@
 
 #include "profile.hpp"
 
-/** Utils */
-
-/**
- * @brief Prompt user to press any key.
- *
- */
-void prompt_enter();
-
 /** Calibration profile */
 const std::string default_profile = "/etc/air/profile";
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)

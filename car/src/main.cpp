@@ -6,6 +6,7 @@
 #include <vector>
 
 #include <shared/menu.hpp>
+#include <shared/utils.hpp>
 
 #include "calibrate.hpp"
 #include "common.hpp"
