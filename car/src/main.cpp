@@ -13,7 +13,7 @@
 #include "demos.hpp"
 #include "profile.hpp"
 
-const std::string about =R"(AIR Car Controller
+const std::string about = R"(AIR Car Controller
 Copyright (C) 2024 Vladyslav Aviedov, Caio DaSilva, Scott Abramson
 
 This program is part of a project for GE1502 Cornerstone of Engineering at

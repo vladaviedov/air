@@ -5,14 +5,15 @@
 #include "demos.hpp"
 
 #include <atomic>
-#include <cstdlib>
 #include <future>
 #include <iostream>
 #include <memory>
 
 #include <driver/device.hpp>
 #include <driver/drf7020d20.hpp>
+#include <driver/motors.hpp>
 #include <driver/pinmap.hpp>
+#include <driver/servo.hpp>
 #include <shared/menu.hpp>
 #include <shared/messages.hpp>
 #include <shared/tdma.hpp>
@@ -21,9 +22,11 @@
 #include "common.hpp"
 
 static void tdma_slots();
+static void manual_drive();
 
 static const std::vector<menu_item> demos = {
-	{.text = "TDMA Slots", .action = &tdma_slots}};
+	{.text = "TDMA slots", .action = &tdma_slots},
+	{.text = "Manual drive", .action = &manual_drive}};
 
 void demo_submenu() {
 	show_menu("Car Demos", demos, true);
@@ -126,5 +129,105 @@ void tdma_slots() {
 		} else {
 			std::cout << "No response" << '\n';
 		}
+	}
+}
+
+void manual_drive() {
+	auto servo_profile = car_profile.get_servo();
+	if (!servo_profile.has_value()) {
+		std::cout << "No servo calibration data. Exiting...\n";
+		prompt_enter();
+		return;
+	}
+
+	// Init hardware
+	motor m_1(gpio_pins, RASPI_15, RASPI_13, RASPI_11);
+	motor m_2(gpio_pins, RASPI_33, RASPI_35, RASPI_37);
+	servo m_sv(gpio_pins, RASPI_32);
+
+	raw_tty();
+
+	std::cout << "Hardware initialized.\n";
+	std::cout << "Starting manual control.\n\n";
+
+	printf("%-25s %-25s\n", "Directional controls", "Speed controls");
+	printf("%-25s %-25s\n", "q w e", "u");
+	printf("%-25s\n", "  s  ");
+	printf("%-25s %-25s\n", "z x c", "j");
+	printf("\nHit space to exit\n");
+
+	uint32_t speed = 0.0F;
+	uint32_t servo = servo_profile->center;
+	direction dir = FORWARD;
+
+	while (true) {
+		if (speed == 0) {
+			m_1.stop();
+			m_2.stop();
+
+			printf("Current speed: stp; ");
+		} else {
+			m_1.set((float)speed, dir);
+			m_2.set((float)speed, dir);
+			m_sv.set(servo);
+
+			printf("Current speed: %03u; ", speed);
+		}
+
+		printf("Direction: %s ", dir == FORWARD ? "forw" : "back");
+		if (servo == servo_profile->max_left) {
+			printf("%-20s", "left  ");
+		} else if (servo == servo_profile->center) {
+			printf("%-20s", "center");
+		} else {
+			printf("%-20s", "right");
+		}
+
+		int input = std::getchar();
+
+		switch (input) {
+		case ' ':
+			restore_tty();
+			return;
+		case 'q':
+			dir = FORWARD;
+			servo = servo_profile->max_left;
+			break;
+		case 'w':
+			dir = FORWARD;
+			servo = servo_profile->center;
+			break;
+		case 'e':
+			dir = FORWARD;
+			servo = servo_profile->max_right;
+			break;
+		case 's':
+			speed = 0;
+			break;
+		case 'z':
+			dir = BACKWARD;
+			servo = servo_profile->max_left;
+			break;
+		case 'x':
+			dir = BACKWARD;
+			servo = servo_profile->center;
+			break;
+		case 'c':
+			dir = BACKWARD;
+			servo = servo_profile->max_right;
+			break;
+		case 'u':
+			if (speed < 100) {
+				speed += 10;
+			}
+			break;
+		case 'j':
+			if (speed > 0) {
+				speed -= 10;
+			}
+			break;
+		}
+
+		std::cout << '\r';
 	}
 }
