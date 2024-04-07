@@ -1,3 +1,7 @@
+/**
+ * @file src/messageworker.hpp
+ * @brief handler for control messages
+*/
 #pragma once
 
 #include <cstdint>
@@ -10,12 +14,32 @@ class message_worker {
 public:
 	message_worker(const std::shared_ptr<tdma> &tdma_handler_in);
 
+	/**
+	 * @brief awaits check in from car and sends out a check in
+	*/
 	void await_checkin();
+	/**
+	 * @brief receives request from car
+	 * @return pair of car id and desired position of car
+	*/
 	std::pair<std::string, uint32_t> await_request();
+	/**
+	 * @brief receives clear message from car and ends conversation
+	*/
 	void await_clear();
 
+	/**
+	 * @brief creates check in message
+	*/
 	std::string format_checkin();
+	/**
+	 * @brief creates unsupported message
+	*/
 	std::string format_unsupported();
+	/**
+	 * @param command response to car's request
+	 * @brief creates command message
+	*/
 	std::string format_command(const std::string &command);
 
 private:
