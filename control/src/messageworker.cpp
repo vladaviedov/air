@@ -1,7 +1,7 @@
 /**
  * @file src/messageworker.cpp
  * @brief handler for control messages
-*/
+ */
 
 #include "messageworker.hpp"
 
@@ -20,42 +20,40 @@ static constexpr std::string STANDBY = "SBY";
 static constexpr std::string CLEAR = "CLR";
 static constexpr std::string FINAL = "FIN";
 
+#define MESSAGE_TIMEOUT 4 /*amountof time to wait for message (in frames)*/
+
 message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in)
 	: tdma_handler(tdma_handler_in) {
 	control_id = get_id();
 }
 
-void message_worker::await_checkin() {
-	std::string rx_msg;
-	while (rx_msg.empty()) {
-		rx_msg = tdma_handler->rx_sync(UINT32_MAX);
-	}
+bool message_worker::await_checkin() {
+	std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT);
 
 	std::istringstream parts(rx_msg);
 	std::string header;
 	std::string check;
 
 	parts >> header;
-	parts >> check;
 
 	if (!validate_header(header)) {
 		tdma_handler->tx_sync(format_unsupported());
-		return;
+		return false;
 	}
 
+	parts >> check;
 	if (parts.eof() || check != "CHK") {
 		tdma_handler->tx_sync(format_command(STANDBY));
-		return;
+		return false;
 	}
 
 	tdma_handler->tx_sync(format_checkin());
+	return true;
 }
 
 std::pair<std::string, uint32_t> message_worker::await_request() {
-	std::string rx_msg;
-	while (rx_msg.empty()) {
-		rx_msg = tdma_handler->rx_sync(UINT32_MAX);
-	}
+	std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT);
+	// how should I handle if message isn't received here?
 
 	std::istringstream parts(rx_msg);
 
@@ -70,24 +68,22 @@ std::pair<std::string, uint32_t> message_worker::await_request() {
 
 	request.c_str();
 	uint8_t current_pos =
-		(uint8_t)request[1]; /*TO-DO: this may need to be tested*/
-	uint8_t desired_pos = (uint8_t)request[2];
+		(uint8_t)request[0]; /*TO-DO: this may need to be tested*/
+	uint8_t desired_pos = (uint8_t)request[1];
 
 	return std::pair<std::string, uint8_t>(car_id, desired_pos);
 }
 
-void message_worker::await_clear() {
-	std::string rx_msg;
-	while (rx_msg.empty()) {
-		rx_msg = tdma_handler->rx_sync(UINT32_MAX);
-	}
+bool message_worker::await_clear() {
+	std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT);
 
 	if (rx_msg != CLEAR) {
 		// TO-DO: handle error
-		return;
+		return false;
 	}
 
 	tdma_handler->tx_sync(FINAL);
+	return true;
 }
 
 std::string message_worker::format_checkin() {
