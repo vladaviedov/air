@@ -12,7 +12,8 @@
 #include <shared/tdma.hpp>
 
 int main() {
-	auto rf_test = std::make_shared<drf7020d20>(gpio_pins, RASPI_12, RASPI_11, RASPI_7, 0);
+	auto rf_test =
+		std::make_shared<drf7020d20>(gpio_pins, RASPI_12, RASPI_11, RASPI_7, 0);
 
 	rf_test->enable();
 	rf_test->configure(
@@ -22,7 +23,10 @@ int main() {
 
 	while (true) {
 		std::cout << tdma_test.rx_sync(1000) << '\n';
-		std::cout << std::chrono::system_clock::now().time_since_epoch().count() / 1000000 << '\n';
+		std::cout
+			<< std::chrono::system_clock::now().time_since_epoch().count() /
+				   1000000
+			<< '\n';
 	}
 
 	return 0;

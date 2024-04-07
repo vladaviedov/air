@@ -1,7 +1,7 @@
 /**
  * @file src/messageworker.cpp
  * @brief Message handler for car
-*/
+ */
 #include "messageworker.hpp"
 
 #include <sstream>
@@ -21,9 +21,10 @@ message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in)
 }
 
 void message_worker::await_checkin() {
-	tdma_handler->tx_sync(format_checkin()); // send check in 
+	tdma_handler->tx_sync(format_checkin()); // send check in
 
-	std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT); // receive check in
+	std::string rx_msg =
+		tdma_handler->rx_sync(MESSAGE_TIMEOUT); // receive check in
 
 	/*
 	std::istringstream parts(rx_msg);
