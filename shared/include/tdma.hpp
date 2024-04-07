@@ -64,7 +64,7 @@ public:
 	/**
 	 * @brief get the timeslot of device
 	 */
-	inline int32_t get_timeslot() {
+	inline uint32_t get_timeslot() {
 		return slot;
 	}
 

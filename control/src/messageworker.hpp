@@ -21,7 +21,7 @@ public:
 	/**
 	 * @brief awaits check in from car and sends out a check in
 	*/
-	void await_checkin();
+	bool await_checkin();
 	/**
 	 * @brief receives request from car
 	 * @return pair of car id and desired position of car
