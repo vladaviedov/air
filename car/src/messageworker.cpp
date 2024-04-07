@@ -13,7 +13,7 @@ static constexpr std::string MSG_HEADER = "AIRv1.0";
 static constexpr std::string CHECK = "CHK";
 static constexpr std::string ACKNOWLEDGE = "ACK";
 
-#define MESSAGE_TIMEOUT 100 /*time to wait for message (in frames)*/
+#define MESSAGE_TIMEOUT 4 /*time to wait for message (in frames)*/
 
 message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in)
 	: tdma_handler(tdma_handler_in) {
@@ -38,10 +38,10 @@ std::string message_worker::format_checkin() {
 }
 
 std::string message_worker::format_request(const uint8_t &desired_pos) {
-	uint8_t request_data = current_pos | desired_pos;
 	std::string formatted_request;
 	formatted_request.append(*car_id + " ");
-	formatted_request.push_back(request_data);
+	formatted_request.push_back(current_pos);
+	formatted_request.push_back(desired_pos);
 	return formatted_request;
 }
 
