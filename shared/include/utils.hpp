@@ -26,3 +26,9 @@ void raw_tty();
  * @note Resets signal handlers.
  */
 void restore_tty();
+
+/**
+ * @brief Print program and license information.
+ *
+ */
+void print_about();
