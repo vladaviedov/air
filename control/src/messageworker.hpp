@@ -12,6 +12,10 @@
 
 class message_worker {
 public:
+	/**
+	 * @brief constructor for control message worker
+	 * @param[in] tdma_handler_in
+	*/
 	message_worker(const std::shared_ptr<tdma> &tdma_handler_in);
 
 	/**
