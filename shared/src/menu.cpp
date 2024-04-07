@@ -15,18 +15,6 @@
 #include <termios.h>
 #include <unistd.h>
 
-// Generation command: figlet 'AIRv1.0' -f slant -k -c | boxes -d ansi-rounded
-static const std::string BANNER =
-	R"(                   ╭───────────────────────────────────────────╮
-                   │     ___     ____ ____         ___   ____  │
-                   │    /   |   /  _// __ \ _   __<  /  / __ \ │
-                   │   / /| |   / / / /_/ /| | / // /  / / / / │
-                   │  / ___ | _/ / / _, _/ | |/ // /_ / /_/ /  │
-                   │ /_/  |_|/___//_/ |_|  |___//_/(_)\____/   │
-                   │                                           │
-                   ╰───────────────────────────────────────────╯
-	)";
-
 static constexpr std::string CLEAR_TTY = "\033[2J\033[1;1H";
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
@@ -47,7 +35,6 @@ void show_menu(const std::string &heading,
 		auto digits = (uint32_t)std::log10(items.size() + 1) + 1;
 
 		// Print list
-		std::cout << BANNER << "\n";
 		std::cout << heading << "\n\n";
 		uint32_t index = 0;
 		for (index = 0; index < items.size(); index++) {
