@@ -20,15 +20,18 @@ public:
 
 	/**
 	 * @brief awaits check in from car and sends out a check in
+	 * @return true if check in is sent successfully
 	 */
 	bool await_checkin();
 	/**
 	 * @brief receives request from car
 	 * @return pair of car id and desired position of car
 	 */
+
 	std::pair<std::string, uint32_t> await_request();
 	/**
 	 * @brief receives clear message from car and ends conversation
+	 * @return true if clear is sent successfully
 	 */
 	bool await_clear();
 
@@ -36,10 +39,12 @@ public:
 	 * @brief creates check in message
 	 */
 	std::string format_checkin();
+
 	/**
 	 * @brief creates unsupported message
 	 */
 	std::string format_unsupported();
+
 	/**
 	 * @param command response to car's request
 	 * @brief creates command message
