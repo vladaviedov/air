@@ -12,7 +12,12 @@
 
 class message_worker {
 public:
+	/**
+	 * @brief constructor for car message worker
+	 * @param[in] tdma_handler_in
+	 */
 	message_worker(const std::shared_ptr<tdma> &tdma_handler_in);
+
 	/**
 	 * @brief send and receive check in from control
 	 * @return control id
@@ -21,17 +26,22 @@ public:
 
 	/**
 	 * @brief create check in message
+	 * @return check in message
 	 */
 	std::string format_checkin();
+
 	/**
-	 * @param desired_pos position car is requesting to go
+	 * @param[in] desired_pos position car is requesting to go
 	 * @brief creates request for car with id, current position, and desired
 	 * position
+	 * @return request message
 	 */
 	std::string format_request(const uint8_t &desired_pos);
+
 	/**
-	 * @param command given by control
+	 * @param[in] command given by control
 	 * @brief acknowledges command given by control
+	 * @return acknowledge message
 	 */
 	std::string format_acknowledge(const std::string &command);
 
