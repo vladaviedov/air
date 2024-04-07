@@ -20,26 +20,17 @@ message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in)
 	car_id = get_id();
 }
 
-void message_worker::await_checkin() {
+std::string message_worker::await_checkin() {
 	tdma_handler->tx_sync(format_checkin()); // send check in
 
-	std::string rx_msg =
+	std::string control_id =
 		tdma_handler->rx_sync(MESSAGE_TIMEOUT); // receive check in
 
-	/*
-	std::istringstream parts(rx_msg);
-	std::string header;
-	std::string check;
+	if (!validate_id(control_id)) {
+		throw std::invalid_argument("Invalid id received");
+	}
 
-	parts >> header;
-	if (parts.eof() || !validate_header(header)) {
-		throw std::invalid_argument("Header is invalid");
-	}
-	parts >> check;
-	if (!parts.eof() || check != CHECK) {
-		throw std::invalid_argument("Check is invalid");
-	}
-	*/
+	return control_id
 }
 
 std::string message_worker::format_checkin() {

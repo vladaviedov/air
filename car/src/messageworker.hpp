@@ -15,8 +15,9 @@ public:
 	message_worker(const std::shared_ptr<tdma> &tdma_handler_in);
 	/**
 	 * @brief send and receive check in from control
+	 * @return control id
 	 */
-	void await_checkin();
+	std::string await_checkin();
 
 	/**
 	 * @brief create check in message
