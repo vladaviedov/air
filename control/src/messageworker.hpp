@@ -1,0 +1,24 @@
+#pragma once
+
+#include <cstdint>
+#include <stdlib.h>
+#include <string>
+
+#include <shared/tdma.hpp>
+
+class message_worker {
+public:
+	message_worker(const std::shared_ptr<tdma> &tdma_handler_in);
+
+	void await_checkin();
+	std::pair<std::string, uint32_t> await_request();
+	void await_clear();
+
+	std::string format_checkin();
+	std::string format_unsupported();
+	std::string format_command(const std::string &command);
+
+private:
+	std::shared_ptr<tdma> tdma_handler;
+	std::shared_ptr<std::string> control_id;
+};
