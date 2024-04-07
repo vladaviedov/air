@@ -11,7 +11,9 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
+extern "C" {
 #include <i2c/smbus.h>
+}
 
 i2c::i2c(uint8_t addr, int adapter_nr)
 	: dev_addr(addr) {
@@ -32,8 +34,12 @@ i2c::~i2c() {
 	close(fd);
 }
 
-int i2c::read(uint8_t reg, uint8_t *data) const {
-	return i2c_smbus_read_block_data(fd, reg, data);
+uint8_t i2c::read_byte(uint8_t reg) const {
+	return i2c_smbus_read_byte_data(fd, reg);
+}
+
+uint16_t i2c::read_word(uint8_t reg) const {
+	return i2c_smbus_read_word_data(fd, reg);
 }
 
 bool i2c::write(uint8_t reg, const uint8_t *data, uint8_t size) const {

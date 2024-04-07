@@ -11,21 +11,28 @@ public:
 	/**
 	 * @brief Constructor. Initializes I2C device.
 	 *
-	 * @param[in] addr - device address of the I2C slave device.
+	 * @param[in] addr - Device address of the I2C slave device.
+	 * @param[in] adapter_nr - The number of the I2C adapter.
 	 */
 	i2c(uint8_t addr, int adapter_nr);
 
 	~i2c();
 
 	/**
-	 * @brief Read up to 32 bytes.
+	 * @brief Read a byte.
 	 *
 	 * @param[in] reg - Register to read from.
-	 * @param[out] data - Data buffer to write to.
-	 * @param[in] size - Size of data buffer.
-	 * @return number of bytes read.
+	 * @return The byte that was read.
 	 */
-	int read(uint8_t reg, uint8_t *data) const;
+	uint8_t read_byte(uint8_t reg) const;
+
+	/**
+	 * @brief Read a word.
+	 *
+	 * @param[in] reg - Register to read from.
+	 * @return The word that was read.
+	 */
+	uint16_t read_word(uint8_t reg) const;
 
 	/**
 	 * @brief Write up to 32 bytes.

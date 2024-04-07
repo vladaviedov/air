@@ -43,7 +43,7 @@ public:
 	 * @param[in] speed - Motor speed (1-100).
 	 * @param[in] dir - Motor direction.
 	 */
-	void set(uint32_t speed, direction dir);
+	void set(float speed, direction dir);
 
 	/**
 	 * @brief Invert motor direction when using 'set'.

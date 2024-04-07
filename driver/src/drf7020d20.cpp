@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <cstring>
 #include <fcntl.h>
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -48,6 +49,10 @@ drf7020d20::drf7020d20(const gpiod::chip &chip,
 }
 
 drf7020d20::~drf7020d20() {
+	if (rejecter) {
+		rejecter_off();
+	}
+
 	en.release();
 	aux.release();
 	set.release();
@@ -63,6 +68,35 @@ void drf7020d20::disable() {
 	en.set_value(0);
 	std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	enable_flag = false;
+}
+
+void drf7020d20::rejecter_on() {
+	if (rejecter_thread != nullptr) {
+		return;
+	}
+
+	auto executor = [&]() {
+		while (rejecter) {
+			while (rejecter_standby) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			}
+
+			if (aux.event_wait(std::chrono::milliseconds(1))) {
+				// Clear events and data buffer
+				aux.event_read();
+				serial.read();
+			}
+		}
+	};
+
+	rejecter = true;
+	rejecter_thread = std::make_unique<std::thread>(executor);
+}
+
+void drf7020d20::rejecter_off() {
+	rejecter = false;
+	rejecter_thread->join();
+	rejecter_thread.reset();
 }
 
 bool drf7020d20::configure(uint32_t freq,
@@ -133,13 +167,15 @@ std::string drf7020d20::receive(std::chrono::milliseconds timeout) const {
 		throw std::logic_error("Radio is disabled, cannot receive");
 	}
 
-	// AUX will fall when data is ready to read
-	if (!aux.event_wait(timeout)) {
+	rejecter_standby = true;
+	bool received = aux.event_wait(timeout);
+	rejecter_standby = false;
+
+	if (!received) {
 		return "";
 	}
 
-	// Clear event
+	// Clear event & read data
 	aux.event_read();
-
 	return serial.read();
 }

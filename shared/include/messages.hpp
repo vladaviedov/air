@@ -17,4 +17,4 @@ struct msg_t {
 
 bool validate_header(const std::string &str);
 bool validate_id(const std::string &str);
-const std::shared_ptr<std::string> &read_id();
+const std::shared_ptr<std::string> &get_id();

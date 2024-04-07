@@ -17,7 +17,7 @@ static constexpr std::string FINAL = "FIN";
 
 message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in)
 	: tdma_handler(tdma_handler_in) {
-	control_id = read_id();
+	control_id = get_id();
 }
 
 void message_worker::await_checkin() {
