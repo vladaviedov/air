@@ -1,7 +1,7 @@
 /**
  * @file src/messageworker.cpp
  * @brief handler for control messages
-*/
+ */
 
 #include "messageworker.hpp"
 
@@ -28,7 +28,6 @@ message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in)
 }
 
 bool message_worker::await_checkin() {
-	
 	std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT);
 
 	std::istringstream parts(rx_msg);
@@ -53,10 +52,9 @@ bool message_worker::await_checkin() {
 }
 
 std::pair<std::string, uint32_t> message_worker::await_request() {
-	
-	std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT); 
-	//how should I handle if message isn't received here?
-	
+	std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT);
+	// how should I handle if message isn't received here?
+
 	std::istringstream parts(rx_msg);
 
 	std::string car_id;
@@ -77,7 +75,6 @@ std::pair<std::string, uint32_t> message_worker::await_request() {
 }
 
 bool message_worker::await_clear() {
-	
 	std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT);
 
 	if (rx_msg != CLEAR) {
