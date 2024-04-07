@@ -37,7 +37,7 @@ std::string message_worker::format_checkin() {
 	return MSG_HEADER + " " + CHECK;
 }
 
-std::string message_worker::format_request(uint8_t desired_pos) {
+std::string message_worker::format_request(const uint8_t &desired_pos) {
 	uint8_t request_data = current_pos | desired_pos;
 	std::string formatted_request;
 	formatted_request.append(*car_id + " ");
@@ -45,6 +45,6 @@ std::string message_worker::format_request(uint8_t desired_pos) {
 	return formatted_request;
 }
 
-std::string message_worker::format_acknowledge(std::string command) {
+std::string message_worker::format_acknowledge(const std::string &command) {
 	return ACKNOWLEDGE + " " + command;
 }

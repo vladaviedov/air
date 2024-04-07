@@ -28,12 +28,12 @@ public:
 	 * @brief creates request for car with id, current position, and desired
 	 * position
 	 */
-	std::string format_request(uint8_t desired_pos);
+	std::string format_request(const uint8_t &desired_pos);
 	/**
 	 * @param command given by control
 	 * @brief acknowledges command given by control
 	 */
-	std::string format_acknowledge(std::string command);
+	std::string format_acknowledge(const std::string &command);
 
 private:
 	std::shared_ptr<tdma> tdma_handler;
