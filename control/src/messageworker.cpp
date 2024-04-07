@@ -28,6 +28,7 @@ message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in)
 }
 
 bool message_worker::await_checkin() {
+	
 	std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT);
 
 	std::istringstream parts(rx_msg);
