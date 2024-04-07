@@ -25,10 +25,10 @@ public:
 	bool await_checkin();
 	/**
 	 * @brief receives request from car
-	 * @return pair of car id and desired position of car
+	 * @return pair of current and desired position of car
 	 */
 
-	std::pair<std::string, uint32_t> await_request();
+	std::pair<uint8_t, uint8_t> await_request();
 
 	/**
 	 * @brief receives clear message from car and ends conversation
@@ -58,6 +58,14 @@ public:
 	*/
 	inline void send_command(const std::string &command) {
 		tdma_handler->tx_sync(format_command(command));
+	}
+
+	/**
+	 * @brief get timeslot of car
+	 * @return timeslot
+	*/
+	inline uint32_t get_timeslot() {
+		return tdma_handler->get_timeslot();
 	}
 
 private:

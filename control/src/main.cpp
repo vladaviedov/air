@@ -19,15 +19,5 @@ int main() {
 	rf_test->configure(
 		433900, drf7020d20::DR9600, 9, drf7020d20::DR9600, drf7020d20::NONE);
 
-	tdma tdma_test(rf_test, 0, tdma::AIR_A);
-
-	while (true) {
-		std::cout << tdma_test.rx_sync(1000) << '\n';
-		std::cout
-			<< std::chrono::system_clock::now().time_since_epoch().count() /
-				   1000000
-			<< '\n';
-	}
-
 	return 0;
 }

@@ -52,7 +52,7 @@ bool message_worker::await_checkin() {
 	return true;
 }
 
-std::pair<std::string, uint32_t> message_worker::await_request() {
+std::pair<uint8_t, uint8_t> message_worker::await_request() {
 	std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT);
 	// how should I handle if message isn't received here?
 
@@ -72,7 +72,7 @@ std::pair<std::string, uint32_t> message_worker::await_request() {
 		(uint8_t)request[0]; /*TO-DO: this may need to be tested*/
 	uint8_t desired_pos = (uint8_t)request[1];
 
-	return std::pair<std::string, uint8_t>(car_id, desired_pos);
+	return std::pair<uint8_t, uint8_t>(current_pos, desired_pos);
 }
 
 bool message_worker::await_clear() {
