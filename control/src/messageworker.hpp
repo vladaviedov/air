@@ -29,6 +29,7 @@ public:
 	 */
 
 	std::pair<std::string, uint32_t> await_request();
+
 	/**
 	 * @brief receives clear message from car and ends conversation
 	 * @return true if clear is sent successfully
@@ -50,6 +51,14 @@ public:
 	 * @brief creates command message
 	 */
 	std::string format_command(const std::string &command);
+
+	/**
+	 * @brief sends command to car
+	 * @param[in] command 
+	*/
+	inline void send_command(const std::string &command) {
+		tdma_handler->tx_sync(format_command(command));
+	}
 
 private:
 	std::shared_ptr<tdma> tdma_handler;
