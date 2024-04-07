@@ -29,6 +29,8 @@ motor::motor(const gpiod::chip &chip,
 		.request_type = gpiod::line_request::DIRECTION_OUTPUT,
 		.flags = 0,
 	});
+
+	stop();
 }
 
 motor::~motor() {
