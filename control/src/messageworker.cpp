@@ -53,11 +53,10 @@ bool message_worker::await_checkin() {
 }
 
 std::pair<std::string, uint32_t> message_worker::await_request() {
-	std::string rx_msg;
-	while (rx_msg.empty()) {
-		rx_msg = tdma_handler->rx_sync(UINT32_MAX);
-	}
-
+	
+	std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT); 
+	//how should I handle if message isn't received here?
+	
 	std::istringstream parts(rx_msg);
 
 	std::string car_id;
@@ -77,18 +76,17 @@ std::pair<std::string, uint32_t> message_worker::await_request() {
 	return std::pair<std::string, uint8_t>(car_id, desired_pos);
 }
 
-void message_worker::await_clear() {
-	std::string rx_msg;
-	while (rx_msg.empty()) {
-		rx_msg = tdma_handler->rx_sync(UINT32_MAX);
-	}
+bool message_worker::await_clear() {
+	
+	std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT);
 
 	if (rx_msg != CLEAR) {
 		// TO-DO: handle error
-		return;
+		return false;
 	}
 
 	tdma_handler->tx_sync(FINAL);
+	return true;
 }
 
 std::string message_worker::format_checkin() {

@@ -30,7 +30,7 @@ public:
 	/**
 	 * @brief receives clear message from car and ends conversation
 	*/
-	void await_clear();
+	bool await_clear();
 
 	/**
 	 * @brief creates check in message
