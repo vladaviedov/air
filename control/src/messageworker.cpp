@@ -1,3 +1,8 @@
+/**
+ * @file src/messageworker.cpp
+ * @brief handler for control messages
+*/
+
 #include "messageworker.hpp"
 
 #include <chrono>
