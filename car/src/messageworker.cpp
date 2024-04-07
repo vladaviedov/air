@@ -30,7 +30,7 @@ std::string message_worker::await_checkin() {
 		throw std::invalid_argument("Invalid id received");
 	}
 
-	return control_id
+	return control_id;
 }
 
 std::string message_worker::format_checkin() {
