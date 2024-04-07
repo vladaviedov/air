@@ -1,7 +1,5 @@
 #include "messageworker.hpp"
 
-
-
 #include <chrono>
 #include <fstream>
 #include <sstream>

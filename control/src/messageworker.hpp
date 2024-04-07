@@ -6,14 +6,12 @@
 
 #include <shared/tdma.hpp>
 
-
-
 class message_worker {
 public:
 	message_worker(const std::shared_ptr<tdma> &tdma_handler_in);
 
 	void await_checkin();
-	std::pair<std::string, uint32_t> await_request(); 
+	std::pair<std::string, uint32_t> await_request();
 	void await_clear();
 
 	std::string format_checkin();
