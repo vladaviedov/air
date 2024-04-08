@@ -44,7 +44,8 @@ public:
 	 *
 	 */
 	inline bool is_done() const {
-		return servo_profile.has_value() && tdma_profile.has_value();
+		return servo_profile.has_value() && tdma_profile.has_value() &&
+			   us_profile.has_value();
 	}
 
 	/** Get/Set */

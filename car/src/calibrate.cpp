@@ -4,7 +4,7 @@
  */
 #include "calibrate.hpp"
 
-#include <cmath>
+#include <chrono>
 #include <cstdint>
 #include <cstdio>
 #include <exception>
@@ -14,10 +14,12 @@
 #include <vector>
 
 #include <driver/device.hpp>
+#include <driver/drf7020d20.hpp>
 #include <driver/hcsr04.hpp>
 #include <driver/pinmap.hpp>
 #include <driver/servo.hpp>
 #include <shared/menu.hpp>
+#include <shared/tdma.hpp>
 #include <shared/utils.hpp>
 
 #include "common.hpp"
@@ -39,10 +41,13 @@ static std::optional<uint32_t> servo_value_select(
 
 static void calibrate_us();
 
+static void calibrate_tdma();
+
 static const std::vector<menu_item> calib_options = {
 	{.text = "Print calibration", .action = &print_calibration},
 	{.text = "Calibrate servo", .action = &calibrate_servo},
 	{.text = "Calibrate ultrasonic", .action = &calibrate_us},
+	{.text = "Calibrate TDMA", .action = &calibrate_tdma},
 	{.text = "Reload default profile", .action = &load_default},
 	{.text = "Load profile from...", .action = &load_from},
 	{.text = "Save default profile", .action = &save_default},
@@ -160,6 +165,7 @@ void print_calibration() {
 		std::cout << "TDMA:\n\n";
 		std::cout << "TX offset: " << tdma_profile->rx_offset_ms << " ms\n";
 		std::cout << "RX offset: " << tdma_profile->tx_offset_ms << " ms\n";
+		std::cout << '\n';
 	} else {
 		std::cout << "TDMA: not defined\n";
 	}
@@ -345,5 +351,99 @@ void calibrate_us() {
 	car_profile.set_us(new_profile);
 
 	restore_tty();
+	prompt_enter();
+}
+
+void calibrate_tdma() {
+	auto rf_module = std::make_shared<drf7020d20>(
+		gpio_pins, RASPI_12, RASPI_16, RASPI_18, 0);
+
+	// Configure RF Chip
+	std::cout << "Configuring RF Chip... " << std::flush;
+	rf_module->enable();
+	if (!rf_module->configure(FREQ_CALIBRATION, drf7020d20::DR9600, 9,
+			drf7020d20::DR9600, drf7020d20::NONE)) {
+		std::cout << "Failed\n";
+		prompt_enter();
+		return;
+	}
+	std::cout << "Success\n";
+
+	auto current = car_profile.get_tdma();
+	profile::tdma new_profile = {0, -5};
+
+	// Print current values
+	if (current.has_value()) {
+		std::cout << "Current values:\n\n";
+		std::cout << "TX: " << current->tx_offset_ms << '\n';
+		std::cout << "RX: " << current->rx_offset_ms << '\n';
+		new_profile = current.value();
+	} else {
+		std::cout << "No calibration data\n";
+	}
+
+	tdma calib_slot(rf_module, 0, tdma::AIR_A);
+	calib_slot.rx_set_offset(new_profile.rx_offset_ms);
+
+	raw_tty();
+	std::cout
+		<< "Ready to calibrate. Put control into calibration assistance.\n";
+	std::cout << "Hit space to continue, 's' to exit\n";
+
+	while (true) {
+		int input = std::getchar();
+		if (input == 's') {
+			restore_tty();
+			prompt_enter();
+			return;
+		}
+		if (input == ' ') {
+			restore_tty();
+			break;
+		}
+	}
+
+	std::cout << "Starting calibration...\n";
+
+	int32_t okay_msgs = 0;
+	while (okay_msgs < 5) {
+		calib_slot.tx_set_offset(new_profile.tx_offset_ms);
+
+		int32_t sent = calib_slot.tx_ts_sync();
+		std::cout << sent << '\n';
+		auto response = rf_module->receive(std::chrono::milliseconds(500));
+		if (response.empty()) {
+			std::cout << "Calibration failure: helper did not respond\n";
+			prompt_enter();
+			return;
+		}
+
+		int32_t res = std::stoi(response);
+		std::cout << res << '\n';
+		int32_t diff = res - sent;
+
+		// Adjust if second rollover
+		if (std::abs(diff) > 500) {
+			res = res + 1000;
+			diff = res - sent;
+		}
+
+		std::cout << "Error: " << diff << "ms\n";
+		if (std::abs(diff) < 5) {
+			okay_msgs++;
+		} else {
+			okay_msgs = 0;
+			new_profile.tx_offset_ms -= diff;
+		}
+	}
+
+	std::cout << "Calibration completed.\n";
+
+	std::cout << "\nNew values:\n\n";
+	std::cout << "TX: " << new_profile.tx_offset_ms << '\n';
+	std::cout << "RX: " << new_profile.rx_offset_ms << '\n';
+
+	car_profile.set_tdma(new_profile);
+
 	prompt_enter();
 }

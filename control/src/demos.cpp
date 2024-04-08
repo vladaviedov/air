@@ -39,8 +39,8 @@ void tdma_control() {
 	// Configure RF Chip
 	std::cout << "Configuring RF Chip... " << std::flush;
 	rf_test->enable();
-	if (!rf_test->configure(433900, drf7020d20::DR9600, 9, drf7020d20::DR9600,
-			drf7020d20::NONE)) {
+	if (!rf_test->configure(FREQ_DEMO, drf7020d20::DR9600, 9,
+			drf7020d20::DR9600, drf7020d20::NONE)) {
 		std::cout << "Failed\n";
 		prompt_enter();
 		return;

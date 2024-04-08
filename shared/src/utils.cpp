@@ -4,6 +4,7 @@
  */
 #include "utils.hpp"
 
+#include <chrono>
 #include <csignal>
 #include <cstdio>
 #include <iostream>
@@ -67,6 +68,11 @@ void restore_tty() {
 void print_about() {
 	std::cout << ABOUT;
 	prompt_enter();
+}
+
+int32_t generate_ms() {
+	auto timestamp = std::chrono::system_clock::now();
+	return (int32_t)(timestamp.time_since_epoch().count() / 1000000 % 1000);
 }
 
 /**
