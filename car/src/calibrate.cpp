@@ -34,9 +34,12 @@ static void calibrate_servo();
 static std::optional<uint32_t> servo_value_select(
 	servo &servo, uint32_t start_value);
 
+static void calibrate_us();
+
 static const std::vector<menu_item> calib_options = {
 	{.text = "Print calibration", .action = &print_calibration},
 	{.text = "Calibrate servo", .action = &calibrate_servo},
+	{.text = "Calibrate ultrasonic", .action = &calibrate_us},
 	{.text = "Reload default profile", .action = &load_default},
 	{.text = "Load profile from...", .action = &load_from},
 	{.text = "Save default profile", .action = &save_default},
@@ -137,6 +140,7 @@ void save(const std::string &to_file) {
 void print_calibration() {
 	auto servo_profile = car_profile.get_servo();
 	auto tdma_profile = car_profile.get_tdma();
+	auto us_profile = car_profile.get_us();
 
 	std::cout << "----------\n";
 	if (servo_profile.has_value()) {
@@ -155,6 +159,14 @@ void print_calibration() {
 		std::cout << "RX offset: " << tdma_profile->tx_offset_ms << " ms\n";
 	} else {
 		std::cout << "TDMA: not defined\n";
+	}
+
+	if (us_profile.has_value()) {
+
+		std::cout << "Ultrasonic:\n\n";
+		std::cout << "Value threshold: " << us_profile->threshold << '\n';
+	} else {
+		std::cout << "Ultrasonic: not defined\n";
 	}
 	std::cout << "----------\n";
 
@@ -261,4 +273,12 @@ std::optional<uint32_t> servo_value_select(servo &servo, uint32_t value) {
 
 	std::cout << '\n';
 	return std::nullopt;
+}
+
+/**
+ * @brief Calibrate ultrasonic sensor.
+ *
+ */
+void calibrate_us() {
+	// TODO: implement
 }

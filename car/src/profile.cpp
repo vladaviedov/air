@@ -21,6 +21,10 @@ static constexpr std::string CHECK_TDMA = "[tdma]";
 static constexpr std::string CHECK_TDMA_TX_OFFSET_MS = "tx";
 static constexpr std::string CHECK_TDMA_RX_OFFSET_MS = "rx";
 
+// File parsing: us profile
+static constexpr std::string CHECK_US = "[us]";
+static constexpr std::string CHECK_US_THRESHOLD = "threshold";
+
 template<typename T>
 static void load_field(
 	std::ifstream &file, const std::string &check, T &destination);
@@ -33,6 +37,7 @@ void profile::load(const std::string &filename) {
 
 	std::optional<servo> servo_load = std::nullopt;
 	std::optional<tdma> tdma_load = std::nullopt;
+	std::optional<us> us_load = std::nullopt;
 
 	std::string line;
 	while (std::getline(file, line)) {
@@ -49,10 +54,16 @@ void profile::load(const std::string &filename) {
 			load_field(file, CHECK_TDMA_TX_OFFSET_MS, tdma_load->tx_offset_ms);
 			load_field(file, CHECK_TDMA_RX_OFFSET_MS, tdma_load->rx_offset_ms);
 		}
+		if (line == CHECK_US) {
+			us_load = std::make_optional<us>();
+
+			load_field(file, CHECK_US_THRESHOLD, us_load->threshold);
+		}
 	}
 
 	servo_profile = servo_load;
 	tdma_profile = tdma_load;
+	us_profile = us_load;
 }
 
 void profile::save(const std::string &filename) const {
@@ -74,6 +85,10 @@ void profile::save(const std::string &filename) const {
 			 << '\n';
 		file << CHECK_TDMA_RX_OFFSET_MS << ' ' << tdma_profile->tx_offset_ms
 			 << '\n';
+	}
+	if (us_profile.has_value()) {
+		file << CHECK_US << '\n';
+		file << CHECK_US_THRESHOLD << ' ' << us_profile->threshold << '\n';
 	}
 }
 
