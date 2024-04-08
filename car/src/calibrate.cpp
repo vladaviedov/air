@@ -4,7 +4,9 @@
  */
 #include "calibrate.hpp"
 
+#include <cmath>
 #include <cstdint>
+#include <cstdio>
 #include <exception>
 #include <iostream>
 #include <optional>
@@ -12,6 +14,7 @@
 #include <vector>
 
 #include <driver/device.hpp>
+#include <driver/hcsr04.hpp>
 #include <driver/pinmap.hpp>
 #include <driver/servo.hpp>
 #include <shared/menu.hpp>
@@ -162,7 +165,6 @@ void print_calibration() {
 	}
 
 	if (us_profile.has_value()) {
-
 		std::cout << "Ultrasonic:\n\n";
 		std::cout << "Value threshold: " << us_profile->threshold << '\n';
 	} else {
@@ -280,5 +282,68 @@ std::optional<uint32_t> servo_value_select(servo &servo, uint32_t value) {
  *
  */
 void calibrate_us() {
-	// TODO: implement
+	auto current = car_profile.get_us();
+	profile::us new_profile = {0};
+	raw_tty();
+
+	// Print current values
+	if (current.has_value()) {
+		std::cout << "Current value: " << current->threshold << '\n';
+		new_profile = current.value();
+	} else {
+		std::cout << "No calibration data\n";
+	}
+
+	hc_sr04 sensor(gpio_pins, RASPI_29, RASPI_31);
+
+	uint32_t order = 0;
+	uint32_t increment = 1;
+
+	std::cout << "\nStarting threshold value calibration...\n";
+	std::cout << "'w' - increment, 's' - decrement\n"
+			  << "'a' - lesser increment, 'd' - greater increment\n"
+			  << "'e' - finish calibration\n";
+
+	while (true) {
+		printf("Value: %10u; Increment: 10^%u", new_profile.threshold, order);
+		int input = std::getchar();
+		if (input == 'e') {
+			break;
+		}
+
+		switch (input) {
+		case 'w':
+			new_profile.threshold += increment;
+			break;
+		case 's':
+			if (new_profile.threshold <= increment) {
+				new_profile.threshold = 0;
+			} else {
+				new_profile.threshold -= increment;
+			}
+			break;
+		case 'a':
+			if (order > 0) {
+				order--;
+				increment /= 10;
+			}
+			break;
+		case 'd':
+			if (order < 9) {
+				order++;
+				increment *= 10;
+			}
+			break;
+		}
+
+		std::putchar('\r');
+	}
+
+	std::cout << "\nNew values:\n\n";
+	std::cout << "Threshold: " << new_profile.threshold << '\n';
+
+	car_profile.set_us(new_profile);
+
+	restore_tty();
+	prompt_enter();
 }
