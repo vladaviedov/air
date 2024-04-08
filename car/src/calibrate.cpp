@@ -308,10 +308,14 @@ void calibrate_us() {
 	std::cout << "\nStarting threshold value calibration...\n";
 	std::cout << "'w' - increment, 's' - decrement\n"
 			  << "'a' - lesser increment, 'd' - greater increment\n"
-			  << "'e' - finish calibration\n";
+			  << "'e' - finish calibration, ' ' - update\n";
 
+	printf("%10s %4s %10s %6s\n", "Threshold", "Increment", "Value", "Status");
 	while (true) {
-		printf("Value: %10u; Increment: 10^%u", new_profile.threshold, order);
+		auto reading = sensor.pulse();
+		// NOLINTNEXTLINE: clang is being silly
+		printf("%10u 10^%u %10llu %s", new_profile.threshold, order, reading,
+			reading < new_profile.threshold ? "detected    " : "not detected");
 		int input = std::getchar();
 		if (input == 'e') {
 			break;
