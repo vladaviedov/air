@@ -36,6 +36,13 @@ public:
 	bool tx_sync(const std::string &msg) const;
 
 	/**
+	 * @brief Transmit the current timestamp accounting for offset.
+	 *
+	 * @return The timestamp milliseconds sent.
+	 */
+	int32_t tx_ts_sync() const;
+
+	/**
 	 * @brief Receive message synchronously.
 	 *
 	 * @param[in] max_frames - Maximum frames before timeout
@@ -62,6 +69,11 @@ public:
 	}
 
 private:
+	/**
+	 * @brief Sleep until the next allowed time to transmit/received.
+	 *
+	 * @param[in] offset_ms - Offset.
+	 */
 	void sleep_until_next_slot(int32_t offset_ms) const;
 
 	std::shared_ptr<drf7020d20> rf_dev;

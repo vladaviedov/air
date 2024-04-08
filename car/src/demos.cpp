@@ -46,16 +46,14 @@ void demo_submenu() {
  *
  */
 void tdma_slots() {
-	/* auto rf_test = std::make_shared<drf7020d20>(gpio_pins, RASPI_40,
-	 * RASPI_37, RASPI_38, 0); */
-	auto rf_test = std::make_shared<drf7020d20>(
+	auto rf_module = std::make_shared<drf7020d20>(
 		gpio_pins, RASPI_12, RASPI_16, RASPI_18, 0);
 
 	// Configure RF Chip
 	std::cout << "Configuring RF Chip... " << std::flush;
-	rf_test->enable();
-	if (!rf_test->configure(433900, drf7020d20::DR9600, 9, drf7020d20::DR9600,
-			drf7020d20::NONE)) {
+	rf_module->enable();
+	if (!rf_module->configure(FREQ_DEMO, drf7020d20::DR9600, 9,
+			drf7020d20::DR9600, drf7020d20::NONE)) {
 		std::cout << "Failed\n";
 		prompt_enter();
 		return;
@@ -115,7 +113,7 @@ void tdma_slots() {
 		}
 	}
 
-	tdma tdma_slot(rf_test, slot, selected_scheme);
+	tdma tdma_slot(rf_module, slot, selected_scheme);
 	tdma_slot.rx_set_offset(-5);
 	tdma_slot.tx_set_offset(-70);
 

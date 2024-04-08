@@ -29,6 +29,9 @@ int main() {
 		if (!car_profile.get_tdma().has_value()) {
 			std::cout << "TDMA\n";
 		}
+		if (!car_profile.get_us().has_value()) {
+			std::cout << "Ultrasonic\n";
+		}
 
 		std::cout << "\nPlease visit the calibration menu\n";
 
