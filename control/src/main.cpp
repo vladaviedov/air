@@ -10,7 +10,6 @@
 #include <driver/pinmap.hpp>
 #include <shared/messages.hpp>
 #include <shared/tdma.hpp>
-#include <thread>
 
 #include "controller.hpp"
 

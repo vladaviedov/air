@@ -6,9 +6,9 @@
 
 #include <cstdint>
 #include <cstdlib>
-#include <string>
-#include <optional>
 #include <functional>
+#include <optional>
+#include <string>
 #include <tuple>
 
 #include <shared/tdma.hpp>
@@ -25,7 +25,9 @@ public:
 	 * @brief awaits check in from car and sends out a check in
 	 * @return true if check in is sent successfully
 	 */
-	void await_request(std::function<void (uint8_t, uint8_t, std::string, message_worker)> callback);
+	void await_request(
+		std::function<void(uint8_t, uint8_t, std::string, message_worker)>
+			callback);
 	/**
 	 * @brief receives request from car
 	 * @return pair of current and desired position of car
@@ -36,7 +38,7 @@ public:
 	 * @brief receives clear message from car and ends conversation
 	 * @return true if clear is sent successfully
 	 */
-	void await_clear(std::function<void (bool, message_worker)> callback);
+	void await_clear(std::function<void(bool, message_worker)> callback);
 
 	/**
 	 * @brief sends check in message
@@ -50,18 +52,18 @@ public:
 
 	/**
 	 * @brief sends standby message
-	*/
+	 */
 	void send_standby();
 
 	/**
 	 * @brief sends go as requested
-	*/
+	 */
 	void send_go_requested();
 
 	/**
 	 * @brief get timeslot of car
 	 * @return timeslot
-	*/
+	 */
 	inline uint32_t get_timeslot() {
 		return tdma_handler->get_timeslot();
 	}

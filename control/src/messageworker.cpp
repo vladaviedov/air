@@ -7,9 +7,9 @@
 
 #include <chrono>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <stdexcept>
-#include <iostream>
 
 #include <shared/messages.hpp>
 
@@ -29,10 +29,10 @@ message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in)
 	control_id = get_id();
 }
 
-void message_worker::await_request(std::function<void (uint8_t, uint8_t, std::string, message_worker)> callback) {
-
+void message_worker::await_request(
+	std::function<void(uint8_t, uint8_t, std::string, message_worker)>
+		callback) {
 	while (true) {
-	
 		std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT);
 
 		std::istringstream parts(rx_msg);
@@ -49,24 +49,26 @@ void message_worker::await_request(std::function<void (uint8_t, uint8_t, std::st
 		if (!parts.eof() || check != "CHK") {
 			continue;
 		}
-		
+
 		tdma_handler->tx_sync(*control_id);
 
-		std::optional<std::tuple<uint8_t, uint8_t, std::string>> request_data = get_request();
+		std::optional<std::tuple<uint8_t, uint8_t, std::string>> request_data =
+			get_request();
 		if (!request_data.has_value()) {
 			continue;
 		}
 
-		callback(std::get<0>(*request_data), std::get<1>(*request_data), std::get<2>(*request_data), *this);
-	
+		callback(std::get<0>(*request_data), std::get<1>(*request_data),
+			std::get<2>(*request_data), *this);
+
 		break;
 	}
 }
 
-std::optional<std::tuple<uint8_t, uint8_t, std::string>> message_worker::get_request() {
-
+std::optional<std::tuple<uint8_t, uint8_t, std::string>>
+message_worker::get_request() {
 	std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT);
-	
+
 	std::istringstream parts(rx_msg);
 	std::string car_id;
 	std::string request;
@@ -78,15 +80,14 @@ std::optional<std::tuple<uint8_t, uint8_t, std::string>> message_worker::get_req
 	parts >> request;
 
 	request.c_str();
-	uint8_t current_pos =
-		(uint8_t)request[0]; 
+	uint8_t current_pos = (uint8_t)request[0];
 	uint8_t desired_pos = (uint8_t)request[1];
 
 	return std::make_tuple(current_pos, desired_pos, car_id);
 }
 
-void message_worker::await_clear(std::function<void (bool, message_worker)> callback) {
-
+void message_worker::await_clear(
+	std::function<void(bool, message_worker)> callback) {
 	std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT);
 
 	if (rx_msg.empty() || rx_msg != CLEAR) {
@@ -120,4 +121,3 @@ void message_worker::send_standby() {
 void message_worker::send_go_requested() {
 	send_command(GO_REQUESTED);
 }
-
