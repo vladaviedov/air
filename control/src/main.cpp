@@ -10,6 +10,9 @@
 #include <driver/pinmap.hpp>
 #include <shared/messages.hpp>
 #include <shared/tdma.hpp>
+#include <thread>
+
+#include "controller.hpp"
 
 int main() {
 	auto rf_test =

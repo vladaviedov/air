@@ -5,8 +5,11 @@
 #pragma once
 
 #include <cstdint>
-#include <stdlib.h>
+#include <cstdlib>
 #include <string>
+#include <optional>
+#include <functional>
+#include <tuple>
 
 #include <shared/tdma.hpp>
 
@@ -22,43 +25,38 @@ public:
 	 * @brief awaits check in from car and sends out a check in
 	 * @return true if check in is sent successfully
 	 */
-	bool await_checkin();
+	void await_request(std::function<void (uint8_t, uint8_t, std::string, message_worker)> callback);
 	/**
 	 * @brief receives request from car
 	 * @return pair of current and desired position of car
 	 */
-
-	std::pair<uint8_t, uint8_t> await_request();
+	std::optional<std::tuple<uint8_t, uint8_t, std::string>> get_request();
 
 	/**
 	 * @brief receives clear message from car and ends conversation
 	 * @return true if clear is sent successfully
 	 */
-	bool await_clear();
+	void await_clear(std::function<void (bool, message_worker)> callback);
 
 	/**
-	 * @brief creates check in message
+	 * @brief sends check in message
 	 */
-	std::string format_checkin();
+	void send_checkin();
 
 	/**
-	 * @brief creates unsupported message
+	 * @brief sends unsupported message
 	 */
-	std::string format_unsupported();
+	void send_unsupported();
 
 	/**
-	 * @param command response to car's request
-	 * @brief creates command message
-	 */
-	std::string format_command(const std::string &command);
-
-	/**
-	 * @brief sends command to car
-	 * @param[in] command 
+	 * @brief sends standby message
 	*/
-	inline void send_command(const std::string &command) {
-		tdma_handler->tx_sync(format_command(command));
-	}
+	void send_standby();
+
+	/**
+	 * @brief sends go as requested
+	*/
+	void send_go_requested();
 
 	/**
 	 * @brief get timeslot of car
@@ -69,6 +67,12 @@ public:
 	}
 
 private:
+	/**
+	 * @param command response to car's request
+	 * @brief creates command message
+	 */
+	void send_command(const std::string &command);
+
 	std::shared_ptr<tdma> tdma_handler;
 	std::shared_ptr<std::string> control_id;
 };
