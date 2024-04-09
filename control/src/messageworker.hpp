@@ -24,6 +24,7 @@ public:
 	/**
 	 * @brief awaits check in from car and sends out a check in
 	 * @return true if check in is sent successfully
+	 * @param[in] callback
 	 */
 	void await_request(
 		std::function<void(uint8_t, uint8_t, std::string, message_worker)>
@@ -37,6 +38,7 @@ public:
 	/**
 	 * @brief receives clear message from car and ends conversation
 	 * @return true if clear is sent successfully
+	 * @param[in] callback
 	 */
 	void await_clear(std::function<void(bool, message_worker)> callback);
 

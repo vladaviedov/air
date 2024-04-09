@@ -34,12 +34,17 @@ public:
 
 	/**
 	 * @brief constuctor for message worker
-	 * @param[in] ms_in
+	 * @param[in] intersect_size
+	 * @param[in] div
 	 */
 	controller(uint8_t intersect_size, tdma::scheme div);
 
 	/**
 	 * @brief callback for car request receival
+	 * @param[in] current_pos
+	 * @param[in] requested_pos
+	 * @param[in] car_id
+	 * @param[in] worker
 	 */
 	void receive_request_callback(uint8_t current_pos,
 		uint8_t requested_pos,
@@ -52,12 +57,15 @@ public:
 	void process_requests();
 
 	/**
-	 * @brief callbcak for clear receivals
+	 * @brief callback for clear receivals
+	 * @param[in] cleared
+	 * @param[in] worker
 	 */
 	void clear_callback(bool cleared, message_worker worker);
 
 	/**
 	 * @brief places car in moving state and blocks entrances
+	 * @param[in] car
 	 */
 	void move_car(car &car);
 
