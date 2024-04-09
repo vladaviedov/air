@@ -4,14 +4,16 @@
  */
 #include "tdma.hpp"
 
-#include <bits/chrono.h>
 #include <chrono>
 #include <cstdint>
+#include <cstdio>
 #include <map>
 #include <string>
 #include <thread>
 
 #include <driver/drf7020d20.hpp>
+
+#include "utils.hpp"
 
 static constexpr uint32_t TIMESLOT_DURATION_MS = 50;
 static constexpr auto TIMESLOT_DURATION =
@@ -48,6 +50,15 @@ bool tdma::tx_sync(const std::string &msg) const {
 
 	sleep_until_next_slot(tx_offset_ms);
 	return rf_dev->transmit(msg.data(), 15);
+}
+
+int32_t tdma::tx_ts_sync() const {
+	sleep_until_next_slot(tx_offset_ms);
+	auto sent_ts = generate_ms() - tx_offset_ms;
+	char buffer[16];
+	std::snprintf(buffer, 16, "%15u", sent_ts);
+	rf_dev->transmit(buffer, 15);
+	return sent_ts;
 }
 
 std::string tdma::rx_sync(uint32_t max_frames) const {

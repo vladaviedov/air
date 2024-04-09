@@ -5,9 +5,6 @@
 #pragma once
 
 #include <cstdint>
-#include <functional>
-#include <mutex>
-#include <thread>
 
 #include <gpiod.hpp>
 

@@ -4,7 +4,9 @@
  */
 #include "calibrate.hpp"
 
+#include <chrono>
 #include <cstdint>
+#include <cstdio>
 #include <exception>
 #include <iostream>
 #include <optional>
@@ -12,9 +14,12 @@
 #include <vector>
 
 #include <driver/device.hpp>
+#include <driver/drf7020d20.hpp>
+#include <driver/hcsr04.hpp>
 #include <driver/pinmap.hpp>
 #include <driver/servo.hpp>
 #include <shared/menu.hpp>
+#include <shared/tdma.hpp>
 #include <shared/utils.hpp>
 
 #include "common.hpp"
@@ -34,9 +39,15 @@ static void calibrate_servo();
 static std::optional<uint32_t> servo_value_select(
 	servo &servo, uint32_t start_value);
 
+static void calibrate_us();
+
+static void calibrate_tdma();
+
 static const std::vector<menu_item> calib_options = {
 	{.text = "Print calibration", .action = &print_calibration},
 	{.text = "Calibrate servo", .action = &calibrate_servo},
+	{.text = "Calibrate ultrasonic", .action = &calibrate_us},
+	{.text = "Calibrate TDMA", .action = &calibrate_tdma},
 	{.text = "Reload default profile", .action = &load_default},
 	{.text = "Load profile from...", .action = &load_from},
 	{.text = "Save default profile", .action = &save_default},
@@ -137,6 +148,7 @@ void save(const std::string &to_file) {
 void print_calibration() {
 	auto servo_profile = car_profile.get_servo();
 	auto tdma_profile = car_profile.get_tdma();
+	auto us_profile = car_profile.get_us();
 
 	std::cout << "----------\n";
 	if (servo_profile.has_value()) {
@@ -153,8 +165,16 @@ void print_calibration() {
 		std::cout << "TDMA:\n\n";
 		std::cout << "TX offset: " << tdma_profile->rx_offset_ms << " ms\n";
 		std::cout << "RX offset: " << tdma_profile->tx_offset_ms << " ms\n";
+		std::cout << '\n';
 	} else {
 		std::cout << "TDMA: not defined\n";
+	}
+
+	if (us_profile.has_value()) {
+		std::cout << "Ultrasonic:\n\n";
+		std::cout << "Value threshold: " << us_profile->threshold << '\n';
+	} else {
+		std::cout << "Ultrasonic: not defined\n";
 	}
 	std::cout << "----------\n";
 
@@ -261,4 +281,173 @@ std::optional<uint32_t> servo_value_select(servo &servo, uint32_t value) {
 
 	std::cout << '\n';
 	return std::nullopt;
+}
+
+/**
+ * @brief Calibrate ultrasonic sensor.
+ *
+ */
+void calibrate_us() {
+	auto current = car_profile.get_us();
+	profile::us new_profile = {0};
+	raw_tty();
+
+	// Print current values
+	if (current.has_value()) {
+		std::cout << "Current value: " << current->threshold << '\n';
+		new_profile = current.value();
+	} else {
+		std::cout << "No calibration data\n";
+	}
+
+	hc_sr04 sensor(gpio_pins, RASPI_29, RASPI_31);
+
+	uint32_t order = 0;
+	uint32_t increment = 1;
+
+	std::cout << "\nStarting threshold value calibration...\n";
+	std::cout << "'w' - increment, 's' - decrement\n"
+			  << "'a' - lesser increment, 'd' - greater increment\n"
+			  << "'e' - finish calibration, ' ' - update\n";
+
+	printf("%10s %4s %10s %6s\n", "Threshold", "Increment", "Value", "Status");
+	while (true) {
+		auto reading = sensor.pulse();
+		// NOLINTNEXTLINE: clang is being silly
+		printf("%10u 10^%u %10llu %s", new_profile.threshold, order, reading,
+			reading < new_profile.threshold ? "detected    " : "not detected");
+		int input = std::getchar();
+		if (input == 'e') {
+			break;
+		}
+
+		switch (input) {
+		case 'w':
+			new_profile.threshold += increment;
+			break;
+		case 's':
+			if (new_profile.threshold <= increment) {
+				new_profile.threshold = 0;
+			} else {
+				new_profile.threshold -= increment;
+			}
+			break;
+		case 'a':
+			if (order > 0) {
+				order--;
+				increment /= 10;
+			}
+			break;
+		case 'd':
+			if (order < 9) {
+				order++;
+				increment *= 10;
+			}
+			break;
+		}
+
+		std::putchar('\r');
+	}
+
+	std::cout << "\nNew values:\n\n";
+	std::cout << "Threshold: " << new_profile.threshold << '\n';
+
+	car_profile.set_us(new_profile);
+
+	restore_tty();
+	prompt_enter();
+}
+
+void calibrate_tdma() {
+	auto rf_module = std::make_shared<drf7020d20>(
+		gpio_pins, RASPI_12, RASPI_16, RASPI_18, 0);
+
+	// Configure RF Chip
+	std::cout << "Configuring RF Chip... " << std::flush;
+	rf_module->enable();
+	if (!rf_module->configure(FREQ_CALIBRATION, drf7020d20::DR9600, 9,
+			drf7020d20::DR9600, drf7020d20::NONE)) {
+		std::cout << "Failed\n";
+		prompt_enter();
+		return;
+	}
+	std::cout << "Success\n";
+
+	auto current = car_profile.get_tdma();
+	profile::tdma new_profile = {0, -5};
+
+	// Print current values
+	if (current.has_value()) {
+		std::cout << "Current values:\n\n";
+		std::cout << "TX: " << current->tx_offset_ms << '\n';
+		std::cout << "RX: " << current->rx_offset_ms << '\n';
+		new_profile = current.value();
+	} else {
+		std::cout << "No calibration data\n";
+	}
+
+	tdma calib_slot(rf_module, 0, tdma::AIR_A);
+	calib_slot.rx_set_offset(new_profile.rx_offset_ms);
+
+	raw_tty();
+	std::cout
+		<< "Ready to calibrate. Put control into calibration assistance.\n";
+	std::cout << "Hit space to continue, 's' to exit\n";
+
+	while (true) {
+		int input = std::getchar();
+		if (input == 's') {
+			restore_tty();
+			prompt_enter();
+			return;
+		}
+		if (input == ' ') {
+			restore_tty();
+			break;
+		}
+	}
+
+	std::cout << "Starting calibration...\n";
+
+	int32_t okay_msgs = 0;
+	while (okay_msgs < 5) {
+		calib_slot.tx_set_offset(new_profile.tx_offset_ms);
+
+		int32_t sent = calib_slot.tx_ts_sync();
+		std::cout << sent << '\n';
+		auto response = rf_module->receive(std::chrono::milliseconds(500));
+		if (response.empty()) {
+			std::cout << "Calibration failure: helper did not respond\n";
+			prompt_enter();
+			return;
+		}
+
+		int32_t res = std::stoi(response);
+		std::cout << res << '\n';
+		int32_t diff = res - sent;
+
+		// Adjust if second rollover
+		if (std::abs(diff) > 500) {
+			res = res + 1000;
+			diff = res - sent;
+		}
+
+		std::cout << "Error: " << diff << "ms\n";
+		if (std::abs(diff) < 5) {
+			okay_msgs++;
+		} else {
+			okay_msgs = 0;
+			new_profile.tx_offset_ms -= diff;
+		}
+	}
+
+	std::cout << "Calibration completed.\n";
+
+	std::cout << "\nNew values:\n\n";
+	std::cout << "TX: " << new_profile.tx_offset_ms << '\n';
+	std::cout << "RX: " << new_profile.rx_offset_ms << '\n';
+
+	car_profile.set_tdma(new_profile);
+
+	prompt_enter();
 }

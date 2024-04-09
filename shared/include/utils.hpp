@@ -4,7 +4,12 @@
  */
 #pragma once
 
+#include <cstdint>
 #include <string>
+
+static constexpr uint32_t FREQ_DEMO = 433900;
+static constexpr uint32_t FREQ_CALIBRATION = 434900;
+static constexpr uint32_t FREQ_LIVE = 435900;
 
 static constexpr std::string CLEAR_TTY = "\033[2J\033[1;1H";
 
@@ -26,3 +31,16 @@ void raw_tty();
  * @note Resets signal handlers.
  */
 void restore_tty();
+
+/**
+ * @brief Print program and license information.
+ *
+ */
+void print_about();
+
+/**
+ * @brief Generate current timestamps in ms.
+ *
+ * @return Timestamp number.
+ */
+int32_t generate_ms();
