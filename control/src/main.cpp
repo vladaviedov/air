@@ -1,25 +1,21 @@
-#include <chrono>
-#include <iostream>
-#include <string>
-#include <thread>
+/**
+ * @file src/main.cpp
+ * @brief Control entry point.
+ */
+#include <vector>
 
-#include <gpiod.hpp>
+#include <shared/menu.hpp>
+#include <shared/utils.hpp>
 
-#include <driver/device.hpp>
-#include <driver/drf7020d20.hpp>
-#include <driver/pinmap.hpp>
-#include <shared/messages.hpp>
-#include <shared/tdma.hpp>
+#include "calibrate.hpp"
+#include "demos.hpp"
 
-#include "controller.hpp"
+static const std::vector<menu_item> car_menu = {
+	{.text = "Demos", .action = &demo_submenu},
+	{.text = "Calibration", .action = &calibration_submenu},
+	{.text = "About this program", .action = &print_about}};
 
 int main() {
-	auto rf_test =
-		std::make_shared<drf7020d20>(gpio_pins, RASPI_12, RASPI_11, RASPI_7, 0);
-
-	rf_test->enable();
-	rf_test->configure(
-		433900, drf7020d20::DR9600, 9, drf7020d20::DR9600, drf7020d20::NONE);
-
+	show_menu("Control Actions", car_menu, false);
 	return 0;
 }

@@ -59,6 +59,19 @@ Clean commands:
 - `make libclean` - clean libraries
 - `make fullclean` - clean everything including compiler
 
+## Tools
+Formatter:
+- `clang-format` - version 17
+- `make checkformat` - check formatting
+- `make format` - run formatter task
+
+Static analyzer:
+- `clang-tidy` - version 17
+- `make runlint` - run static analyzer
+
+On debian/ubuntu, these are not available in repo currently, so get it using
+the LLVM script.
+
 ## Binaries
 Output files:
 ```

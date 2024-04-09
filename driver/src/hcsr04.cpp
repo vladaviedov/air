@@ -6,8 +6,6 @@
 
 #include <chrono>
 #include <cstdint>
-#include <mutex>
-#include <stdexcept>
 #include <thread>
 
 #include <gpiod.hpp>
