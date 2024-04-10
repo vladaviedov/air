@@ -42,12 +42,6 @@ public:
 	void send_clear();
 
 	/**
-	 * @brief create check in message
-	 * @return check in message
-	 */
-	std::string format_checkin();
-
-	/**
 	 * @param[in] desired_pos position car is requesting to go
 	 * @brief creates request for car with id, current position, and desired
 	 * position

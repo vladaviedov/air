@@ -16,16 +16,17 @@ static constexpr std::string ACKNOWLEDGE = "ACK";
 static constexpr std::string STANDBY = "SBY";
 static constexpr std::string GO_REQUESTED = "GRQ";
 static constexpr std::string CLEAR = "CLR";
-static constexpr std::string FINAL = "FIN";
+
+static std::string format_checkin();
 
 static constexpr uint8_t MESSAGE_TIMEOUT =
 	4; /*time to wait for message (in frames)*/
 
 message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in,
 	std::atomic<bool> &active_flag_in)
-	: tdma_handler(tdma_handler_in),
-	  active_flag(active_flag_in),
-	  car_id(get_id()) {}
+	: active_flag(active_flag_in), 
+		tdma_handler(tdma_handler_in),
+	 	car_id(get_id()) {}
 
 std::string message_worker::await_checkin() {
 	tdma_handler->tx_sync(format_checkin()); // send check in
@@ -42,18 +43,16 @@ std::string message_worker::await_checkin() {
 		break;
 	}
 
-	uint8_t desired_pos = 0; // choose random pos
-
 	return control_id;
 }
 
 message_worker::command message_worker::send_request(uint8_t desired_pos) {
 	tdma_handler->tx_sync(format_request(desired_pos));
 	std::string command;
-	uint32_t i = 0;
+	uint32_t iterator = 0;	
 
-	while (i < 3) {
-		i++;
+	while (iterator < 3) {
+		iterator++;
 
 		std::string response =
 			tdma_handler->rx_sync(MESSAGE_TIMEOUT); // receive check in
@@ -75,18 +74,20 @@ message_worker::command message_worker::send_request(uint8_t desired_pos) {
 
 	if (command == STANDBY) {
 		return SBY;
-	} else if (command == GO_REQUESTED) {
+	}  
+	
+	if (command == GO_REQUESTED) {
 		return GRQ;
-	} else {
-		throw std::invalid_argument("Unsupported");
 	}
+
+	throw std::invalid_argument("Unsupported");
 }
 
 void message_worker::send_clear() {
 	tdma_handler->tx_sync(CLEAR);
 }
 
-std::string message_worker::format_checkin() {
+std::string format_checkin() {
 	return MSG_HEADER + " " + CHECK;
 }
 

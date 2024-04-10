@@ -168,7 +168,7 @@ void message_worker_test() {
 			std::make_shared<tdma>(rf_module, slot, selected_scheme);
 
 		message_worker worker(tdma_slot, active);
-
+		
 		std::cout << "Initiating check in proces...\n";
 		auto request_data = worker.await_request_sync();
 
@@ -183,4 +183,6 @@ void message_worker_test() {
 
 		std::cout << "Sent clear: " << sent_clear << std::endl;
 	};
+	control_template(inner_func);
 }
+
