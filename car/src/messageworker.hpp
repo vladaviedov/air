@@ -30,6 +30,7 @@ public:
 	 * @return control id
 	 */
 	std::string await_checkin();
+	
 
 	/**
 	 * @brief send request callback
@@ -40,6 +41,11 @@ public:
 	 * @brief send clear
 	 */
 	void send_clear();
+
+	/**
+	 * @brief send acknowledge
+	 */
+	void send_acknowledge();
 
 	/**
 	 * @param[in] desired_pos position car is requesting to go

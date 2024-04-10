@@ -59,6 +59,17 @@ public:
 	void await_clear(std::function<void(bool, message_worker &)> callback);
 
 	/**
+	 * @brief checks for acknowledge message
+	 * @return true if acknowledge was received
+	*/
+	bool check_acknowledge_sync();
+
+	/**
+	 * @brief checks for acknowledge message
+	*/
+	void check_acknowledge(std::function<void(bool, message_worker &)> callback);
+
+	/**
 	 * @brief sends check in message
 	 */
 	void send_checkin();

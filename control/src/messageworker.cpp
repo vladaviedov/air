@@ -150,3 +150,23 @@ void message_worker::send_standby() {
 void message_worker::send_go_requested() {
 	send_command(GO_REQUESTED);
 }
+
+bool message_worker::check_acknowledge_sync() {
+	std::string ack_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT);
+	return ack_msg == ACKNOWLEDGE;
+}
+
+void message_worker::check_acknowledge(std::function<void(bool, message_worker &)> callback) {
+	if (thread != nullptr) {
+		thread->join();
+		thread.reset();
+	}
+	auto executor = [&]() {
+		bool received_ack = check_acknowledge_sync();
+
+		// hamdle if request data is std::null_opt
+		callback(received_ack, *this);
+	};
+
+	thread = std::make_unique<std::thread>(executor);
+}

@@ -24,9 +24,9 @@ static constexpr uint8_t MESSAGE_TIMEOUT =
 
 message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in,
 	std::atomic<bool> &active_flag_in)
-	: active_flag(active_flag_in), 
-		tdma_handler(tdma_handler_in),
-	 	car_id(get_id()) {}
+	: active_flag(active_flag_in),
+	  tdma_handler(tdma_handler_in),
+	  car_id(get_id()) {}
 
 std::string message_worker::await_checkin() {
 	tdma_handler->tx_sync(format_checkin()); // send check in
@@ -49,7 +49,7 @@ std::string message_worker::await_checkin() {
 message_worker::command message_worker::send_request(uint8_t desired_pos) {
 	tdma_handler->tx_sync(format_request(desired_pos));
 	std::string command;
-	uint32_t iterator = 0;	
+	uint32_t iterator = 0;
 
 	while (iterator < 3) {
 		iterator++;
@@ -74,8 +74,8 @@ message_worker::command message_worker::send_request(uint8_t desired_pos) {
 
 	if (command == STANDBY) {
 		return SBY;
-	}  
-	
+	}
+
 	if (command == GO_REQUESTED) {
 		return GRQ;
 	}
@@ -85,6 +85,10 @@ message_worker::command message_worker::send_request(uint8_t desired_pos) {
 
 void message_worker::send_clear() {
 	tdma_handler->tx_sync(CLEAR);
+}
+
+void message_worker::send_acknowledge() {
+	tdma_handler->tx_sync(ACKNOWLEDGE);
 }
 
 std::string format_checkin() {

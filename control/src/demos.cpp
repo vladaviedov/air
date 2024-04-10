@@ -167,22 +167,29 @@ void message_worker_test() {
 		auto tdma_slot =
 			std::make_shared<tdma>(rf_module, slot, selected_scheme);
 
-		message_worker worker(tdma_slot, active);
-		
-		std::cout << "Initiating check in proces...\n";
-		auto request_data = worker.await_request_sync();
+		while (active) {
+			message_worker worker(tdma_slot, active);
 
-		std::cout << "Current position: " << std::get<0>(request_data)
-				  << std::endl;
-		std::cout << "Desired position: " << std::get<0>(request_data)
-				  << std::endl;
-		std::cout << "Car Id: " << std::get<0>(request_data) << std::endl;
+			std::cout << "Awaiting check-in...\n";
+			auto request_data = worker.await_request_sync();
+			std::cout << "Received check-in:\n\n";
 
-		std::cout << "Awaiting clear from car...\n";
-		bool sent_clear = worker.await_clear_sync();
+			printf("Current Position: %s\n", std::get<0>(request_data));
+			printf("Desired Position: %s\n", std::get<1>(request_data));
+			printf("Car Id: %s\n", std::get<2>(request_data));
 
-		std::cout << "Sent clear: " << sent_clear << std::endl;
+			std::cout << "Processing request...\n";
+			worker.send_go_requested();
+
+			bool receieved_ack = worker.check_acknowledge_sync();
+			std::cout << "Received ACKNOWLEDGE: " << receieved_ack << std::endl;
+
+			std::cout << "Awaiting clear from car...\n";
+			bool sent_clear = worker.await_clear_sync();
+
+			std::cout << "Sent clear: " << sent_clear << std::endl;
+		}
 	};
+
 	control_template(inner_func);
 }
-
