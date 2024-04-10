@@ -10,5 +10,5 @@
 const std::string default_profile = "/etc/air/profile";
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 extern profile car_profile;
-
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 extern uint8_t position;

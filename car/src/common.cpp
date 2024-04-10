@@ -8,5 +8,5 @@
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 profile car_profile;
-
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 uint8_t position = 0;

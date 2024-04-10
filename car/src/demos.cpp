@@ -30,7 +30,6 @@ static void tdma_slots();
 static void manual_drive();
 static void manual_drive_wasd();
 static void simple_lines();
-static void turn(std::string direction);
 
 static const std::vector<menu_item> demos = {
 	{.text = "TDMA slots", .action = &tdma_slots},
