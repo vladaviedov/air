@@ -71,7 +71,7 @@ public:
 	/**
 	 * @brief get the timeslot of device
 	 */
-	inline uint32_t get_timeslot() {
+	inline uint32_t get_timeslot() const {
 		return slot;
 	}
 
