@@ -18,7 +18,8 @@ static constexpr std::string GO_REQUESTED = "GRQ";
 static constexpr std::string CLEAR = "CLR";
 static constexpr std::string FINAL = "FIN";
 
-static constexpr uint8_t MESSAGE_TIMEOUT = 4; /*time to wait for message (in frames)*/
+static constexpr uint8_t MESSAGE_TIMEOUT =
+	4; /*time to wait for message (in frames)*/
 
 message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in,
 	std::atomic<bool> &active_flag_in)

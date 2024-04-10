@@ -22,13 +22,14 @@ static constexpr std::string GO_REQUESTED = "GRQ";
 static constexpr std::string CLEAR = "CLR";
 static constexpr std::string FINAL = "FIN";
 
-static constexpr uint8_t MESSAGE_TIMEOUT = 4; /*amount of time to wait for message (in frames)*/
+static constexpr uint8_t MESSAGE_TIMEOUT =
+	4; /*amount of time to wait for message (in frames)*/
 
 message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in,
 	std::atomic<bool> &active_flag_in)
-	: active_flag(active_flag_in), 
-	tdma_handler(tdma_handler_in),
-	control_id(get_id()) {}
+	: active_flag(active_flag_in),
+	  tdma_handler(tdma_handler_in),
+	  control_id(get_id()) {}
 
 std::tuple<uint8_t, uint8_t, std::string> message_worker::await_request_sync() {
 	while (active_flag) {

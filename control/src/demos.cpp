@@ -141,8 +141,8 @@ void control_template(std::function<void(std::shared_ptr<drf7020d20>,
 }
 
 void tdma_control() {
-	auto inner_func = [](const std::shared_ptr<drf7020d20> &rf_test, uint32_t slot,
-						  tdma::scheme selected_scheme,
+	auto inner_func = [](const std::shared_ptr<drf7020d20> &rf_test,
+						  uint32_t slot, tdma::scheme selected_scheme,
 						  std::atomic<bool> &active) {
 		tdma tdma(rf_test, slot, selected_scheme);
 		tdma.rx_set_offset(-5);
@@ -161,8 +161,8 @@ void tdma_control() {
 }
 
 void message_worker_test() {
-	auto inner_func = [](const std::shared_ptr<drf7020d20> &rf_module, uint32_t slot,
-						  tdma::scheme selected_scheme,
+	auto inner_func = [](const std::shared_ptr<drf7020d20> &rf_module,
+						  uint32_t slot, tdma::scheme selected_scheme,
 						  std::atomic<bool> &active) {
 		auto tdma_slot =
 			std::make_shared<tdma>(rf_module, slot, selected_scheme);
