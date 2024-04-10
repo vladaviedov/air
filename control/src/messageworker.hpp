@@ -22,7 +22,13 @@ public:
 	message_worker(const std::shared_ptr<tdma> &tdma_handler_in, std::atomic<bool> &active_flag_in);
 
 	/**
-	 * @brief awaits check in from car and sends out a check in
+	 * @brief awaits request form car synchronously
+	 * @return true if check in is sent successfully
+	 */
+	std::tuple<uint8_t, uint8_t, std::string> await_request_sync();
+
+	/**
+	 * @brief awaits request form car
 	 * @return true if check in is sent successfully
 	 * @param[in] callback
 	 */
@@ -34,6 +40,12 @@ public:
 	 * @return pair of current and desired position of car
 	 */
 	std::optional<std::tuple<uint8_t, uint8_t, std::string>> get_request();
+
+	/**
+	 * @brief receives clear message from car and ends conversation synchronously
+	 * @return true if clear is sent successfully
+	 */
+	bool await_clear_sync();
 
 	/**
 	 * @brief receives clear message from car and ends conversation

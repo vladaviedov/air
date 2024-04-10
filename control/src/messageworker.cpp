@@ -29,10 +29,43 @@ message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in, std
 	control_id = get_id();
 }
 
+std::tuple<uint8_t, uint8_t, std::string> message_worker::await_request_sync() {
+	while (active_flag) {
+		std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT);
+
+		std::istringstream parts(rx_msg);
+		std::string header;
+		std::string check;
+
+		parts >> header;
+
+		if (parts.eof() || !validate_header(header)) {
+			continue;
+		}
+
+		parts >> check;
+		if (!parts.eof() || check != "CHK") {
+			continue;
+		}
+
+		tdma_handler->tx_sync(*control_id);
+
+		std::optional<std::tuple<uint8_t, uint8_t, std::string>> request_data =
+			get_request();
+		if (!request_data.has_value()) {
+			continue;
+		}
+
+		return request_data.value();
+
+		break;
+	}
+}
+
 void message_worker::await_request(
 	std::function<void(uint8_t, uint8_t, std::string, message_worker)>
 		callback) {
-	while (true) {
+	while (active_flag) {
 		std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT);
 
 		std::istringstream parts(rx_msg);
@@ -84,6 +117,17 @@ message_worker::get_request() {
 	uint8_t desired_pos = (uint8_t)request[1];
 
 	return std::make_tuple(current_pos, desired_pos, car_id);
+}
+
+bool message_worker::await_clear_sync() {
+	std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT);
+
+	if (rx_msg.empty() || rx_msg != CLEAR) {
+		std::cout << "Clear was not received. Clearing anyway...";
+		return false;
+	}
+
+	return true;
 }
 
 void message_worker::await_clear(

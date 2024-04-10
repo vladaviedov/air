@@ -19,10 +19,15 @@
 #include <shared/tdma.hpp>
 #include <shared/utils.hpp>
 
+#include "messageworker.hpp"
+
 static void tdma_control();
+static void control_template(std::function<void(std::shared_ptr<drf7020d20>, uint32_t, tdma::scheme, std::atomic<bool> &)> inner_func);
+static void message_worker_test();
 
 static const std::vector<menu_item> demos = {
-	{.text = "TDMA control", .action = &tdma_control}};
+	{.text = "TDMA control", .action = &tdma_control},
+	{.text = "Message worker", .action = &message_worker_test}};
 
 void demo_submenu() {
 	show_menu("Control Demos", demos, true);
@@ -32,7 +37,7 @@ void demo_submenu() {
  * @brief TDMA multi-slot control demo.
  *
  */
-void tdma_control() {
+void control_template(std::function<void(std::shared_ptr<drf7020d20>, uint32_t, tdma::scheme, std::atomic<bool> &)> inner_func) {
 	auto rf_test =
 		std::make_shared<drf7020d20>(gpio_pins, RASPI_12, RASPI_11, RASPI_7, 0);
 
@@ -106,17 +111,7 @@ void tdma_control() {
 	// Executor function
 	std::atomic<bool> active = true;
 	auto executor = [&](uint32_t slot) {
-		tdma tdma(rf_test, slot, selected_scheme);
-		tdma.rx_set_offset(-5);
-		tdma.tx_set_offset(-70);
-
-		while (active) {
-			auto received = tdma.rx_sync(5);
-			if (!received.empty()) {
-				std::cout << "Slot " << slot << ": " << received << '\n';
-				tdma.tx_sync(*get_id());
-			}
-		}
+		inner_func(rf_test, slot, selected_scheme, active);
 	};
 
 	std::vector<std::thread> threads;
@@ -136,4 +131,31 @@ void tdma_control() {
 	}
 
 	restore_tty();
+}
+
+void tdma_control() {
+	auto inner_func = [](std::shared_ptr<drf7020d20> rf_test, uint32_t slot, tdma::scheme selected_scheme, std::atomic<bool> &active) {
+		tdma tdma(rf_test, slot, selected_scheme);
+		tdma.rx_set_offset(-5);
+		tdma.tx_set_offset(-70);
+
+		while (active) {
+			auto received = tdma.rx_sync(5);
+			if (!received.empty()) {
+				std::cout << "Slot " << slot << ": " << received << '\n';
+				tdma.tx_sync(*get_id());
+			}
+		}
+	};
+
+	control_template(inner_func);
+} 
+
+void message_worker_test() {
+	auto inner_func = [](std::shared_ptr<drf7020d20> rf_module, uint32_t slot, tdma::scheme selected_scheme, std::atomic<bool> &active) {
+		auto tdma_slot = std::make_shared<tdma>(rf_module, slot, selected_scheme);
+
+		message_worker worker(tdma_slot, active);
+
+	};
 }

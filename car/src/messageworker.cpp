@@ -30,7 +30,7 @@ std::string message_worker::await_checkin() {
 
 	std::string control_id;
 
-	while (true) {
+	while (active_flag) {
 
 		control_id = tdma_handler->rx_sync(MESSAGE_TIMEOUT); // receive check in
 
