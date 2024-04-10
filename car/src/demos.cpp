@@ -34,13 +34,12 @@ static void simple_lines();
 static void message_worker_test();
 static void turning();
 
-
 static const std::vector<menu_item> demos = {
 	{.text = "TDMA slots", .action = &tdma_slots},
 	{.text = "Manual drive", .action = &manual_drive},
 	{.text = "Manual drive WASD", .action = &manual_drive_wasd},
 	{.text = "Simple line following", .action = &simple_lines},
-	{.text = "Message worker", .action = &message_worker_test}};
+	{.text = "Message worker", .action = &message_worker_test},
 	{.text = "Turning", .action = &turning},
 	{.text = "Simple line following", .action = &simple_lines}};
 
@@ -513,6 +512,7 @@ void message_worker_test() {
 	} else if (command == message_worker::GRQ) {
 		std::cout << "GO AS REQUESTED\n";
 	}
+}
 
 /**
  * @brief Try a turn.
