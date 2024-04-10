@@ -81,9 +81,9 @@ void profile::save(const std::string &filename) const {
 	}
 	if (tdma_profile.has_value()) {
 		file << CHECK_TDMA << '\n';
-		file << CHECK_TDMA_TX_OFFSET_MS << ' ' << tdma_profile->rx_offset_ms
+		file << CHECK_TDMA_TX_OFFSET_MS << ' ' << tdma_profile->tx_offset_ms
 			 << '\n';
-		file << CHECK_TDMA_RX_OFFSET_MS << ' ' << tdma_profile->tx_offset_ms
+		file << CHECK_TDMA_RX_OFFSET_MS << ' ' << tdma_profile->rx_offset_ms
 			 << '\n';
 	}
 	if (us_profile.has_value()) {

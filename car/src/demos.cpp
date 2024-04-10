@@ -484,6 +484,10 @@ void message_worker_test() {
 
 	message_worker worker(tdma_slot);
 
+	std::cout << "Enter the desired position: \n";
+	std::getline(std::cin, input);
+	uint8_t desired_pos = std::stoi(input);
+
 	std::cout << "Awaiting checkin...\n";
 	auto control_id = worker.send_checkin();
 	if (!control_id.has_value()) {
@@ -493,12 +497,12 @@ void message_worker_test() {
 	}
 	std::cout << "Control Id: " << control_id.value() << std::endl;
 
-	std::cout << "Enter the desired position: \n";
-	std::getline(std::cin, input);
-	uint8_t desired_pos = std::stoi(input);
-
 	std::cout << "Sending request to " << desired_pos << " ...\n";
 	message_worker::command command = worker.send_request(desired_pos);
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+	worker.send_clear();
 
 	if (command == message_worker::SBY) {
 		std::cout << "STANDBY\n";
@@ -506,6 +510,5 @@ void message_worker_test() {
 		std::cout << "GO AS REQUESTED\n";
 	}
 
-	std::cout << "Clearing...\n";
-	worker.send_clear();
+	prompt_enter();
 }

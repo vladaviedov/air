@@ -41,6 +41,7 @@ std::optional<std::string> message_worker::send_checkin() {
 	return control_id;
 }
 
+#include <iostream>
 message_worker::command message_worker::send_request(uint8_t desired_pos) {
 	tdma_handler->tx_sync(format_request(desired_pos));
 	std::string command;
@@ -51,7 +52,8 @@ message_worker::command message_worker::send_request(uint8_t desired_pos) {
 
 		std::string response =
 			tdma_handler->rx_sync(MESSAGE_TIMEOUT); // receive check in
-
+		
+		
 		std::istringstream parts(response);
 		std::string ack;
 
@@ -63,10 +65,13 @@ message_worker::command message_worker::send_request(uint8_t desired_pos) {
 		if (!parts.eof()) {
 			continue;
 		}
+
+		break;
 	}
 
 	tdma_handler->tx_sync(ACKNOWLEDGE);
 
+	std::cout << command << std::endl;
 	if (command == STANDBY) {
 		return SBY;
 	}
@@ -93,7 +98,7 @@ std::string format_checkin() {
 std::string message_worker::format_request(uint8_t desired_pos) {
 	std::string formatted_request;
 	formatted_request.append(*car_id + " ");
-	formatted_request.push_back((char)current_pos);
-	formatted_request.push_back((char)desired_pos);
+	formatted_request.push_back((char)current_pos + '0');
+	formatted_request.push_back((char)desired_pos + '0');
 	return formatted_request;
 }

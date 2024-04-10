@@ -163,8 +163,8 @@ void print_calibration() {
 
 	if (tdma_profile.has_value()) {
 		std::cout << "TDMA:\n\n";
-		std::cout << "TX offset: " << tdma_profile->rx_offset_ms << " ms\n";
-		std::cout << "RX offset: " << tdma_profile->tx_offset_ms << " ms\n";
+		std::cout << "TX offset: " << tdma_profile->tx_offset_ms << " ms\n";
+		std::cout << "RX offset: " << tdma_profile->rx_offset_ms << " ms\n";
 		std::cout << '\n';
 	} else {
 		std::cout << "TDMA: not defined\n";

@@ -88,6 +88,7 @@ void message_worker::await_request(
 std::optional<std::tuple<uint8_t, uint8_t, std::string>>
 message_worker::get_request() {
 	std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT);
+	std::cout << "Received Message: " << rx_msg << std::endl;
 
 	std::istringstream parts(rx_msg);
 	std::string car_id;
@@ -99,8 +100,12 @@ message_worker::get_request() {
 	}
 	parts >> request;
 
-	auto current_pos = (uint8_t)request[0];
-	auto desired_pos = (uint8_t)request[1];
+	auto current_pos = (uint8_t)request[0] - '0';
+	auto desired_pos = (uint8_t)request[1] - '0';
+
+	std::cout << "Current Pos: " << rx_msg << std::endl;
+	std::cout << "Desired Pos: " << rx_msg << std::endl;
+
 
 	return std::make_tuple(current_pos, desired_pos, car_id);
 }
@@ -109,12 +114,12 @@ bool message_worker::await_clear_sync() {
 	std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT);
 
 	if (rx_msg.empty() || rx_msg != CLEAR) {
-		std::cout << "Clear was not received. Clearing anyway...";
+		std::cout << "Clear was not received. Clearing anyway...\n";
 		return false;
 	}
 
 	send_command(FINAL);
-	return false;
+	return true;
 }
 
 void message_worker::await_clear(
@@ -157,6 +162,7 @@ void message_worker::send_go_requested() {
 
 bool message_worker::check_acknowledge_sync() {
 	std::string ack_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT);
+	std::cout << "ACK MSG: " << ack_msg << std::endl;
 	return ack_msg == ACKNOWLEDGE;
 }
 

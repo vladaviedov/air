@@ -166,6 +166,8 @@ void message_worker_test() {
 						  std::atomic<bool> &active) {
 		auto tdma_slot =
 			std::make_shared<tdma>(rf_module, slot, selected_scheme);
+		tdma_slot->rx_set_offset(-5);
+		tdma_slot->tx_set_offset(-70);
 
 		while (active) {
 			message_worker worker(
