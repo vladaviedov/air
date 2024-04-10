@@ -32,6 +32,8 @@ static void manual_drive();
 static void manual_drive_wasd();
 static void simple_lines();
 static void message_worker_test();
+static void turning();
+
 
 static const std::vector<menu_item> demos = {
 	{.text = "TDMA slots", .action = &tdma_slots},
@@ -39,6 +41,8 @@ static const std::vector<menu_item> demos = {
 	{.text = "Manual drive WASD", .action = &manual_drive_wasd},
 	{.text = "Simple line following", .action = &simple_lines},
 	{.text = "Message worker", .action = &message_worker_test}};
+	{.text = "Turning", .action = &turning},
+	{.text = "Simple line following", .action = &simple_lines}};
 
 void demo_submenu() {
 	show_menu("Car Demos", demos, true);
@@ -510,5 +514,76 @@ void message_worker_test() {
 		std::cout << "GO AS REQUESTED\n";
 	}
 
+/**
+ * @brief Try a turn.
+ *
+ */
+void turning() {
+	auto servo_profile = car_profile.get_servo();
+	auto turn_profile = car_profile.get_turn();
+	if (!servo_profile.has_value()) {
+		std::cout << "No servo calibration data. Exiting...\n";
+		prompt_enter();
+		return;
+	}
+	if (!turn_profile.has_value()) {
+		std::cout << "No turning calibration data. Exiting...\n";
+		prompt_enter();
+		return;
+	}
+
+	// Init hardware
+	motor m_1(gpio_pins, RASPI_15, RASPI_13, RASPI_11);
+	motor m_2(gpio_pins, RASPI_33, RASPI_35, RASPI_37);
+	servo m_sv(gpio_pins, RASPI_32);
+
+	std::cout << "Hardware initialized.\n";
+	std::cout << "Hit 'a' to turn left or 'd' to turn right.\n";
+	std::cout << "Hit space to exit\n'";
+
+	raw_tty();
+	while (true) {
+		int input = std::getchar();
+
+		if (input == 'a') {
+			std::cout << "Starting left turn...\n";
+			m_1.set(100, FORWARD);
+			m_2.set(100, FORWARD);
+			m_sv.set(servo_profile->center);
+
+			std::this_thread::sleep_for(
+				std::chrono::milliseconds(turn_profile->left_delay_ms));
+			m_sv.set(servo_profile->max_left);
+			std::this_thread::sleep_for(
+				std::chrono::milliseconds(turn_profile->left_ms));
+
+			m_sv.set(servo_profile->center);
+			m_1.stop();
+			m_2.stop();
+			std::cout << "Left turn finished\n";
+		}
+		if (input == 'd') {
+			std::cout << "Starting right turn...\n";
+			m_1.set(100, FORWARD);
+			m_2.set(100, FORWARD);
+			m_sv.set(servo_profile->center);
+
+			std::this_thread::sleep_for(
+				std::chrono::milliseconds(turn_profile->right_delay_ms));
+			m_sv.set(servo_profile->max_right);
+			std::this_thread::sleep_for(
+				std::chrono::milliseconds(turn_profile->right_ms));
+
+			m_sv.set(servo_profile->center);
+			m_1.stop();
+			m_2.stop();
+			std::cout << "Right turn finished\n";
+		}
+		if (input == ' ') {
+			break;
+		}
+	}
+
+	restore_tty();
 	prompt_enter();
 }

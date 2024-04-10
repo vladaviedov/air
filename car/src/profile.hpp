@@ -25,6 +25,13 @@ public:
 		uint32_t threshold;
 	};
 
+	struct turn {
+		uint32_t right_ms;
+		uint32_t right_delay_ms;
+		uint32_t left_ms;
+		uint32_t left_delay_ms;
+	};
+
 	/**
 	 * @brief Load profile from file.
 	 *
@@ -45,7 +52,7 @@ public:
 	 */
 	inline bool is_done() const {
 		return servo_profile.has_value() && tdma_profile.has_value() &&
-			   us_profile.has_value();
+			   us_profile.has_value() && turn_profile.has_value();
 	}
 
 	/** Get/Set */
@@ -74,8 +81,17 @@ public:
 		us_profile = opts;
 	}
 
+	inline std::optional<turn> get_turn() const {
+		return turn_profile;
+	}
+
+	inline void set_turn(turn &opts) {
+		turn_profile = opts;
+	}
+
 private:
 	std::optional<servo> servo_profile = std::nullopt;
 	std::optional<tdma> tdma_profile = std::nullopt;
 	std::optional<us> us_profile = std::nullopt;
+	std::optional<turn> turn_profile = std::nullopt;
 };
