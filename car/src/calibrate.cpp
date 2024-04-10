@@ -50,11 +50,11 @@ static const std::vector<menu_item> calib_options = {
 	{.text = "Calibrate servo", .action = &calibrate_servo},
 	{.text = "Calibrate ultrasonic", .action = &calibrate_us},
 	{.text = "Calibrate TDMA", .action = &calibrate_tdma},
+	{.text = "Calibrate position", .action = &calibrate_position},
 	{.text = "Reload default profile", .action = &load_default},
 	{.text = "Load profile from...", .action = &load_from},
 	{.text = "Save default profile", .action = &save_default},
-	{.text = "Save profile as...", .action = &save_as},
-	{.text = "Calibrate position", .action = &calibrate_position}};
+	{.text = "Save profile as...", .action = &save_as}};
 
 void calibration_submenu() {
 	show_menu("Calibration", calib_options, true);
@@ -454,8 +454,6 @@ void calibrate_tdma() {
 
 	prompt_enter();
 }
-
-int position;
 
 void calibrate_position() {
 	std::cout << "Enter the initial position: " << std::flush;

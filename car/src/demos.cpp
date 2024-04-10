@@ -393,39 +393,3 @@ void manual_drive_wasd() {
 		std::cout << '\r';
 	}
 }
-
-void turn(std::string direction) {
-	if (position == 0) {
-		if (direction == "left") {
-			position = 0;
-		} else if (direction == "straight") {
-			position = 3;
-		} else {
-			position = 2;
-		}
-	} else if (position == 1) {
-		if (direction == "left") {
-			position = 3;
-		} else if (direction == "straight") {
-			position = 2;
-		} else {
-			position = 1;
-		}
-	} else if (position == 2) {
-		if (direction == "left") {
-			position = 2;
-		} else if (direction == "straight") {
-			position = 1;
-		} else {
-			position = 0;
-		}
-	} else {
-		if (direction == "left") {
-			position = 1;
-		} else if (direction == "straight") {
-			position = 0;
-		} else {
-			position = 3;
-		}
-	}
-}
