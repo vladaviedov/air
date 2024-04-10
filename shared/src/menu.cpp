@@ -32,6 +32,7 @@ void show_menu(const std::string &heading,
 	bool is_submenu) {
 	while (true) {
 		// Clear screen
+		std::cout << BANNER << "\n";
 		std::cout << CLEAR_TTY << std::flush;
 		raw_tty();
 
