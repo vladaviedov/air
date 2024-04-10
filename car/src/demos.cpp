@@ -22,6 +22,7 @@
 #include <shared/messages.hpp>
 #include <shared/tdma.hpp>
 #include <shared/utils.hpp>
+#include "messageworker.hpp"
 
 #include "common.hpp"
 
@@ -30,12 +31,14 @@ static void tdma_slots();
 static void manual_drive();
 static void manual_drive_wasd();
 static void simple_lines();
+static void message_worker_test();
 
 static const std::vector<menu_item> demos = {
 	{.text = "TDMA slots", .action = &tdma_slots},
 	{.text = "Manual drive", .action = &manual_drive},
 	{.text = "Manual drive WASD", .action = &manual_drive_wasd},
-	{.text = "Simple line following", .action = &simple_lines}};
+	{.text = "Simple line following", .action = &simple_lines},
+	{.text = "Message worker", .action = &message_worker_test}};
 
 void demo_submenu() {
 	show_menu("Car Demos", demos, true);
@@ -46,6 +49,14 @@ void demo_submenu() {
  *
  */
 void tdma_slots() {
+
+	auto tdma_profile = car_profile.get_tdma();
+	if (!tdma_profile.has_value()) {
+		std::cout << "TDMA not configured. Exiting...\n";
+		prompt_enter(); 
+		return;
+	}
+
 	auto rf_module = std::make_shared<drf7020d20>(
 		gpio_pins, RASPI_12, RASPI_16, RASPI_18, 0);
 
@@ -391,4 +402,109 @@ void manual_drive_wasd() {
 
 		std::cout << '\r';
 	}
+}
+
+void message_worker_test() {
+
+	auto tdma_profile = car_profile.get_tdma();
+	if (!tdma_profile.has_value()) {
+		std::cout << "TDMA not configured. Exiting...\n";
+		prompt_enter(); 
+		return;
+	}
+
+	auto rf_module = std::make_shared<drf7020d20>(
+		gpio_pins, RASPI_12, RASPI_16, RASPI_18, 0);
+
+	// Configure RF Chip
+	std::cout << "Configuring RF Chip... " << std::flush;
+	rf_module->enable();
+	if (!rf_module->configure(FREQ_DEMO, drf7020d20::DR9600, 9,
+			drf7020d20::DR9600, drf7020d20::NONE)) {
+		std::cout << "Failed\n";
+		prompt_enter();
+		return;
+	}
+	std::cout << "Success\n";
+
+	// Select scheme
+	std::string input;
+	tdma::scheme selected_scheme = tdma::AIR_A;
+	uint32_t n_slots = 4;
+
+	std::cout << "AIR TDMA Scheme (default - A): ";
+	std::getline(std::cin, input);
+	if (!input.empty()) {
+		switch (input[0]) {
+		case 'A': // fallthrough
+		case 'a':
+			// Already set
+			break;
+		case 'B': // fallthrough
+		case 'b':
+			selected_scheme = tdma::AIR_B;
+			n_slots = 8;
+			break;
+		case 'C': // fallthrough
+		case 'c':
+			selected_scheme = tdma::AIR_C;
+			n_slots = 16;
+			break;
+		default:
+			std::cout << "Unknown scheme\n";
+			prompt_enter();
+			return;
+		}
+	}
+
+	// Select timeslot
+	uint32_t slot = 0;
+	printf("Timeslot [0-%u] (default - 0): ", n_slots - 1);
+	std::getline(std::cin, input);
+	if (!input.empty()) {
+		try {
+			int32_t slot_input = std::stoi(input);
+			if (slot_input < 0 || (uint32_t)slot_input >= n_slots) {
+				std::cout << "Invalid Timeslot\n";
+				prompt_enter();
+				return;
+			}
+
+			slot = (uint32_t)slot_input;
+		} catch (std::exception &ex) {
+			std::cout << "Invalid Timeslot\n";
+			std::cerr << ex.what() << std::endl;
+
+			prompt_enter();
+			return;
+		}
+	}
+
+	auto tdma_slot = std::make_shared<tdma>(rf_module, slot, selected_scheme);
+	tdma_slot->rx_set_offset(tdma_profile->rx_offset_ms);
+	tdma_slot->tx_set_offset(tdma_profile->tx_offset_ms);	
+
+	message_worker worker(tdma_slot);
+
+	std::cout << "Awaiting checkin...\n";
+	std::string control_id = worker.await_checkin();
+	std::cout << "Control Id: " << control_id << std::endl;
+	
+	
+	std::cout << "Enter the desired position: \n";
+	std::getline(std::cin, input);
+	uint8_t desired_pos = std::stoi(input);
+
+	std::cout << "Sending request...\n";
+	message_worker::command command = worker.send_request(desired_pos);
+	
+	if (command == message_worker::SBY) {
+		std::cout << "STANDBY\n";
+	}
+	else if (command = message_worker::GRQ) {
+		std::cout << "GO AS REQUESTED\n";
+	}
+
+	std::cout << "Clearing...\n";
+	worker.send_clear(); 
 }

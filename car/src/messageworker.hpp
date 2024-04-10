@@ -35,6 +35,11 @@ public:
 	message_worker::command send_request(uint8_t desired_pos);
 
 	/**
+	 * @brief send clear
+	*/
+	void send_clear();
+
+	/**
 	 * @brief create check in message
 	 * @return check in message
 	 */

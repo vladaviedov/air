@@ -42,7 +42,6 @@ std::string message_worker::await_checkin() {
 	}
 
 	uint8_t desired_pos = 0; //choose random pos
-	send_request(desired_pos);
 
 	return control_id;
 }
@@ -83,6 +82,10 @@ message_worker::command message_worker::send_request(uint8_t desired_pos) {
 	else {
 		throw std::invalid_argument("Unsupported");
 	}
+}
+
+void message_worker::send_clear() {
+	tdma_handler->tx_sync(CLEAR);
 }
 
 std::string message_worker::format_checkin() {
