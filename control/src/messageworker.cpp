@@ -26,13 +26,14 @@ static constexpr uint8_t MESSAGE_TIMEOUT =
 	4; /*amount of time to wait for message (in frames)*/
 
 message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in,
-	std::atomic<bool> &active_flag_in)
+	std::shared_ptr<std::atomic<bool>> active_flag_in)
 	: active_flag(active_flag_in),
 	  tdma_handler(tdma_handler_in),
 	  control_id(get_id()) {}
 
-std::tuple<uint8_t, uint8_t, std::string> message_worker::await_request_sync() {
-	while (active_flag) {
+std::optional<std::tuple<uint8_t, uint8_t, std::string>>
+message_worker::await_request_sync() {
+	while (*active_flag) {
 		std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT);
 
 		std::istringstream parts(rx_msg);
@@ -60,6 +61,7 @@ std::tuple<uint8_t, uint8_t, std::string> message_worker::await_request_sync() {
 
 		return request_data.value();
 	}
+	return std::nullopt;
 }
 
 void message_worker::await_request(
@@ -71,10 +73,13 @@ void message_worker::await_request(
 	}
 	auto executor = [&]() {
 		auto request_data = await_request_sync();
-
+		if (!request_data.has_value()) {
+			return;
+		}
 		// hamdle if request data is std::null_opt
-		callback(std::get<0>(request_data), std::get<1>(request_data),
-			std::get<2>(request_data), *this);
+		callback(std::get<0>(request_data.value()),
+			std::get<1>(request_data.value()),
+			std::get<2>(request_data.value()), *this);
 	};
 
 	thread = std::make_unique<std::thread>(executor);
@@ -156,7 +161,8 @@ bool message_worker::check_acknowledge_sync() {
 	return ack_msg == ACKNOWLEDGE;
 }
 
-void message_worker::check_acknowledge(std::function<void(bool, message_worker &)> callback) {
+void message_worker::check_acknowledge(
+	std::function<void(bool, message_worker &)> callback) {
 	if (thread != nullptr) {
 		thread->join();
 		thread.reset();

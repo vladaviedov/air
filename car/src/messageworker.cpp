@@ -22,25 +22,20 @@ static std::string format_checkin();
 static constexpr uint8_t MESSAGE_TIMEOUT =
 	4; /*time to wait for message (in frames)*/
 
-message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in,
-	std::atomic<bool> &active_flag_in)
-	: active_flag(active_flag_in),
-	  tdma_handler(tdma_handler_in),
-	  car_id(get_id()) {}
+message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in)
+	: tdma_handler(tdma_handler_in),
+	  car_id(get_id()),
+	  current_pos(tdma_handler->get_timeslot()) {}
 
-std::string message_worker::await_checkin() {
+std::optional<std::string> message_worker::send_checkin() {
 	tdma_handler->tx_sync(format_checkin()); // send check in
 
 	std::string control_id;
 
-	while (active_flag) {
-		control_id = tdma_handler->rx_sync(MESSAGE_TIMEOUT); // receive check in
+	control_id = tdma_handler->rx_sync(MESSAGE_TIMEOUT); // receive check in
 
-		if (!validate_id(control_id)) {
-			continue;
-		}
-
-		break;
+	if (!validate_id(control_id)) {
+		return std::nullopt;
 	}
 
 	return control_id;
@@ -98,7 +93,7 @@ std::string format_checkin() {
 std::string message_worker::format_request(uint8_t desired_pos) {
 	std::string formatted_request;
 	formatted_request.append(*car_id + " ");
-	formatted_request.push_back(current_pos);
-	formatted_request.push_back(desired_pos);
+	formatted_request.push_back((char)current_pos);
+	formatted_request.push_back((char)desired_pos);
 	return formatted_request;
 }

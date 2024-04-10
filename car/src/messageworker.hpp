@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <functional>
 #include <memory>
+#include <optional>
 #include <string>
 
 #include <shared/tdma.hpp>
@@ -22,15 +23,13 @@ public:
 	 * @brief constructor for car message worker
 	 * @param[in] tdma_handler_in
 	 */
-	message_worker(const std::shared_ptr<tdma> &tdma_handler_in,
-		std::atomic<bool> &active_flag_in);
+	message_worker(const std::shared_ptr<tdma> &tdma_handler_in);
 
 	/**
 	 * @brief send and receive check in from control
 	 * @return control id
 	 */
-	std::string await_checkin();
-	
+	std::optional<std::string> send_checkin();
 
 	/**
 	 * @brief send request callback
@@ -56,7 +55,6 @@ public:
 	std::string format_request(uint8_t desired_pos);
 
 private:
-	std::atomic<bool> &active_flag;
 	std::shared_ptr<tdma> tdma_handler;
 	std::shared_ptr<std::string> car_id;
 	uint8_t current_pos;

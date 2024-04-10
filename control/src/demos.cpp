@@ -168,15 +168,20 @@ void message_worker_test() {
 			std::make_shared<tdma>(rf_module, slot, selected_scheme);
 
 		while (active) {
-			message_worker worker(tdma_slot, active);
+			message_worker worker(
+				tdma_slot, std::make_shared<std::atomic<bool>>(&active));
 
 			std::cout << "Awaiting check-in...\n";
 			auto request_data = worker.await_request_sync();
-			std::cout << "Received check-in:\n\n";
+			if (!request_data.has_value()) {
+				std::cout << "No data received. Cancelled...\n";
+				break;
+			}
 
-			printf("Current Position: %s\n", std::get<0>(request_data));
-			printf("Desired Position: %s\n", std::get<1>(request_data));
-			printf("Car Id: %s\n", std::get<2>(request_data));
+			std::cout << "Received check-in:\n\n";
+			printf("Current Position: %u\n", std::get<0>(request_data.value()));
+			printf("Desired Position: %u\n", std::get<1>(request_data.value()));
+			printf("Car Id: %s\n", std::get<2>(request_data.value()).c_str());
 
 			std::cout << "Processing request...\n";
 			worker.send_go_requested();

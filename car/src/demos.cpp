@@ -482,12 +482,16 @@ void message_worker_test() {
 	tdma_slot->rx_set_offset(tdma_profile->rx_offset_ms);
 	tdma_slot->tx_set_offset(tdma_profile->tx_offset_ms);
 
-	std::atomic<bool> active = true;
-	message_worker worker(tdma_slot, active);
+	message_worker worker(tdma_slot);
 
 	std::cout << "Awaiting checkin...\n";
-	std::string control_id = worker.await_checkin();
-	std::cout << "Control Id: " << control_id << std::endl;
+	auto control_id = worker.send_checkin();
+	if (!control_id.has_value()) {
+		std::cout << "Control id not received. Cancelling...";
+		prompt_enter();
+		return;
+	}
+	std::cout << "Control Id: " << control_id.value() << std::endl;
 
 	std::cout << "Enter the desired position: \n";
 	std::getline(std::cin, input);
