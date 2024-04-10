@@ -27,7 +27,7 @@ static constexpr uint8_t MESSAGE_TIMEOUT =
 
 message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in,
 	std::shared_ptr<std::atomic<bool>> active_flag_in)
-	: active_flag(active_flag_in),
+	: active_flag(std::move(active_flag_in)),
 	  tdma_handler(tdma_handler_in),
 	  control_id(get_id()) {}
 
@@ -99,7 +99,6 @@ message_worker::get_request() {
 	}
 	parts >> request;
 
-	request.c_str();
 	auto current_pos = (uint8_t)request[0];
 	auto desired_pos = (uint8_t)request[1];
 
