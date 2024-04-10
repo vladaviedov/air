@@ -26,15 +26,18 @@ static constexpr uint8_t MESSAGE_TIMEOUT =
 	4; /*amount of time to wait for message (in frames)*/
 
 message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in,
-	std::shared_ptr<std::atomic<bool>> active_flag_in)
-	: active_flag(std::move(active_flag_in)),
+	std::atomic<bool> &active_flag_in)
+	: active_flag(active_flag_in),
 	  tdma_handler(tdma_handler_in),
 	  control_id(get_id()) {}
 
 std::optional<std::tuple<uint8_t, uint8_t, std::string>>
 message_worker::await_request_sync() {
-	while (*active_flag) {
+	while (active_flag) {
 		std::string rx_msg = tdma_handler->rx_sync(MESSAGE_TIMEOUT);
+		if (rx_msg.empty()) {
+			continue;
+		}
 
 		std::istringstream parts(rx_msg);
 		std::string header;
@@ -105,7 +108,6 @@ message_worker::get_request() {
 
 	std::cout << "Current Pos: " << rx_msg << std::endl;
 	std::cout << "Desired Pos: " << rx_msg << std::endl;
-
 
 	return std::make_tuple(current_pos, desired_pos, car_id);
 }

@@ -10,7 +10,7 @@
 controller::controller(uint8_t intersect_size, tdma::scheme div)
 	: rf_module(std::make_shared<drf7020d20>(
 		  gpio_pins, RASPI_12, RASPI_11, RASPI_7, 0)),
-	  active(std::make_shared<std::atomic<bool>>(true)) {
+	  active(true) {
 	blocked_intersects.reserve(intersect_size);
 	workers.reserve(intersect_size);
 	for (uint32_t i = 0; i < intersect_size; i++) {

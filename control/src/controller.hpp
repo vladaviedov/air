@@ -71,7 +71,7 @@ public:
 
 private:
 	std::shared_ptr<drf7020d20> rf_module;
-	std::shared_ptr<std::atomic<bool>> active;
+	std::atomic<bool> active;
 	std::vector<tdma> tdmas;
 	std::vector<message_worker> workers;
 	std::vector<bool> blocked_intersects;

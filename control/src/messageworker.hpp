@@ -21,7 +21,7 @@ public:
 	 * @param[in] tdma_handler_in
 	 */
 	message_worker(const std::shared_ptr<tdma> &tdma_handler_in,
-		std::shared_ptr<std::atomic<bool>> active_flag_in);
+		std::atomic<bool> &active_flag_in);
 
 	/**
 	 * @brief awaits request form car synchronously
@@ -107,7 +107,8 @@ private:
 	void send_command(const std::string &command);
 
 	std::unique_ptr<std::thread> thread;
-	std::shared_ptr<std::atomic<bool>> active_flag;
+	// NOLINTNEXTLINE
+	std::atomic<bool> &active_flag;
 	std::shared_ptr<tdma> tdma_handler;
 	std::shared_ptr<std::string> control_id;
 };

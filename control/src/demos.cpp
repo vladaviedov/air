@@ -169,9 +169,9 @@ void message_worker_test() {
 		tdma_slot->rx_set_offset(-5);
 		tdma_slot->tx_set_offset(-70);
 
-		while (active) {
-			message_worker worker(
-				tdma_slot, std::make_shared<std::atomic<bool>>(&active));
+		auto active_ptr = std::make_shared<std::atomic<bool>>(&active);
+		while (active) { // when space is hit, breaks
+			message_worker worker(tdma_slot, active);
 
 			std::cout << "Awaiting check-in...\n";
 			auto request_data = worker.await_request_sync();

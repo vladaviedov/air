@@ -42,6 +42,7 @@ std::optional<std::string> message_worker::send_checkin() {
 }
 
 #include <iostream>
+
 message_worker::command message_worker::send_request(uint8_t desired_pos) {
 	tdma_handler->tx_sync(format_request(desired_pos));
 	std::string command;
@@ -52,8 +53,7 @@ message_worker::command message_worker::send_request(uint8_t desired_pos) {
 
 		std::string response =
 			tdma_handler->rx_sync(MESSAGE_TIMEOUT); // receive check in
-		
-		
+
 		std::istringstream parts(response);
 		std::string ack;
 
