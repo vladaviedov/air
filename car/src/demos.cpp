@@ -483,8 +483,9 @@ void message_worker_test() {
 	auto tdma_slot = std::make_shared<tdma>(rf_module, slot, selected_scheme);
 	tdma_slot->rx_set_offset(tdma_profile->rx_offset_ms);
 	tdma_slot->tx_set_offset(tdma_profile->tx_offset_ms);	
-
-	message_worker worker(tdma_slot);
+	
+	std::atomic<bool> active = true;
+	message_worker worker(tdma_slot, active);
 
 	std::cout << "Awaiting checkin...\n";
 	std::string control_id = worker.await_checkin();
@@ -501,7 +502,7 @@ void message_worker_test() {
 	if (command == message_worker::SBY) {
 		std::cout << "STANDBY\n";
 	}
-	else if (command = message_worker::GRQ) {
+	else if (command == message_worker::GRQ) {
 		std::cout << "GO AS REQUESTED\n";
 	}
 

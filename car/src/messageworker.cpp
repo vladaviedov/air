@@ -20,8 +20,8 @@ static constexpr std::string FINAL = "FIN";
 
 #define MESSAGE_TIMEOUT 4 /*time to wait for message (in frames)*/
 
-message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in)
-	: tdma_handler(tdma_handler_in) {
+message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in, std::atomic<bool> &active_flag_in)
+	: tdma_handler(tdma_handler_in), active_flag(active_flag_in) {
 	car_id = get_id();
 }
 

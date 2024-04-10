@@ -21,7 +21,7 @@ public:
 	 * @brief constructor for car message worker
 	 * @param[in] tdma_handler_in
 	 */
-	message_worker(const std::shared_ptr<tdma> &tdma_handler_in);
+	message_worker(const std::shared_ptr<tdma> &tdma_handler_in, std::atomic<bool> &active_flag_in);
 
 	/**
 	 * @brief send and receive check in from control
@@ -54,6 +54,7 @@ public:
 	std::string format_request(uint8_t desired_pos);
 
 private:
+	std::atomic<bool> &active_flag;
 	std::shared_ptr<tdma> tdma_handler;
 	std::shared_ptr<std::string> car_id;
 	uint8_t current_pos;

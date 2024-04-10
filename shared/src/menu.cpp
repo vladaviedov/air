@@ -38,7 +38,6 @@ void show_menu(const std::string &heading,
 		auto digits = (uint32_t)std::log10(items.size() + 1) + 1;
 
 		// Print list
-		std::cout << BANNER << "\n";
 		std::cout << heading << "\n\n";
 		uint32_t index = 0;
 		for (index = 0; index < items.size(); index++) {
