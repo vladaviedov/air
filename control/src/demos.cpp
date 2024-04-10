@@ -19,10 +19,14 @@
 #include <shared/tdma.hpp>
 #include <shared/utils.hpp>
 
+#include "controller.hpp"
 #include "messageworker.hpp"
 
 static void tdma_control();
-static void control_template(std::function<void(std::shared_ptr<drf7020d20>, uint32_t, tdma::scheme, std::atomic<bool> &)> inner_func);
+static void control_template(std::function<void(std::shared_ptr<drf7020d20>,
+		uint32_t,
+		tdma::scheme,
+		std::atomic<bool> &)> inner_func);
 static void message_worker_test();
 
 static const std::vector<menu_item> demos = {
@@ -37,7 +41,10 @@ void demo_submenu() {
  * @brief TDMA multi-slot control demo.
  *
  */
-void control_template(std::function<void(std::shared_ptr<drf7020d20>, uint32_t, tdma::scheme, std::atomic<bool> &)> inner_func) {
+void control_template(std::function<void(std::shared_ptr<drf7020d20>,
+		uint32_t,
+		tdma::scheme,
+		std::atomic<bool> &)> inner_func) {
 	auto rf_test =
 		std::make_shared<drf7020d20>(gpio_pins, RASPI_12, RASPI_11, RASPI_7, 0);
 
@@ -134,7 +141,9 @@ void control_template(std::function<void(std::shared_ptr<drf7020d20>, uint32_t, 
 }
 
 void tdma_control() {
-	auto inner_func = [](std::shared_ptr<drf7020d20> rf_test, uint32_t slot, tdma::scheme selected_scheme, std::atomic<bool> &active) {
+	auto inner_func = [](const std::shared_ptr<drf7020d20> &rf_test, uint32_t slot,
+						  tdma::scheme selected_scheme,
+						  std::atomic<bool> &active) {
 		tdma tdma(rf_test, slot, selected_scheme);
 		tdma.rx_set_offset(-5);
 		tdma.tx_set_offset(-70);
@@ -149,13 +158,29 @@ void tdma_control() {
 	};
 
 	control_template(inner_func);
-} 
+}
 
 void message_worker_test() {
-	auto inner_func = [](std::shared_ptr<drf7020d20> rf_module, uint32_t slot, tdma::scheme selected_scheme, std::atomic<bool> &active) {
-		auto tdma_slot = std::make_shared<tdma>(rf_module, slot, selected_scheme);
+	auto inner_func = [](const std::shared_ptr<drf7020d20> &rf_module, uint32_t slot,
+						  tdma::scheme selected_scheme,
+						  std::atomic<bool> &active) {
+		auto tdma_slot =
+			std::make_shared<tdma>(rf_module, slot, selected_scheme);
 
 		message_worker worker(tdma_slot, active);
 
+		std::cout << "Initiating check in proces...\n";
+		auto request_data = worker.await_request_sync();
+
+		std::cout << "Current position: " << std::get<0>(request_data)
+				  << std::endl;
+		std::cout << "Desired position: " << std::get<0>(request_data)
+				  << std::endl;
+		std::cout << "Car Id: " << std::get<0>(request_data) << std::endl;
+
+		std::cout << "Awaiting clear from car...\n";
+		bool sent_clear = worker.await_clear_sync();
+
+		std::cout << "Sent clear: " << sent_clear << std::endl;
 	};
 }

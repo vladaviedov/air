@@ -4,9 +4,9 @@
  */
 #include "messageworker.hpp"
 
+#include <functional>
 #include <sstream>
 #include <stdexcept>
-#include <functional>
 
 #include <shared/messages.hpp>
 
@@ -18,12 +18,13 @@ static constexpr std::string GO_REQUESTED = "GRQ";
 static constexpr std::string CLEAR = "CLR";
 static constexpr std::string FINAL = "FIN";
 
-#define MESSAGE_TIMEOUT 4 /*time to wait for message (in frames)*/
+static constexpr uint8_t MESSAGE_TIMEOUT = 4; /*time to wait for message (in frames)*/
 
-message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in, std::atomic<bool> &active_flag_in)
-	: tdma_handler(tdma_handler_in), active_flag(active_flag_in) {
-	car_id = get_id();
-}
+message_worker::message_worker(const std::shared_ptr<tdma> &tdma_handler_in,
+	std::atomic<bool> &active_flag_in)
+	: tdma_handler(tdma_handler_in),
+	  active_flag(active_flag_in),
+	  car_id(get_id()) {}
 
 std::string message_worker::await_checkin() {
 	tdma_handler->tx_sync(format_checkin()); // send check in
@@ -31,23 +32,21 @@ std::string message_worker::await_checkin() {
 	std::string control_id;
 
 	while (active_flag) {
-
 		control_id = tdma_handler->rx_sync(MESSAGE_TIMEOUT); // receive check in
 
 		if (!validate_id(control_id)) {
 			continue;
 		}
-		
+
 		break;
 	}
 
-	uint8_t desired_pos = 0; //choose random pos
+	uint8_t desired_pos = 0; // choose random pos
 
 	return control_id;
 }
 
 message_worker::command message_worker::send_request(uint8_t desired_pos) {
-	
 	tdma_handler->tx_sync(format_request(desired_pos));
 	std::string command;
 	uint32_t i = 0;
@@ -72,14 +71,12 @@ message_worker::command message_worker::send_request(uint8_t desired_pos) {
 	}
 
 	tdma_handler->tx_sync(ACKNOWLEDGE);
-	
+
 	if (command == STANDBY) {
 		return SBY;
-	}
-	else if (command == GO_REQUESTED) {
+	} else if (command == GO_REQUESTED) {
 		return GRQ;
-	}
-	else {
+	} else {
 		throw std::invalid_argument("Unsupported");
 	}
 }
@@ -99,5 +96,3 @@ std::string message_worker::format_request(uint8_t desired_pos) {
 	formatted_request.push_back(desired_pos);
 	return formatted_request;
 }
-
-

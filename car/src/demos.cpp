@@ -22,9 +22,9 @@
 #include <shared/messages.hpp>
 #include <shared/tdma.hpp>
 #include <shared/utils.hpp>
-#include "messageworker.hpp"
 
 #include "common.hpp"
+#include "messageworker.hpp"
 
 static void tdma_slots();
 
@@ -49,11 +49,10 @@ void demo_submenu() {
  *
  */
 void tdma_slots() {
-
 	auto tdma_profile = car_profile.get_tdma();
 	if (!tdma_profile.has_value()) {
 		std::cout << "TDMA not configured. Exiting...\n";
-		prompt_enter(); 
+		prompt_enter();
 		return;
 	}
 
@@ -405,11 +404,10 @@ void manual_drive_wasd() {
 }
 
 void message_worker_test() {
-
 	auto tdma_profile = car_profile.get_tdma();
 	if (!tdma_profile.has_value()) {
 		std::cout << "TDMA not configured. Exiting...\n";
-		prompt_enter(); 
+		prompt_enter();
 		return;
 	}
 
@@ -482,30 +480,28 @@ void message_worker_test() {
 
 	auto tdma_slot = std::make_shared<tdma>(rf_module, slot, selected_scheme);
 	tdma_slot->rx_set_offset(tdma_profile->rx_offset_ms);
-	tdma_slot->tx_set_offset(tdma_profile->tx_offset_ms);	
-	
+	tdma_slot->tx_set_offset(tdma_profile->tx_offset_ms);
+
 	std::atomic<bool> active = true;
 	message_worker worker(tdma_slot, active);
 
 	std::cout << "Awaiting checkin...\n";
 	std::string control_id = worker.await_checkin();
 	std::cout << "Control Id: " << control_id << std::endl;
-	
-	
+
 	std::cout << "Enter the desired position: \n";
 	std::getline(std::cin, input);
 	uint8_t desired_pos = std::stoi(input);
 
-	std::cout << "Sending request...\n";
+	std::cout << "Sending request to " << desired_pos << " ...\n";
 	message_worker::command command = worker.send_request(desired_pos);
-	
+
 	if (command == message_worker::SBY) {
 		std::cout << "STANDBY\n";
-	}
-	else if (command == message_worker::GRQ) {
+	} else if (command == message_worker::GRQ) {
 		std::cout << "GO AS REQUESTED\n";
 	}
 
 	std::cout << "Clearing...\n";
-	worker.send_clear(); 
+	worker.send_clear();
 }

@@ -48,8 +48,8 @@ public:
 	 */
 	void receive_request_callback(uint8_t current_pos,
 		uint8_t requested_pos,
-		std::string car_id,
-		message_worker worker);
+		std::string &car_id,
+		message_worker &worker);
 
 	/**
 	 * @brief process car requests
@@ -61,7 +61,7 @@ public:
 	 * @param[in] cleared
 	 * @param[in] worker
 	 */
-	void clear_callback(bool cleared, message_worker worker);
+	void clear_callback(bool cleared, message_worker &worker);
 
 	/**
 	 * @brief places car in moving state and blocks entrances

@@ -9,6 +9,7 @@
 #include <functional>
 #include <optional>
 #include <string>
+#include <thread>
 #include <tuple>
 
 #include <shared/tdma.hpp>
@@ -19,7 +20,8 @@ public:
 	 * @brief constructor for control message worker
 	 * @param[in] tdma_handler_in
 	 */
-	message_worker(const std::shared_ptr<tdma> &tdma_handler_in, std::atomic<bool> &active_flag_in);
+	message_worker(const std::shared_ptr<tdma> &tdma_handler_in,
+		std::atomic<bool> &active_flag_in);
 
 	/**
 	 * @brief awaits request form car synchronously
@@ -33,8 +35,9 @@ public:
 	 * @param[in] callback
 	 */
 	void await_request(
-		std::function<void(uint8_t, uint8_t, std::string, message_worker)>
+		std::function<void(uint8_t, uint8_t, std::string &, message_worker &)>
 			callback);
+
 	/**
 	 * @brief receives request from car
 	 * @return pair of current and desired position of car
@@ -42,7 +45,8 @@ public:
 	std::optional<std::tuple<uint8_t, uint8_t, std::string>> get_request();
 
 	/**
-	 * @brief receives clear message from car and ends conversation synchronously
+	 * @brief receives clear message from car and ends conversation
+	 * synchronously
 	 * @return true if clear is sent successfully
 	 */
 	bool await_clear_sync();
@@ -52,7 +56,7 @@ public:
 	 * @return true if clear is sent successfully
 	 * @param[in] callback
 	 */
-	void await_clear(std::function<void(bool, message_worker)> callback);
+	void await_clear(std::function<void(bool, message_worker &)> callback);
 
 	/**
 	 * @brief sends check in message
@@ -89,6 +93,7 @@ private:
 	 */
 	void send_command(const std::string &command);
 
+	std::unique_ptr<std::thread> thread;
 	std::atomic<bool> &active_flag;
 	std::shared_ptr<tdma> tdma_handler;
 	std::shared_ptr<std::string> control_id;

@@ -5,9 +5,9 @@
 #pragma once
 
 #include <cstdlib>
+#include <functional>
 #include <memory>
 #include <string>
-#include <functional>
 
 #include <shared/tdma.hpp>
 
@@ -17,11 +17,13 @@ public:
 		SBY,
 		GRQ,
 	};
+
 	/**
 	 * @brief constructor for car message worker
 	 * @param[in] tdma_handler_in
 	 */
-	message_worker(const std::shared_ptr<tdma> &tdma_handler_in, std::atomic<bool> &active_flag_in);
+	message_worker(const std::shared_ptr<tdma> &tdma_handler_in,
+		std::atomic<bool> &active_flag_in);
 
 	/**
 	 * @brief send and receive check in from control
@@ -31,12 +33,12 @@ public:
 
 	/**
 	 * @brief send request callback
-	*/
+	 */
 	message_worker::command send_request(uint8_t desired_pos);
 
 	/**
 	 * @brief send clear
-	*/
+	 */
 	void send_clear();
 
 	/**

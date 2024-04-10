@@ -17,7 +17,7 @@ controller::controller(uint8_t intersect_size, tdma::scheme div)
 		std::atomic<bool> active = true;
 		message_worker worker(tdma_ptr, active);
 		auto executor = [&](uint8_t curr_pos, uint8_t requested_pos,
-							std::string car_id, message_worker worker) {
+							std::string &car_id, message_worker &worker) {
 			receive_request_callback(curr_pos, requested_pos, car_id, worker);
 		};
 		worker.await_request(executor);
@@ -29,10 +29,10 @@ controller::controller(uint8_t intersect_size, tdma::scheme div)
 
 void controller::receive_request_callback(uint8_t current_pos,
 	uint8_t requested_pos,
-	std::string car_id,
-	message_worker worker) {
+	std::string &car_id,
+	message_worker &worker) {
 	car car = {
-		.car_id = car_id,
+		.car_id = std::move(car_id),
 		.state = CHECKIN,
 		.current_pos = current_pos,
 		.request_pos = requested_pos,
@@ -69,13 +69,13 @@ void controller::move_car(car &car) {
 	for (uint8_t i = car.current_pos + 1; i <= car.request_pos; i++) {
 		blocked_intersects[i] = true;
 	}
-	auto executor = [&](bool cleared, message_worker worker) {
+	auto executor = [&](bool cleared, message_worker &worker) {
 		clear_callback(cleared, worker);
 	};
 	workers[car.current_pos].await_clear(executor);
 }
 
-void controller::clear_callback(bool cleared, message_worker message_worker) {
+void controller::clear_callback(bool cleared, message_worker &message_worker) {
 	car curr_car = cars[message_worker.get_timeslot()];
 	if (cleared) {
 		for (uint8_t i = curr_car.current_pos + 1; i <= curr_car.request_pos;
