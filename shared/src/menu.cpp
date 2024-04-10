@@ -32,13 +32,13 @@ void show_menu(const std::string &heading,
 	bool is_submenu) {
 	while (true) {
 		// Clear screen
-		std::cout << BANNER << "\n";
 		std::cout << CLEAR_TTY << std::flush;
 		raw_tty();
 
 		auto digits = (uint32_t)std::log10(items.size() + 1) + 1;
 
 		// Print list
+		std::cout << BANNER << "\n";
 		std::cout << heading << "\n\n";
 		uint32_t index = 0;
 		for (index = 0; index < items.size(); index++) {
