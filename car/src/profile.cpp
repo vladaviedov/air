@@ -25,6 +25,12 @@ static constexpr std::string CHECK_TDMA_RX_OFFSET_MS = "rx";
 static constexpr std::string CHECK_US = "[us]";
 static constexpr std::string CHECK_US_THRESHOLD = "threshold";
 
+// File parsing: turning profile
+static constexpr std::string CHECK_TURN = "[turn]";
+static constexpr std::string CHECK_TURN_RIGHT_MS = "right";
+static constexpr std::string CHECK_TURN_LEFT_MS = "left";
+static constexpr std::string CHECK_TURN_LEFT_MS_DELAY = "left_delay";
+
 template<typename T>
 static void load_field(
 	std::ifstream &file, const std::string &check, T &destination);
@@ -38,6 +44,7 @@ void profile::load(const std::string &filename) {
 	std::optional<servo> servo_load = std::nullopt;
 	std::optional<tdma> tdma_load = std::nullopt;
 	std::optional<us> us_load = std::nullopt;
+	std::optional<turn> turn_load = std::nullopt;
 
 	std::string line;
 	while (std::getline(file, line)) {
@@ -59,11 +66,19 @@ void profile::load(const std::string &filename) {
 
 			load_field(file, CHECK_US_THRESHOLD, us_load->threshold);
 		}
+		if (line == CHECK_TURN) {
+			turn_load = std::make_optional<turn>();
+
+			load_field(file, CHECK_TURN_RIGHT_MS, turn_load->right_ms);
+			load_field(file, CHECK_TURN_LEFT_MS, turn_load->left_ms);
+			load_field(file, CHECK_TURN_LEFT_MS_DELAY, turn_load->left_delay_ms);
+		}
 	}
 
 	servo_profile = servo_load;
 	tdma_profile = tdma_load;
 	us_profile = us_load;
+	turn_profile = turn_load;
 }
 
 void profile::save(const std::string &filename) const {
@@ -89,6 +104,12 @@ void profile::save(const std::string &filename) const {
 	if (us_profile.has_value()) {
 		file << CHECK_US << '\n';
 		file << CHECK_US_THRESHOLD << ' ' << us_profile->threshold << '\n';
+	}
+	if (turn_profile.has_value()) {
+		file << CHECK_TURN << '\n';
+		file << CHECK_TURN_RIGHT_MS << ' ' << turn_profile->right_ms << '\n';
+		file << CHECK_TURN_LEFT_MS << ' ' << turn_profile->left_ms << '\n';
+		file << CHECK_TURN_LEFT_MS_DELAY << ' ' << turn_profile->left_delay_ms << '\n';
 	}
 }
 
