@@ -43,6 +43,8 @@ static void calibrate_us();
 
 static void calibrate_tdma();
 
+static void calibrate_position();
+
 static const std::vector<menu_item> calib_options = {
 	{.text = "Print calibration", .action = &print_calibration},
 	{.text = "Calibrate servo", .action = &calibrate_servo},
@@ -51,7 +53,8 @@ static const std::vector<menu_item> calib_options = {
 	{.text = "Reload default profile", .action = &load_default},
 	{.text = "Load profile from...", .action = &load_from},
 	{.text = "Save default profile", .action = &save_default},
-	{.text = "Save profile as...", .action = &save_as}};
+	{.text = "Save profile as...", .action = &save_as},
+	{.text = "Calibrate position", .action = &calibrate_position}};
 
 void calibration_submenu() {
 	show_menu("Calibration", calib_options, true);
@@ -450,4 +453,11 @@ void calibrate_tdma() {
 	car_profile.set_tdma(new_profile);
 
 	prompt_enter();
+}
+
+int position;
+
+void calibrate_position() {
+	std::cout << "Enter the initial position: " << std::flush;
+	std::cin >> position;
 }

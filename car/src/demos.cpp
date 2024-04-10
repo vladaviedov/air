@@ -30,6 +30,7 @@ static void tdma_slots();
 static void manual_drive();
 static void manual_drive_wasd();
 static void simple_lines();
+static void turn(std::string direction);
 
 static const std::vector<menu_item> demos = {
 	{.text = "TDMA slots", .action = &tdma_slots},
@@ -390,5 +391,41 @@ void manual_drive_wasd() {
 		}
 
 		std::cout << '\r';
+	}
+}
+
+void turn(std::string direction) {
+	if (position == 0) {
+		if (direction == "left") {
+			position = 0;
+		} else if (direction == "straight") {
+			position = 3;
+		} else {
+			position = 2;
+		}
+	} else if (position == 1) {
+		if (direction == "left") {
+			position = 3;
+		} else if (direction == "straight") {
+			position = 2;
+		} else {
+			position = 1;
+		}
+	} else if (position == 2) {
+		if (direction == "left") {
+			position = 2;
+		} else if (direction == "straight") {
+			position = 1;
+		} else {
+			position = 0;
+		}
+	} else {
+		if (direction == "left") {
+			position = 1;
+		} else if (direction == "straight") {
+			position = 0;
+		} else {
+			position = 3;
+		}
 	}
 }
