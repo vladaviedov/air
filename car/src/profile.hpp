@@ -27,6 +27,7 @@ public:
 
 	struct turn {
 		uint32_t right_ms;
+		uint32_t right_delay_ms;
 		uint32_t left_ms;
 		uint32_t left_delay_ms;
 	};

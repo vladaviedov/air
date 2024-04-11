@@ -447,8 +447,11 @@ void turning() {
 			std::cout << "Starting right turn...\n";
 			m_1.set(100, FORWARD);
 			m_2.set(100, FORWARD);
-			m_sv.set(servo_profile->max_right);
+			m_sv.set(servo_profile->center);
 
+			std::this_thread::sleep_for(
+				std::chrono::milliseconds(turn_profile->right_delay_ms));
+			m_sv.set(servo_profile->max_right);
 			std::this_thread::sleep_for(
 				std::chrono::milliseconds(turn_profile->right_ms));
 

@@ -28,8 +28,9 @@ static constexpr std::string CHECK_US_THRESHOLD = "threshold";
 // File parsing: turning profile
 static constexpr std::string CHECK_TURN = "[turn]";
 static constexpr std::string CHECK_TURN_RIGHT_MS = "right";
+static constexpr std::string CHECK_TURN_RIGHT_DELAY_MS = "right_delay";
 static constexpr std::string CHECK_TURN_LEFT_MS = "left";
-static constexpr std::string CHECK_TURN_LEFT_MS_DELAY = "left_delay";
+static constexpr std::string CHECK_TURN_LEFT_DELAY_MS = "left_delay";
 
 template<typename T>
 static void load_field(
@@ -70,9 +71,11 @@ void profile::load(const std::string &filename) {
 			turn_load = std::make_optional<turn>();
 
 			load_field(file, CHECK_TURN_RIGHT_MS, turn_load->right_ms);
+			load_field(
+				file, CHECK_TURN_RIGHT_DELAY_MS, turn_load->right_delay_ms);
 			load_field(file, CHECK_TURN_LEFT_MS, turn_load->left_ms);
 			load_field(
-				file, CHECK_TURN_LEFT_MS_DELAY, turn_load->left_delay_ms);
+				file, CHECK_TURN_LEFT_DELAY_MS, turn_load->left_delay_ms);
 		}
 	}
 
@@ -109,8 +112,10 @@ void profile::save(const std::string &filename) const {
 	if (turn_profile.has_value()) {
 		file << CHECK_TURN << '\n';
 		file << CHECK_TURN_RIGHT_MS << ' ' << turn_profile->right_ms << '\n';
+		file << CHECK_TURN_RIGHT_DELAY_MS << ' ' << turn_profile->left_delay_ms
+			 << '\n';
 		file << CHECK_TURN_LEFT_MS << ' ' << turn_profile->left_ms << '\n';
-		file << CHECK_TURN_LEFT_MS_DELAY << ' ' << turn_profile->left_delay_ms
+		file << CHECK_TURN_LEFT_DELAY_MS << ' ' << turn_profile->left_delay_ms
 			 << '\n';
 	}
 }
