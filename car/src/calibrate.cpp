@@ -523,7 +523,8 @@ void calibrate_turning() {
 	std::getchar();
 	auto end_time = std::chrono::system_clock::now();
 	motors.stop();
-	new_profile.right_ms = (end_time - start_time).count() / 1000000 - (ADJUSTMENT - SIDE_ADJUSTMENT);
+	new_profile.right_ms = (end_time - start_time).count() / 1000000 -
+						   (ADJUSTMENT - SIDE_ADJUSTMENT);
 	servo_m.set(servo_profile->center);
 	std::cout << "Right turn calibration completed!\n";
 
@@ -534,7 +535,8 @@ void calibrate_turning() {
 
 	servo_m.set(servo_profile->max_right);
 	motors.set(100, BACKWARD);
-	std::this_thread::sleep_for(std::chrono::milliseconds(new_profile.right_ms));
+	std::this_thread::sleep_for(
+		std::chrono::milliseconds(new_profile.right_ms));
 	servo_m.set(servo_profile->center);
 
 	// Measure time
@@ -546,7 +548,8 @@ void calibrate_turning() {
 	}
 	end_time = std::chrono::system_clock::now();
 	motors.stop();
-	new_profile.right_delay_ms = (end_time - start_time).count() / 1000000 - (ADJUSTMENT - SIDE_ADJUSTMENT);
+	new_profile.right_delay_ms = (end_time - start_time).count() / 1000000 -
+								 (ADJUSTMENT - SIDE_ADJUSTMENT);
 	std::cout << "Right turn delay calibration completed!\n";
 
 	// Calibrate left turn
@@ -563,7 +566,8 @@ void calibrate_turning() {
 	std::getchar();
 	end_time = std::chrono::system_clock::now();
 	motors.stop();
-	new_profile.left_ms = (end_time - start_time).count() / 1000000 - (ADJUSTMENT + SIDE_ADJUSTMENT);
+	new_profile.left_ms = (end_time - start_time).count() / 1000000 -
+						  (ADJUSTMENT + SIDE_ADJUSTMENT);
 	servo_m.set(servo_profile->center);
 	std::cout << "Left turn calibration completed!\n";
 
@@ -586,7 +590,8 @@ void calibrate_turning() {
 	}
 	end_time = std::chrono::system_clock::now();
 	motors.stop();
-	new_profile.left_delay_ms = (end_time - start_time).count() / 1000000 - (ADJUSTMENT + SIDE_ADJUSTMENT);
+	new_profile.left_delay_ms = (end_time - start_time).count() / 1000000 -
+								(ADJUSTMENT + SIDE_ADJUSTMENT);
 	std::cout << "Left turn delay calibration completed!\n";
 
 	std::cout << "Calibration completed.\n";
