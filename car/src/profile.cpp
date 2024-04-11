@@ -71,7 +71,8 @@ void profile::load(const std::string &filename) {
 
 			load_field(file, CHECK_TURN_RIGHT_MS, turn_load->right_ms);
 			load_field(file, CHECK_TURN_LEFT_MS, turn_load->left_ms);
-			load_field(file, CHECK_TURN_LEFT_MS_DELAY, turn_load->left_delay_ms);
+			load_field(
+				file, CHECK_TURN_LEFT_MS_DELAY, turn_load->left_delay_ms);
 		}
 	}
 
@@ -109,7 +110,8 @@ void profile::save(const std::string &filename) const {
 		file << CHECK_TURN << '\n';
 		file << CHECK_TURN_RIGHT_MS << ' ' << turn_profile->right_ms << '\n';
 		file << CHECK_TURN_LEFT_MS << ' ' << turn_profile->left_ms << '\n';
-		file << CHECK_TURN_LEFT_MS_DELAY << ' ' << turn_profile->left_delay_ms << '\n';
+		file << CHECK_TURN_LEFT_MS_DELAY << ' ' << turn_profile->left_delay_ms
+			 << '\n';
 	}
 }
 
