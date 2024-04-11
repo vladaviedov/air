@@ -68,6 +68,13 @@ public:
 		tx_offset_ms = new_offset_ms;
 	}
 
+	/**
+	 * @brief get the timeslot of device
+	 */
+	inline uint32_t get_timeslot() const {
+		return slot;
+	}
+
 private:
 	/**
 	 * @brief Sleep until the next allowed time to transmit/received.

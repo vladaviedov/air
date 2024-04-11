@@ -19,10 +19,19 @@
 #include <shared/tdma.hpp>
 #include <shared/utils.hpp>
 
+#include "controller.hpp"
+#include "messageworker.hpp"
+
 static void tdma_control();
+static void control_template(std::function<void(std::shared_ptr<drf7020d20>,
+		uint32_t,
+		tdma::scheme,
+		std::atomic<bool> &)> inner_func);
+static void message_worker_test();
 
 static const std::vector<menu_item> demos = {
-	{.text = "TDMA control", .action = &tdma_control}};
+	{.text = "TDMA control", .action = &tdma_control},
+	{.text = "Message worker", .action = &message_worker_test}};
 
 void demo_submenu() {
 	show_menu("Control Demos", demos, true);
@@ -32,7 +41,10 @@ void demo_submenu() {
  * @brief TDMA multi-slot control demo.
  *
  */
-void tdma_control() {
+void control_template(std::function<void(std::shared_ptr<drf7020d20>,
+		uint32_t,
+		tdma::scheme,
+		std::atomic<bool> &)> inner_func) {
 	auto rf_test =
 		std::make_shared<drf7020d20>(gpio_pins, RASPI_12, RASPI_11, RASPI_7, 0);
 
@@ -106,17 +118,7 @@ void tdma_control() {
 	// Executor function
 	std::atomic<bool> active = true;
 	auto executor = [&](uint32_t slot) {
-		tdma tdma(rf_test, slot, selected_scheme);
-		tdma.rx_set_offset(-5);
-		tdma.tx_set_offset(-70);
-
-		while (active) {
-			auto received = tdma.rx_sync(5);
-			if (!received.empty()) {
-				std::cout << "Slot " << slot << ": " << received << '\n';
-				tdma.tx_sync(*get_id());
-			}
-		}
+		inner_func(rf_test, slot, selected_scheme, active);
 	};
 
 	std::vector<std::thread> threads;
@@ -136,4 +138,65 @@ void tdma_control() {
 	}
 
 	restore_tty();
+}
+
+void tdma_control() {
+	auto inner_func = [](const std::shared_ptr<drf7020d20> &rf_test,
+						  uint32_t slot, tdma::scheme selected_scheme,
+						  std::atomic<bool> &active) {
+		tdma tdma(rf_test, slot, selected_scheme);
+		tdma.rx_set_offset(-5);
+		tdma.tx_set_offset(-70);
+
+		while (active) {
+			auto received = tdma.rx_sync(5);
+			if (!received.empty()) {
+				std::cout << "Slot " << slot << ": " << received << '\n';
+				tdma.tx_sync(*get_id());
+			}
+		}
+	};
+
+	control_template(inner_func);
+}
+
+void message_worker_test() {
+	auto inner_func = [](const std::shared_ptr<drf7020d20> &rf_module,
+						  uint32_t slot, tdma::scheme selected_scheme,
+						  std::atomic<bool> &active) {
+		auto tdma_slot =
+			std::make_shared<tdma>(rf_module, slot, selected_scheme);
+		tdma_slot->rx_set_offset(-5);
+		tdma_slot->tx_set_offset(-70);
+
+		auto active_ptr = std::make_shared<std::atomic<bool>>(&active);
+		while (active) { // when space is hit, breaks
+			message_worker worker(tdma_slot, active);
+
+			std::cout << "Awaiting check-in...\n";
+			auto request_data = worker.await_request_sync();
+			if (!request_data.has_value()) {
+				std::cout << "No data received. Cancelled...\n";
+				break;
+			}
+
+			std::cout << "Received check-in:\n\n";
+			printf("Current Position: %u\n", std::get<0>(request_data.value()));
+			printf("Desired Position: %u\n", std::get<1>(request_data.value()));
+			printf("Car Id: %s\n", std::get<2>(request_data.value()).c_str());
+
+			std::cout << "Processing request...\n";
+			worker.send_go_requested();
+
+			bool receieved_ack = worker.check_acknowledge_sync();
+			std::cout << "Received ACKNOWLEDGE: " << receieved_ack << std::endl;
+
+			std::cout << "Awaiting clear from car...\n";
+			bool sent_clear = worker.await_clear_sync();
+
+			std::cout << "Sent clear: " << sent_clear << std::endl;
+		}
+	};
+
+	control_template(inner_func);
 }
