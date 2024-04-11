@@ -11,11 +11,14 @@
 #include <iostream>
 #include <optional>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include <driver/device.hpp>
 #include <driver/drf7020d20.hpp>
 #include <driver/hcsr04.hpp>
+#include <driver/lightsens.hpp>
+#include <driver/motors.hpp>
 #include <driver/pinmap.hpp>
 #include <driver/servo.hpp>
 #include <shared/menu.hpp>
@@ -43,6 +46,7 @@ static void calibrate_us();
 
 static void calibrate_tdma();
 
+static void calibrate_turning();
 static void calibrate_position();
 
 static const std::vector<menu_item> calib_options = {
@@ -51,10 +55,14 @@ static const std::vector<menu_item> calib_options = {
 	{.text = "Calibrate ultrasonic", .action = &calibrate_us},
 	{.text = "Calibrate TDMA", .action = &calibrate_tdma},
 	{.text = "Calibrate position", .action = &calibrate_position},
+	{.text = "Calibrate turning", .action = &calibrate_turning},
 	{.text = "Reload default profile", .action = &load_default},
 	{.text = "Load profile from...", .action = &load_from},
 	{.text = "Save default profile", .action = &save_default},
 	{.text = "Save profile as...", .action = &save_as}};
+
+static constexpr uint32_t ADJUSTMENT = 700;
+static constexpr uint32_t SIDE_ADJUSTMENT = 100;
 
 void calibration_submenu() {
 	show_menu("Calibration", calib_options, true);
@@ -152,6 +160,7 @@ void print_calibration() {
 	auto servo_profile = car_profile.get_servo();
 	auto tdma_profile = car_profile.get_tdma();
 	auto us_profile = car_profile.get_us();
+	auto turn_profile = car_profile.get_turn();
 
 	std::cout << "----------\n";
 	if (servo_profile.has_value()) {
@@ -176,8 +185,19 @@ void print_calibration() {
 	if (us_profile.has_value()) {
 		std::cout << "Ultrasonic:\n\n";
 		std::cout << "Value threshold: " << us_profile->threshold << '\n';
+		std::cout << '\n';
 	} else {
 		std::cout << "Ultrasonic: not defined\n";
+	}
+
+	if (turn_profile.has_value()) {
+		std::cout << "Turning:\n\n";
+		std::cout << "Right duration: " << turn_profile->right_ms << " ms\n";
+		std::cout << "Right delay: " << turn_profile->right_delay_ms << " ms\n";
+		std::cout << "Left duration: " << turn_profile->left_ms << " ms\n";
+		std::cout << "Left delay: " << turn_profile->left_delay_ms << " ms\n";
+	} else {
+		std::cout << "Turning: not defined\n";
 	}
 	std::cout << "----------\n";
 
@@ -452,6 +472,139 @@ void calibrate_tdma() {
 
 	car_profile.set_tdma(new_profile);
 
+	prompt_enter();
+}
+
+/**
+ * @brief Calibrate turning timings.
+ *
+ */
+void calibrate_turning() {
+	auto servo_profile = car_profile.get_servo();
+	if (!servo_profile.has_value()) {
+		std::cout << "No servo calibration data. Exiting...\n";
+		prompt_enter();
+		return;
+	}
+
+	auto current = car_profile.get_turn();
+	profile::turn new_profile = {0, 0, 0, 0};
+	raw_tty();
+
+	// Print current values
+	if (current.has_value()) {
+		std::cout << "Current values:\n\n";
+		std::cout << "Right duration: " << current->right_ms << "ms\n";
+		std::cout << "Right delay: " << current->right_delay_ms << "ms\n";
+		std::cout << "Left duration: " << current->left_ms << "ms\n";
+		std::cout << "Left delay: " << current->left_delay_ms << "ms\n";
+
+		new_profile = current.value();
+	} else {
+		std::cout << "No calibration data\n";
+	}
+
+	motor motors(gpio_pins, RASPI_15, RASPI_13, RASPI_11);
+	servo servo_m(gpio_pins, RASPI_32);
+	light_sens ir_left(gpio_pins, RASPI_22);
+	light_sens ir_right(gpio_pins, RASPI_24);
+
+	// Calibrate right turn
+	std::cout << "\nHit any key to begin right turn calibration.\n";
+	std::cout << "You will need to hit a key again once the car does a 90 "
+				 "degree right turn\n";
+	std::getchar();
+
+	servo_m.set(servo_profile->max_right);
+	motors.set(100, FORWARD);
+
+	// Measure time
+	auto start_time = std::chrono::system_clock::now();
+	std::getchar();
+	auto end_time = std::chrono::system_clock::now();
+	motors.stop();
+	new_profile.right_ms = (end_time - start_time).count() / 1000000 -
+						   (ADJUSTMENT - SIDE_ADJUSTMENT);
+	servo_m.set(servo_profile->center);
+	std::cout << "Right turn calibration completed!\n";
+
+	// Calibrate left offset
+	std::cout << "\nPlace the car at an intersection exit.\n";
+	std::cout << "Hit any key to begin right delay calibration.\n";
+	std::getchar();
+
+	servo_m.set(servo_profile->max_right);
+	motors.set(100, BACKWARD);
+	std::this_thread::sleep_for(
+		std::chrono::milliseconds(new_profile.right_ms));
+	servo_m.set(servo_profile->center);
+
+	// Measure time
+	start_time = std::chrono::system_clock::now();
+	while (true) {
+		if (ir_left.read() && ir_right.read()) {
+			break;
+		}
+	}
+	end_time = std::chrono::system_clock::now();
+	motors.stop();
+	new_profile.right_delay_ms = (end_time - start_time).count() / 1000000 -
+								 (ADJUSTMENT - SIDE_ADJUSTMENT);
+	std::cout << "Right turn delay calibration completed!\n";
+
+	// Calibrate left turn
+	std::cout << "\nHit any key to begin left turn calibration.\n";
+	std::cout << "You will need to hit a key again once the car does a 90 "
+				 "degree left turn\n";
+	std::getchar();
+
+	servo_m.set(servo_profile->max_left);
+	motors.set(100, FORWARD);
+
+	// Measure time
+	start_time = std::chrono::system_clock::now();
+	std::getchar();
+	end_time = std::chrono::system_clock::now();
+	motors.stop();
+	new_profile.left_ms = (end_time - start_time).count() / 1000000 -
+						  (ADJUSTMENT + SIDE_ADJUSTMENT);
+	servo_m.set(servo_profile->center);
+	std::cout << "Left turn calibration completed!\n";
+
+	// Calibrate left offset
+	std::cout << "\nPlace the car at an intersection exit.\n";
+	std::cout << "Hit any key to begin left delay calibration.\n";
+	std::getchar();
+
+	servo_m.set(servo_profile->max_left);
+	motors.set(100, BACKWARD);
+	std::this_thread::sleep_for(std::chrono::milliseconds(new_profile.left_ms));
+	servo_m.set(servo_profile->center);
+
+	// Measure time
+	start_time = std::chrono::system_clock::now();
+	while (true) {
+		if (ir_left.read() && ir_right.read()) {
+			break;
+		}
+	}
+	end_time = std::chrono::system_clock::now();
+	motors.stop();
+	new_profile.left_delay_ms = (end_time - start_time).count() / 1000000 -
+								(ADJUSTMENT + SIDE_ADJUSTMENT);
+	std::cout << "Left turn delay calibration completed!\n";
+
+	std::cout << "Calibration completed.\n";
+
+	std::cout << "\nNew values:\n\n";
+	std::cout << "Right duration: " << new_profile.right_ms << '\n';
+	std::cout << "Right delay: " << new_profile.right_delay_ms << '\n';
+	std::cout << "Left duration: " << new_profile.left_ms << '\n';
+	std::cout << "Left delay: " << new_profile.left_delay_ms << '\n';
+
+	car_profile.set_turn(new_profile);
+
+	restore_tty();
 	prompt_enter();
 }
 

@@ -32,6 +32,9 @@ int main() {
 		if (!car_profile.get_us().has_value()) {
 			std::cout << "Ultrasonic\n";
 		}
+		if (!car_profile.get_turn().has_value()) {
+			std::cout << "Turning\n";
+		}
 
 		std::cout << "\nPlease visit the calibration menu\n";
 
